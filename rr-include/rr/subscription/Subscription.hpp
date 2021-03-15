@@ -1,5 +1,5 @@
-#ifndef SUBSCRIPTION_HPP
-#define SUBSCRIPTION_HPP
+#ifndef RR_SUBSCRIPTION_SUBSCRIPTION_HPP
+#define RR_SUBSCRIPTION_SUBSCRIPTION_HPP
 
 #include <list>
 
@@ -191,4 +191,4 @@ public:
 	using KeyBase<Topic, SyncTraits>::KeyBase;
 };
 
-#endif // SUBSCRIPTION_HPP
+#endif // RR_SUBSCRIPTION_SUBSCRIPTION_HPP
