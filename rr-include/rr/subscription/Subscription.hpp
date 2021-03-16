@@ -14,6 +14,8 @@
 # include <thread>
 #endif  /* defined(SUBSCRIPTION_HPP_ENABLE_THREAD_SAFETY) */
 
+namespace Rr {
+namespace Subscription {
 
 // ------------ Topics ------------ //
 // Feel free to extend
@@ -190,5 +192,8 @@ class Key<void, Topic, SyncTraits> : public KeyBase<Topic, SyncTraits> {
 public:
 	using KeyBase<Topic, SyncTraits>::KeyBase;
 };
+
+}  // namespace Subscription
+}  // namespace Rr
 
 #endif // RR_SUBSCRIPTION_SUBSCRIPTION_HPP
