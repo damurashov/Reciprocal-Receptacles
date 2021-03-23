@@ -148,7 +148,7 @@ public:
 		observerInfo = &pushObserver((MemberCallable) callable, (Util::Observer *) instance);
 	}
 
-	void notify(Type... args)
+	static void notify(Type... args)
 	{
 		auto iterators = getIterators();  // The returned range won't be changed, therefore there's no reason to syncrhonize access
 
