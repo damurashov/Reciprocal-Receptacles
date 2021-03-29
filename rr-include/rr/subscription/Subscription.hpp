@@ -100,7 +100,7 @@ using DefaultSyncTraits = Util::SyncTraitsMock;
 // ------------ KeyBase (multiargument) ------------ //
 
 
-template <typename Topic, typename SyncTraits, typename ...Type>
+template <typename TopicTrait, typename SyncTraits, typename ...Type>
 class KeyBase {
 protected:
 	using MemberCallable = void (Util::Observer:: *)(Type...);
@@ -134,6 +134,8 @@ protected:
 	ObserverInfo *observerInfo = nullptr;
 
 public:
+	using Topic = TopicTrait;
+
 	void enableSubscribe(bool aEnabled)
 	{
 		if (observerInfo) {
@@ -176,21 +178,23 @@ public:
 	}
 };
 
-template <typename Topic, typename SyncTraits, typename ...Type>
-typename KeyBase<Topic, SyncTraits, Type...>::Observers KeyBase<Topic, SyncTraits, Type...>::observers {};
+template <typename TopicTrait, typename SyncTraits, typename ...Type>
+typename KeyBase<TopicTrait, SyncTraits, Type...>::Observers KeyBase<TopicTrait, SyncTraits, Type...>::observers {};
 
 // ------------ Key (single argument) ------------ //
 
-template <typename SingleType, typename Topic = Topics::Default, typename SyncTraits = DefaultSyncTraits>
-class Key : public KeyBase<Topic, SyncTraits, SingleType> {
+template <typename SingleType, typename TopicTrait = Topics::Default, typename SyncTraits = DefaultSyncTraits>
+class Key : public KeyBase<TopicTrait, SyncTraits, SingleType> {
 public:
-	using KeyBase<Topic, SyncTraits, SingleType>::KeyBase;
+	using Type = SingleType;
+	using KeyBase<TopicTrait, SyncTraits, SingleType>::KeyBase;
 };
 
-template <typename Topic, typename SyncTraits>
-class Key<void, Topic, SyncTraits> : public KeyBase<Topic, SyncTraits> {
+template <typename TopicTrait, typename SyncTraits>
+class Key<void, TopicTrait, SyncTraits> : public KeyBase<TopicTrait, SyncTraits> {
 public:
-	using KeyBase<Topic, SyncTraits>::KeyBase;
+	using Type = void;
+	using KeyBase<TopicTrait, SyncTraits>::KeyBase;
 };
 
 }  // namespace Subscription
