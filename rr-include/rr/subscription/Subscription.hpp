@@ -109,7 +109,7 @@ protected:
 		MemberCallable callable;
 		typename SyncTraits::MutObserver mutex;
 		bool enabled = true;
-		ObserverInfo(Util::Observer *aObserver, MemberCallable aCallable) : observer(aObserver), callable(aCallable)
+		ObserverInfo(Util::Observer *aObserver, MemberCallable aCallable, bool aEnabled = true) : observer(aObserver), callable(aCallable), enabled(aEnabled)
 		{
 		}
 	};
@@ -124,10 +124,10 @@ protected:
 		return {observers.list.begin(), observers.list.end()};
 	}
 
-	static ObserverInfo &pushObserver(MemberCallable aObsCall, Util::Observer *aObs)
+	static ObserverInfo &pushObserver(MemberCallable aObsCall, Util::Observer *aObs, bool aEnabled = true)
 	{
 		typename SyncTraits::LockObserverStorage lock(observers.mutex);
-		observers.list.emplace_back(aObs, aObsCall);
+		observers.list.emplace_back(aObs, aObsCall, aEnabled);
 		return observers.list.back();
 	}
 
@@ -145,9 +145,9 @@ public:
 	}
 
 	template <typename InstanceType>
-	KeyBase(void (InstanceType:: *callable)(Type...), InstanceType *instance)
+	KeyBase(void (InstanceType:: *callable)(Type...), InstanceType *instance, bool enabled = true)
 	{
-		observerInfo = &pushObserver((MemberCallable) callable, (Util::Observer *) instance);
+		observerInfo = &pushObserver((MemberCallable) callable, (Util::Observer *) instance, enabled);
 	}
 
 	static void notify(Type... args)
