@@ -104,12 +104,20 @@ template <typename TopicTrait, typename SyncTraits, typename ...Type>
 class KeyBase {
 protected:
 	using MemberCallable = void (Util::Observer:: *)(Type...);
+	using StaticCallable = void (*)(Type...);
+
 	struct ObserverInfo {
 		Util::Observer *observer;
-		MemberCallable callable;
+		union {
+			MemberCallable memberCallable;
+			StaticCallable staticCallable;
+		};
 		typename SyncTraits::MutObserver mutex;
 		bool enabled = true;
-		ObserverInfo(Util::Observer *aObserver, MemberCallable aCallable, bool aEnabled = true) : observer(aObserver), callable(aCallable), enabled(aEnabled)
+		ObserverInfo(Util::Observer *aObserver, MemberCallable aCallable, bool aEnabled = true) : observer(aObserver), memberCallable(aCallable), enabled(aEnabled)
+		{
+		}
+		ObserverInfo(StaticCallable aCallable, bool aEnabled = true) : observer(nullptr), staticCallable(aCallable), enabled(aEnabled)
 		{
 		}
 	};
@@ -128,6 +136,13 @@ protected:
 	{
 		typename SyncTraits::LockObserverStorage lock(observers.mutex);
 		observers.list.emplace_back(aObs, aObsCall, aEnabled);
+		return observers.list.back();
+	}
+
+	static ObserverInfo &pushObserver(StaticCallable aStaticCallable, bool aEnabled = true)
+	{
+		typename SyncTraits::LockObserverStorage lock(observers.mutex);
+		observers.list.emplace_back(aStaticCallable, aEnabled);
 		return observers.list.back();
 	}
 
@@ -150,6 +165,11 @@ public:
 		observerInfo = &pushObserver((MemberCallable) callable, (Util::Observer *) instance, enabled);
 	}
 
+	KeyBase(void (*staticCallable)(Type...), bool enabled = true)
+	{
+		observerInfo = &pushObserver((StaticCallable) staticCallable, enabled);
+	}
+
 	static void notify(Type... args)
 	{
 		auto iterators = getIterators();  // The returned range won't be changed, therefore there's no reason to syncrhonize access
@@ -163,8 +183,12 @@ public:
 				continue;
 			}
 			auto obs = it->observer;
-			auto obsCallable = it->callable;
-			(obs->*obsCallable)(args...);
+			if (obs) {  // Member
+				auto obsCallable = it->memberCallable;
+				(obs->*obsCallable)(args...);
+			} else {  // Static
+				it->staticCallable(args...);
+			}
 		}
 	}
 
