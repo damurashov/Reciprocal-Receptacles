@@ -17,13 +17,6 @@
 namespace Rr {
 namespace Subscription {
 
-// ------------ Topics ------------ //
-// Feel free to extend
-
-namespace Topics {
-	struct Default {};
-}  // namespace Keys
-
 
 // ------------ Utility ------------ //
 
@@ -65,8 +58,14 @@ private:
 // - LockObserverStorage
 //
 
+// Mock class serving as pseudo-type for subscribers
+struct Observer {
+};
+
+}  // namespace Util
+
 #if defined(SUBSCRIPTION_HPP_ENABLE_THREAD_SAFETY)
-struct SyncTraitsStrict {
+struct SyncTraitsFull {
 	using MutObserversStorage = std::mutex;                           // Type of mutex for static observers storage
 	using MutObserver         = std::mutex;                           // Type of mutex for particular observers
 	using LockObserverStorage = std::lock_guard<MutObserversStorage>; // RAII sync. for static observers storage
@@ -74,28 +73,24 @@ struct SyncTraitsStrict {
 	using LockObserverNotify  = std::lock_guard<MutObserver>;         // RAII sync. for particular observers: on 'notify' call
 };
 #endif /* #if defined(SUBSCRIPTION_HPP_ENABLE_THREAD_SAFETY) */
-struct SyncTraitsMock {
-	using MutObserversStorage = MockBasicLockable;
-	using MutObserver         = MockBasicLockable;
-	using LockObserverStorage = LockGuard<MutObserversStorage>;
-	using LockObserverEnable  = LockGuard<MutObserver>;
-	using LockObserverNotify  = LockGuard<MutObserver>;
+struct SyncTraitsNoSync {
+	using MutObserversStorage = Util::MockBasicLockable;
+	using MutObserver         = Util::MockBasicLockable;
+	using LockObserverStorage = Util::LockGuard<MutObserversStorage>;
+	using LockObserverEnable  = Util::LockGuard<MutObserver>;
+	using LockObserverNotify  = Util::LockGuard<MutObserver>;
 };
-
-// Mock class serving as pseudo-type for subscribers
-struct Observer {
-};
-
-}  // namespace Util
-
 
 // ------------ Key ------------ //
 
 #if defined(SUBSCRIPTION_HPP_ENABLE_THREAD_SAFETY)
-using DefaultSyncTraits = Util::SyncTraitsStrict;
+using DefaultSyncTraits = SyncTraitsFull;
 #else
-using DefaultSyncTraits = Util::SyncTraitsMock;
+using DefaultSyncTraits = SyncTraitsNoSync;
 #endif
+
+struct DefaultTopic {
+};
 
 // ------------ KeyBase (multiargument) ------------ //
 
@@ -207,7 +202,7 @@ typename KeyBase<TopicTrait, SyncTraits, Type...>::Observers KeyBase<TopicTrait,
 
 // ------------ Key (single argument) ------------ //
 
-template <typename SingleType, typename TopicTrait = Topics::Default, typename SyncTraits = DefaultSyncTraits>
+template <typename SingleType, typename TopicTrait = DefaultTopic, typename SyncTraits = DefaultSyncTraits>
 class Key : public KeyBase<TopicTrait, SyncTraits, SingleType> {
 public:
 	using Type = SingleType;
