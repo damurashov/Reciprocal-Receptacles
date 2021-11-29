@@ -1,99 +1,51 @@
 #ifndef RR_SUBSCRIPTION_SUBSCRIPTION_HPP
 #define RR_SUBSCRIPTION_SUBSCRIPTION_HPP
 
+#include <Rr/Util/Sync.hpp>
+
+// TODO: Offer an alternative to std::list. For example, ETL library https://github.com/ETLCPP/etl
+# if !RRO_STL_USED
+# error The current version of Rr requires STL.
+#endif
 #include <list>
 
-// ------------ Thread Safety Macro ------------ //
-
-#if 1
-# define SUBSCRIPTION_HPP_ENABLE_THREAD_SAFETY
-#endif
-
-#if defined(SUBSCRIPTION_HPP_ENABLE_THREAD_SAFETY)
+#if RRO_STL_USED
 # include <mutex>
 # include <thread>
-#endif  /* defined(SUBSCRIPTION_HPP_ENABLE_THREAD_SAFETY) */
+#endif
 
 namespace Rr {
 namespace Subscription {
 
-
-// ------------ Utility ------------ //
-
 namespace Util {
 
-// https://en.cppreference.com/w/cpp/named_req/BasicLockable
-struct MockBasicLockable final {
-	inline void lock()
-	{
-	}
-	inline void unlock()
-	{
-	}
-};
-
-// Mocks STL's lock_guard:
-// https://en.cppreference.com/w/cpp/thread/lock_guard
-template <typename Mutex>
-struct LockGuard final {
-public:
-	LockGuard(Mutex &aMutex) : mutex(aMutex)
-	{
-		mutex.lock();
-	}
-	~LockGuard()
-	{
-		mutex.unlock();
-	}
-private:
-	Mutex &mutex;
-};
-
-
-// ------------ SyncTraits ------------ //
-//
-// Synchronization facilities used by Key<...> Interface requirements are
-// defined by RAII facilities:
-// - LockObserverEnable
-// - LockObserverStorage
-//
-
-// Mock class serving as pseudo-type for subscribers
 struct Observer {
 };
-
-}  // namespace Util
-
-#if defined(SUBSCRIPTION_HPP_ENABLE_THREAD_SAFETY)
-struct SyncTraitsFull {
-	using MutObserversStorage = std::mutex;                           // Type of mutex for static observers storage
-	using MutObserver         = std::mutex;                           // Type of mutex for particular observers
-	using LockObserverStorage = std::lock_guard<MutObserversStorage>; // RAII sync. for static observers storage
-	using LockObserverEnable  = std::lock_guard<MutObserver>;         // RAII sync. for particular observers: lifecycle management
-	using LockObserverNotify  = std::lock_guard<MutObserver>;         // RAII sync. for particular observers: on 'notify' call
-};
-#endif /* #if defined(SUBSCRIPTION_HPP_ENABLE_THREAD_SAFETY) */
-struct SyncTraitsNoSync {
-	using MutObserversStorage = Util::MockBasicLockable;
-	using MutObserver         = Util::MockBasicLockable;
-	using LockObserverStorage = Util::LockGuard<MutObserversStorage>;
-	using LockObserverEnable  = Util::LockGuard<MutObserver>;
-	using LockObserverNotify  = Util::LockGuard<MutObserver>;
-};
-
-// ------------ Key ------------ //
-
-#if defined(SUBSCRIPTION_HPP_ENABLE_THREAD_SAFETY)
-using DefaultSyncTraits = SyncTraitsFull;
-#else
-using DefaultSyncTraits = SyncTraitsNoSync;
-#endif
 
 struct DefaultTopic {
 };
 
-// ------------ KeyBase (multiargument) ------------ //
+}  // namespace Util
 
+// Sync traits
+
+template <typename Tmutex, template <typename> typename Tlock>
+struct SyncTrait final {
+	using MutObserversStorage = Tmutex;         // Type of mutex for static observers storage
+	using MutObserver         = Tmutex;         // Type of mutex for particular observers
+	using LockObserverStorage = Tlock<Tmutex>;  // RAII sync. for static observers storage
+	using LockObserverEnable  = Tlock<Tmutex>;  // RAII sync. for particular observers: lifecycle management
+	using LockObserverNotify  = Tlock<Tmutex>;  // RAII sync. for particular observers: on 'notify' call
+};
+
+using MockSyncTrait = SyncTrait<Rr::Util::Sync::MockBasicLockable, Rr::Util::Sync::LockGuard>;
+using DefaultSyncTrait = MockSyncTrait;
+
+#if RRO_STL_USED
+using StlSyncTrait = SyncTrait<std::mutex, std::lock_guard>;
+#endif
+
+// Base type
 
 template <typename TopicTrait, typename SyncTraits, typename ...Type>
 class KeyBase {
@@ -200,9 +152,9 @@ public:
 template <typename TopicTrait, typename SyncTraits, typename ...Type>
 typename KeyBase<TopicTrait, SyncTraits, Type...>::Observers KeyBase<TopicTrait, SyncTraits, Type...>::observers {};
 
-// ------------ Key (single argument) ------------ //
+// Key, single argument
 
-template <typename SingleType, typename TopicTrait = DefaultTopic, typename SyncTraits = DefaultSyncTraits>
+template <typename SingleType, typename TopicTrait = Util::DefaultTopic, typename SyncTraits = DefaultSyncTrait>
 class Key : public KeyBase<TopicTrait, SyncTraits, SingleType> {
 public:
 	using Type = SingleType;

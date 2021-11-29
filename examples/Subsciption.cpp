@@ -17,7 +17,7 @@ void unknownEvent(void)
 class Subscriber {
 public:
 	// For multiple types: Topic, SyncTrait, Types...
-	using KeyParam = Rr::Subscription::KeyBase<Topic::Info, Rr::Subscription::SyncTraitsFull, const std::string &, int>;
+	using KeyParam = Rr::Subscription::KeyBase<Topic::Info, Rr::Subscription::StlSyncTrait, const std::string &, int>;
 
 private:
 	struct {
