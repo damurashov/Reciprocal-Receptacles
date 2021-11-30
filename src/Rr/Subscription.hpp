@@ -75,70 +75,25 @@ protected:
 		typename SyncTraits::MutObserversStorage mutex;
 	} observers;
 
-	static std::pair<typename std::list<ObserverInfo>::iterator, typename std::list<ObserverInfo>::iterator> getIterators() {
-		typename SyncTraits::LockObserverStorage lock(observers.mutex);
-		return {observers.list.begin(), observers.list.end()};
-	}
+	static std::pair<typename std::list<ObserverInfo>::iterator, typename std::list<ObserverInfo>::iterator> getIterators();
 
-	static ObserverInfo &pushObserver(MemberCallable aObsCall, Util::Observer *aObs, bool aEnabled = true)
-	{
-		typename SyncTraits::LockObserverStorage lock(observers.mutex);
-		observers.list.emplace_back(aObs, aObsCall, aEnabled);
-		return observers.list.back();
-	}
+	static ObserverInfo &pushObserver(MemberCallable aObsCall, Util::Observer *aObs, bool aEnabled = true);
 
-	static ObserverInfo &pushObserver(StaticCallable aStaticCallable, bool aEnabled = true)
-	{
-		typename SyncTraits::LockObserverStorage lock(observers.mutex);
-		observers.list.emplace_back(aStaticCallable, aEnabled);
-		return observers.list.back();
-	}
+	static ObserverInfo &pushObserver(StaticCallable aStaticCallable, bool aEnabled = true);
 
 	ObserverInfo *observerInfo = nullptr;
 
 public:
 	using Topic = TopicTrait;
 
-	void enableSubscribe(bool aEnabled)
-	{
-		if (observerInfo) {
-			typename SyncTraits::LockObserverEnable lock(observerInfo->mutex);  // Thread-safe, 'coz the entry will not be destructed no matter what
-			observerInfo->enabled = aEnabled;
-		}
-	}
+	void enableSubscribe(bool aEnabled);
 
 	template <typename InstanceType>
-	KeyBase(void (InstanceType:: *callable)(Type...), InstanceType *instance, bool enabled = true)
-	{
-		observerInfo = &pushObserver((MemberCallable) callable, (Util::Observer *) instance, enabled);
-	}
+	KeyBase(void (InstanceType:: *callable)(Type...), InstanceType *instance, bool enabled = true);
 
-	KeyBase(void (*staticCallable)(Type...), bool enabled = true)
-	{
-		observerInfo = &pushObserver((StaticCallable) staticCallable, enabled);
-	}
+	KeyBase(void (*staticCallable)(Type...), bool enabled = true);
 
-	static void notify(Type... args)
-	{
-		auto iterators = getIterators();  // The returned range won't be changed, therefore there's no reason to syncrhonize access
-
-		for (auto it = iterators.first; it != iterators.second; ++it) {
-			if (!it->enabled) {  // Preliminary check to avoid unnecessary lock expenses
-				continue;
-			}
-			typename SyncTraits::LockObserverNotify lock(it->mutex);
-			if (!it->enabled) {
-				continue;
-			}
-			auto obs = it->observer;
-			if (obs) {  // Member
-				auto obsCallable = it->memberCallable;
-				(obs->*obsCallable)(args...);
-			} else {  // Static
-				it->staticCallable(args...);
-			}
-		}
-	}
+	static void notify(Type... args);
 
 	KeyBase()
 	{
@@ -171,5 +126,7 @@ public:
 
 }  // namespace Subscription
 }  // namespace Rr
+
+#include "Subscription.impl"
 
 #endif // RR_SUBSCRIPTION_SUBSCRIPTION_HPP

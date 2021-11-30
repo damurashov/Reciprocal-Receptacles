@@ -1,0 +1,84 @@
+//
+// Subscription.impl
+//
+// Author: Dmitry Murashov
+//   Mail: dmtrDOTmurashovATgmailDOTcom (gmail.com)
+//
+
+namespace Rr {
+namespace Subscription {
+
+template <typename TopicTrait, typename SyncTraits, typename ...Type>
+inline std::pair<typename std::list<typename KeyBase<TopicTrait, SyncTraits, Type...>::ObserverInfo>::iterator, 
+	typename std::list<typename KeyBase<TopicTrait, SyncTraits, Type...>::ObserverInfo>::iterator> 
+KeyBase<TopicTrait, SyncTraits, Type...>::getIterators() 
+{
+	typename SyncTraits::LockObserverStorage lock(observers.mutex);
+	return {observers.list.begin(), observers.list.end()};
+}
+
+template <typename TopicTrait, typename SyncTraits, typename ...Type>
+inline typename KeyBase<TopicTrait, SyncTraits, Type...>::ObserverInfo 
+&KeyBase<TopicTrait, SyncTraits, Type...>::pushObserver(KeyBase<TopicTrait, SyncTraits, Type...>::MemberCallable aObsCall, Util::Observer *aObs, bool aEnabled)
+{
+	typename SyncTraits::LockObserverStorage lock(observers.mutex);
+	observers.list.emplace_back(aObs, aObsCall, aEnabled);
+	return observers.list.back();
+}
+
+template <typename TopicTrait, typename SyncTraits, typename ...Type>
+inline typename KeyBase<TopicTrait, SyncTraits, Type...>::ObserverInfo 
+&KeyBase<TopicTrait, SyncTraits, Type...>::pushObserver(StaticCallable aStaticCallable, bool aEnabled)
+{
+	typename SyncTraits::LockObserverStorage lock(observers.mutex);
+	observers.list.emplace_back(aStaticCallable, aEnabled);
+	return observers.list.back();
+}
+
+template <typename TopicTrait, typename SyncTraits, typename ...Type>
+inline void KeyBase<TopicTrait, SyncTraits, Type...>::enableSubscribe(bool aEnabled)
+{
+	if (observerInfo) {
+		typename SyncTraits::LockObserverEnable lock(observerInfo->mutex);  // Thread-safe, 'coz the entry will not be destructed no matter what
+		observerInfo->enabled = aEnabled;
+	}
+}
+
+template <typename TopicTrait, typename SyncTraits, typename ...Type>
+template <typename InstanceType>
+inline KeyBase<TopicTrait, SyncTraits, Type...>::KeyBase(void (InstanceType:: *callable)(Type...), InstanceType *instance, bool enabled)
+{
+	observerInfo = &pushObserver((MemberCallable) callable, (Util::Observer *) instance, enabled);
+}
+
+template <typename TopicTrait, typename SyncTraits, typename ...Type>
+inline KeyBase<TopicTrait, SyncTraits, Type...>::KeyBase(void (*staticCallable)(Type...), bool enabled)
+{
+	observerInfo = &pushObserver((StaticCallable) staticCallable, enabled);
+}
+
+template <typename TopicTrait, typename SyncTraits, typename ...Type>
+inline void KeyBase<TopicTrait, SyncTraits, Type...>::notify(Type... args)
+{
+	auto iterators = getIterators();  // The returned range won't be changed, therefore there's no reason to syncrhonize access
+
+	for (auto it = iterators.first; it != iterators.second; ++it) {
+		if (!it->enabled) {  // Preliminary check to avoid unnecessary lock expenses
+			continue;
+		}
+		typename SyncTraits::LockObserverNotify lock(it->mutex);
+		if (!it->enabled) {
+			continue;
+		}
+		auto obs = it->observer;
+		if (obs) {  // Member
+			auto obsCallable = it->memberCallable;
+			(obs->*obsCallable)(args...);
+		} else {  // Static
+			it->staticCallable(args...);
+		}
+	}
+}
+
+}  // namespace Subscription
+}  // namespace Rr
