@@ -35,13 +35,36 @@ private:
 ///
 /// @brief STL BasicLockable trait https://en.cppreference.com/w/cpp/named_req/BasicLockable
 ///
-struct MockBasicLockable final {
-inline void lock()
-{
-}
-inline void unlock()
-{
-}
+struct MockBasicLockable {
+	inline void lock()
+	{
+	}
+
+	inline void unlock()
+	{
+	}
+
+};
+
+///
+/// @brief STL SharedMutex trait https://en.cppreference.com/w/cpp/named_req/SharedMutex
+///
+struct MockSharedMutex : MockBasicLockable {
+	inline void try_lock() 
+	{
+	}
+
+	inline void lock_shared() 
+	{
+	}
+
+	inline void try_lock_shared()
+	{
+	}
+
+	inline void unlock_shared()
+	{
+	}
 };
 
 }  // namespace Sync
