@@ -1,0 +1,42 @@
+//
+// Module.hpp
+// 
+// Author: Dmitry Murashov
+//   Mail: dmtrDOTmurashovATgmailDOTcom (gmail.com)
+//
+
+#include <cassert>
+
+namespace Rr {
+namespace Module {
+
+template <typename Tinterface, typename TsyncTrait>
+inline Mod<Tinterface, TsyncTrait>::Mod(): lock(mutex)
+{
+}
+
+template <typename Tinterface, typename TsyncTrait>
+inline bool Mod<Tinterface, TsyncTrait>::isValid() const 
+{
+	return instance != nullptr;
+}
+
+template <typename Tinterface, typename TsyncTrait>
+inline typename Util::DecayPreserveConst<Tinterface>::type &Mod<Tinterface, TsyncTrait>::getInstance()
+{
+	assert(instance != nullptr);
+	return *instance;
+}
+
+template <typename Tinterface, typename TsyncTrait>
+inline void Mod<Tinterface, TsyncTrait>::setInstance(typename std::decay<Tinterface>::type &aInstance)
+{
+	static typename TsyncTrait::MutexType mutex;
+	typename TsyncTrait::WriteLockType lock{mutex};
+	
+	assert(instance == nullptr);
+	instance = &aInstance;
+}
+
+}  // namespace Module
+}  // namespace Rr
