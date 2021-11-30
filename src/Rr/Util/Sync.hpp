@@ -36,11 +36,11 @@ private:
 /// @brief STL BasicLockable trait https://en.cppreference.com/w/cpp/named_req/BasicLockable
 ///
 struct MockBasicLockable {
-	inline void lock()
+	constexpr void lock()
 	{
 	}
 
-	inline void unlock()
+	constexpr void unlock()
 	{
 	}
 
@@ -50,19 +50,19 @@ struct MockBasicLockable {
 /// @brief STL SharedMutex trait https://en.cppreference.com/w/cpp/named_req/SharedMutex
 ///
 struct MockSharedMutex : MockBasicLockable {
-	inline void try_lock() 
+	constexpr bool try_lock()
 	{
 	}
 
-	inline void lock_shared() 
+	constexpr void lock_shared()
 	{
 	}
 
-	inline void try_lock_shared()
+	constexpr void try_lock_shared()
 	{
 	}
 
-	inline void unlock_shared()
+	constexpr void unlock_shared()
 	{
 	}
 };
