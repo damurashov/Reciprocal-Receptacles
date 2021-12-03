@@ -63,6 +63,8 @@ private:
 	char memory[size()];  ///< Storage for anything that will be constructed
 };
 
+// TODO: PolymorphicCell<N>
+
 }  // namespace Util
 }  // namespace Rr
 
