@@ -1,0 +1,20 @@
+//
+// Callback.impl
+//
+// Created: 2021-12-03
+//  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
+//
+
+namespace Rr {
+namespace Util {
+
+template<class Tto, class Tret, class Tfrom, class Targs> 
+typename MemberCallable<Tret, Tto, Targs>::CallbackType 
+memberCast(Tret (Tfrom::*aFrom)(Targs, ...))
+{
+	return reinterpret_cast<typename MemberCallable<Tret, Tto, Targs>::CallbackType>(aFrom);
+}
+
+
+}  // namespace Util
+}  // namespace Rr
