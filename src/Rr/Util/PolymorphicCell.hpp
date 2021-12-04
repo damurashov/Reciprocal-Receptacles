@@ -8,36 +8,10 @@
 #if !defined(RR_UTIL_POLYMORPHIC_CELL)
 #define RR_UTIL_POLYMORPHIC_CELL
 
+#include <Rr/Trait/Max.hpp>
+
 namespace Rr {
 namespace Util {
-
-template <unsigned N1, unsigned N2, bool Ngt = (N1 > N2)>
-struct Max2;
-
-template <unsigned N1, unsigned N2>
-struct Max2<N1, N2, true> {
-	static constexpr auto value = N1;
-};
-
-template <unsigned N1, unsigned N2>
-struct Max2<N1, N2, false> {
-	static constexpr auto value = N2;
-};
-
-template <unsigned N, unsigned ...Nsizeofs>
-struct MaxVar {
-	static constexpr auto value = Max2<N, MaxVar<(Nsizeofs)...>::value>::value;
-};
-
-template <unsigned N>
-struct MaxVar<N> {
-	static constexpr auto value = N;
-};
-
-template <class T, class ...Targs>
-struct MaxSizeof {
-	static constexpr auto value = MaxVar<sizeof(T), sizeof(Targs)...>::value;
-};
 
 template <class Tbase, class ...Tderived>
 struct PolymorphicCell {

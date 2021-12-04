@@ -11,7 +11,7 @@ namespace Util {
 template <class Tbase, class ...Tderived>
 inline constexpr unsigned PolymorphicCell<Tbase, Tderived...>::size()
 {
-	return MaxSizeof<Tbase, Tderived...>::value;
+	return Rr::Trait::MaxSizeof<Tbase, Tderived...>::value;
 }
 
 

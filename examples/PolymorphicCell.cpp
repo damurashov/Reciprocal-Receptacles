@@ -1,5 +1,5 @@
 //
-// Callback.hpp
+// PolymorphicCell.hpp
 //
 // Created: 2021-12-03
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
