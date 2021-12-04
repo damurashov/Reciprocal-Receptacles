@@ -1,6 +1,6 @@
 //
 // Sync.hpp
-// 
+//
 // Author: Dmitry Murashov
 //  Email: dmtr D murashov A gmail D com (Obfuscated to protect from spambots. Replace "D" with ".", "A" with "@")
 //
@@ -14,8 +14,8 @@ namespace Sync {
 
 ///
 /// @brief Mocks STL's lock_guard: https://en.cppreference.com/w/cpp/thread/lock_guard
-/// 
-/// @tparam Mutex 
+///
+/// @tparam Mutex
 ///
 template <typename Mutex>
 struct LockGuard final {
@@ -52,6 +52,7 @@ struct MockBasicLockable {
 struct MockSharedMutex : MockBasicLockable {
 	constexpr bool try_lock()
 	{
+		return true;
 	}
 
 	constexpr void lock_shared()
