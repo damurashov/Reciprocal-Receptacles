@@ -54,4 +54,6 @@ int main(void)
 	cDerived(42);
 	cA(42);
 	cStatic(42);
+
+	cout << Callable::kConst << endl;
 }

@@ -1,5 +1,5 @@
 //
-// Callable.impl
+// CallableBase.impl
 //
 // Created: 2021-12-06
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
@@ -23,10 +23,14 @@ inline Tret Callable<Tinstance, Tret(Targs...)>::operator()(Targs ...aArgs)
 	return (instance->*callback)(aArgs...);
 }
 
-}  // namespace CallableImpl
+template <typename Tsignature, typename Tret, typename ...Targs>
+inline Tret CallableBase<Tsignature, Tret, Targs...>::operator()(Targs ...aArgs)
+{
+	return (callable.instance->*callable.callback)(aArgs...);
+}
 
-template <class Tret, class ...Targs>
-inline Callable<Tret(Targs...)>::Callable(Tret(*aCallback)(Targs...))
+template <typename Tsignature, typename Tret, typename ...Targs>
+inline CallableBase<Tsignature, Tret, Targs...>::CallableBase(Tret(*aCallback)(Targs...))
 {
 	using CallableImplType = CallableImpl::Callable<Tret(Targs...)>;
 
@@ -35,21 +39,28 @@ inline Callable<Tret(Targs...)>::Callable(Tret(*aCallback)(Targs...))
 	callable.callback = reinterpret_cast<decltype(callable.callback)>(&CallableImplType::operator());
 }
 
+}  // namespace CallableImpl
+
 template <class Tret, class ...Targs>
 template <class Tinstance>
 inline Callable<Tret(Targs...)>::Callable(Tret(Tinstance::*aCallback)(Targs...), Tinstance *aInstance)
 {
 	using CallableImplType = CallableImpl::Callable<Tinstance, Tret(Targs...)>;
 
-	CallableImplType *callableImpl = new (memory) CallableImplType{aCallback, aInstance};
-	callable.instance = reinterpret_cast<decltype(callable.instance)>(callableImpl);
-	callable.callback = reinterpret_cast<decltype(callable.callback)>(&CallableImplType::operator());
+	CallableImplType *callableImpl = new (this->memory) CallableImplType{aCallback, aInstance};
+	this->callable.instance = reinterpret_cast<decltype(this->callable.instance)>(callableImpl);
+	this->callable.callback = reinterpret_cast<decltype(this->callable.callback)>(&CallableImplType::operator());
 }
 
 template <class Tret, class ...Targs>
-inline Tret Callable<Tret(Targs...)>::operator()(Targs ...aArgs)
+template <class Tinstance>
+inline Callable<Tret(Targs...) const>::Callable(Tret(Tinstance::*aCallback)(Targs...) const, const Tinstance *aInstance)
 {
-	return (callable.instance->*callable.callback)(aArgs...);
+	using CallableImplType = CallableImpl::Callable<Tinstance, Tret(Targs...)>;
+
+	CallableImplType *callableImpl = new (this->memory) CallableImplType{aCallback, aInstance};
+	this->callable.instance = reinterpret_cast<decltype(this->callable.instance)>(callableImpl);
+	this->callable.callback = reinterpret_cast<decltype(this->callable.callback)>(&CallableImplType::operator());
 }
 
 }  // namespace Util

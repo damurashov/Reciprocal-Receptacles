@@ -45,16 +45,11 @@ struct Callable<Tinstance, Tret(Targs...)> {
 struct Mock {
 };
 
-}  // namespace CallableImpl
-
-template <typename ...T>
-struct Callable;
-
-template <typename Tret, typename ...Targs>
-class Callable<Tret(Targs...)> {
+template <typename Tsignature, typename Tret, typename ...Targs>
+class CallableBase {
 	// Wrapper over CallbackImpl::Callback instance
-private:
-	using Fn = Rr::Trait::Fn<CallableImpl::Mock, Tret(Targs...)>;
+protected:
+	using Fn = Rr::Trait::Fn<CallableImpl::Mock, Tsignature>;
 
 	struct {
 		typename Fn::CallbackType callback;  /// Instead of Tret(Tinstance::*)(Targs...), we use Tret(Mock::*)(Targs...), because the underlying call procedure is the same regardless of a class implementation
@@ -62,18 +57,41 @@ private:
 	} callable;
 
 	// Memory to store CallbackImpl::Callback instance
-private:
-	static constexpr auto kMemSize = Rr::Trait::MaxSizeof<typename CallableImpl::Callable<CallableImpl::Mock, Tret(Targs...)>,
-		typename CallableImpl::Callable<Tret(Targs...)>>::value;  // TODO: Some compilers may differ in their implementation regarding whether or not member function pointer is a pointer to a virtual function
+protected:
+	static constexpr auto kMemSize = Rr::Trait::MaxSizeof<typename CallableImpl::Callable<CallableImpl::Mock, Tsignature>,
+		typename CallableImpl::Callable<Tsignature>>::value;  // TODO: Some compilers may differ in their implementation regarding whether or not member function pointer is a pointer to a virtual function
 	char memory[kMemSize];  /// Storage for whatever instance we create
 
+	CallableBase() = default;
+
 public:
-	Callable(Tret(*)(Targs...));
+	static constexpr bool kConst = Fn::kConst;
+	Tret operator()(Targs...);
+
+	CallableBase(Tret(*)(Targs...));
+};
+
+}  // namespace CallableImpl
+
+template<class ...>
+struct Callable;
+
+template<class Tret, class ...Targs>
+struct Callable<Tret(Targs...)> : CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...> {
+	using CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...>::operator();
+	using CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...>::CallableBase;
 
 	template <typename Tinstance>
 	Callable(Tret(Tinstance::*)(Targs...), Tinstance*);
+};
 
-	Tret operator()(Targs...);
+template<class Tret, class ...Targs>
+struct Callable<Tret(Targs...) const> : CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...> {
+	using CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...>::operator();
+	using CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...>::CallableBase;
+
+	template <typename Tinstance>
+	Callable(Tret(Tinstance::*)(Targs...) const, const Tinstance*);
 };
 
 }  // namespace Util
