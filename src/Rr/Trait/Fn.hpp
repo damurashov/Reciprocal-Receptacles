@@ -19,12 +19,6 @@ struct Fn<T, Tret(Targs...)> {
 	using CallbackType = Tret(T::*)(Targs...);
 	using ReturnType = Tret;
 	using InstanceType = T;
-
-	struct Type {
-		using Callback = Tret(T::*)(Targs...);
-		using Return = Tret;
-		using Instance = T;
-	};
 };
 
 template<class Tret, class ...Targs>
@@ -32,12 +26,6 @@ struct Fn<Tret(Targs...)> {
 	using CallbackType = Tret(*)(Targs...);
 	using ReturnType = Tret;
 	using InstanceType = void;
-
-	struct Type {
-		using Callback = Tret(*)(Targs...);
-		using Return = Tret;
-		using Instance = void;
-	};
 };
 
 }  // namespace Trait
