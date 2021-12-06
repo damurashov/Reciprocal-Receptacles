@@ -64,7 +64,7 @@ private:
 	// Memory to store CallbackImpl::Callback instance
 private:
 	static constexpr auto kMemSize = Rr::Trait::MaxSizeof<typename CallableImpl::Callable<CallableImpl::Mock, Tret(Targs...)>,
-		typename CallableImpl::Callable<Tret(Targs...)>>::value;
+		typename CallableImpl::Callable<Tret(Targs...)>>::value;  // TODO: Some compilers may differ in their implementation regarding whether or not member function pointer is a pointer to a virtual function
 	char memory[kMemSize];  /// Storage for whatever instance we create
 
 public:
