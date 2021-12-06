@@ -67,7 +67,6 @@ private:
 		typename CallableImpl::Callable<Tret(Targs...)>>::value;
 	char memory[kMemSize];  /// Storage for whatever instance we create
 
-
 public:
 	Callable(Tret(*)(Targs...));
 
