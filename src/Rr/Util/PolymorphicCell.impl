@@ -35,5 +35,11 @@ inline &PolymorphicCell<Tbase, Tderived...>::operator Tbase &()
 	return *reinterpret_cast<Tbase *>(memory);
 }
 
+template <class Tbase, class ...Tderived>
+inline void *PolymorphicCell<Tbase, Tderived...>::data()
+{
+	return memory;
+}
+
 }  // namespace Util
 }  // namespace Rr

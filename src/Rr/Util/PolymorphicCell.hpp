@@ -33,6 +33,8 @@ struct PolymorphicCell {
 	///
 	template <class T, class ...Targs>
 	PolymorphicCell(T *, Targs &&...);
+
+	void *data();
 private:
 	char memory[size()];  ///< Storage for anything that will be constructed
 };
