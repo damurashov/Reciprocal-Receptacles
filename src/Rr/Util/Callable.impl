@@ -1,0 +1,56 @@
+//
+// Callable.impl
+//
+// Created: 2021-12-06
+//  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
+//
+
+#include "Callable.hpp"
+
+namespace Rr {
+namespace Util {
+namespace CallableImpl {
+
+template <class Tret, class ...Targs>
+inline Tret Callable<Tret(Targs...)>::operator()(Targs ...aArgs)
+{
+	return callback(aArgs...);
+}
+
+template <class Tinstance, class Tret, class ...Targs>
+inline Tret Callable<Tinstance, Tret(Targs...)>::operator()(Targs ...aArgs)
+{
+	return (instance->*callback)(aArgs...);
+}
+
+}  // namespace CallableImpl
+
+template <class Tret, class ...Targs>
+inline Callable<Tret(Targs...)>::Callable(Tret(*aCallback)(Targs...))
+{
+	using CallableImplType = CallableImpl::Callable<Tret(Targs...)>;
+
+	CallableImplType *callableImpl = new (memory) CallableImplType{aCallback};
+	callable.instance = reinterpret_cast<decltype(callable.instance)>(callableImpl);
+	callable.callback = reinterpret_cast<decltype(callable.callback)>(&CallableImplType::operator());
+}
+
+template <class Tret, class ...Targs>
+template <class Tinstance>
+inline Callable<Tret(Targs...)>::Callable(Tret(Tinstance::*aCallback)(Targs...), Tinstance *aInstance)
+{
+	using CallableImplType = CallableImpl::Callable<Tinstance, Tret(Targs...)>;
+
+	CallableImplType *callableImpl = new (memory) CallableImplType{aCallback, aInstance};
+	callable.instance = reinterpret_cast<decltype(callable.instance)>(callableImpl);
+	callable.callback = reinterpret_cast<decltype(callable.callback)>(&CallableImplType::operator());
+}
+
+template <class Tret, class ...Targs>
+inline Tret Callable<Tret(Targs...)>::operator()(Targs ...aArgs)
+{
+	return (callable.instance->*callable.callback)(aArgs...);
+}
+
+}  // namespace Util
+}  // namespace Rr
