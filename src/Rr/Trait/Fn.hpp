@@ -43,7 +43,7 @@ struct Fn<T, Tret(Targs...)> {
 };
 
 template<class T, class Tret, class ...Targs>
-struct Fn<T, Tret(Targs...) const> {
+struct Fn<T const, Tret(Targs...) const> {
 	using CallbackType = Tret(T::*)(Targs...)const;
 	using ReturnType = Tret;
 	using InstanceType = const T;
@@ -66,7 +66,7 @@ struct Fn<Tret(Targs...)const> {
 	using ReturnType = Tret;
 	using InstanceType = void;
 	using CallableType = FnImpl::StaticCallable<ReturnType, CallbackType, Targs...>;
-	static constexpr bool kConst = false;
+	static constexpr bool kConst = true;
 };
 
 }  // namespace Trait
