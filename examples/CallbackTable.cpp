@@ -42,7 +42,7 @@ void callbackTable()
 	}
 }
 
-void callableTable()
+void observerTable()
 {
 	Rr::Util::ObserverTable<void(int, char) const, std::list> obst;
 	obst.construct(callMe);
@@ -51,5 +51,6 @@ void callableTable()
 int main(void)
 {
 	callbackTable();
+	observerTable();
 }
 
