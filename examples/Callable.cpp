@@ -30,6 +30,10 @@ struct A {
 	{
 		std::cout << "A::callMe: " << a << endl;
 	}
+	void callMe(int a) const
+	{
+		std::cout << "A::callMe (const): " << a << endl;
+	}
 };
 
 void callMe(int a)
@@ -55,5 +59,16 @@ int main(void)
 	cA(42);
 	cStatic(42);
 
-	cout << Callable::kConst << endl;
+	// cout << Callable::kConst << endl;
+
+	using ConstCallable = Rr::Util::Callable<void(int)const>;
+
+	ConstCallable ccStatic{callMe};
+	ccStatic(43);
+	{
+		const A a;
+		ConstCallable ccA{&A::callMe, &a};
+
+		ccA(43);
+	}
 }

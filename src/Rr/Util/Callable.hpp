@@ -13,90 +13,83 @@
 
 namespace Rr {
 namespace Util {
+
 namespace CallableImpl {
 
-template <class ...T>
-struct Callable;
-
-///
-/// @brief  Static callable wrapper
-///
-template <class Tret, class ...Targs>
-struct Callable<Tret(Targs...)> {
-	Tret operator()(Targs...);
-
-	Tret (*callback)(Targs...);
-};
-
-///
-/// @brief Member callable wrapper
-///
-template <class Tinstance, class Tret, class ...Targs>
-struct Callable<Tinstance, Tret(Targs...)> {
-	Tret operator()(Targs...);
-
-	Tret (Tinstance::*callback)(Targs...);
-	Tinstance *instance;
-};
-
-///
-/// @brief Mock structure
-///
-struct Mock {
-};
-
-template <typename Tsignature, typename Tret, typename ...Targs>
-class CallableBase {
-	// Wrapper over CallbackImpl::Callback instance
-protected:
-	using Fn = Rr::Trait::Fn<CallableImpl::Mock, Tsignature>;
-
-	struct {
-		typename Fn::CallbackType callback;  /// Instead of Tret(Tinstance::*)(Targs...), we use Tret(Mock::*)(Targs...), because the underlying call procedure is the same regardless of a class implementation
-		typename Fn::InstanceType *instance;  /// Instead of a pointer to a particular instance, we use Mock*, because the underlying call procedure is the same regardless of a class implementation
-	} callable;
-
-	// Memory to store CallbackImpl::Callback instance
-protected:
-	static constexpr auto kMemSize = Rr::Trait::MaxSizeof<typename CallableImpl::Callable<CallableImpl::Mock, Tsignature>,
-		typename CallableImpl::Callable<Tsignature>>::value;  // TODO: Some compilers may differ in their implementation regarding whether or not member function pointer is a pointer to a virtual function
-	char memory[kMemSize];  /// Storage for whatever instance we create
-
-	CallableBase() = default;
-
-public:
-	static constexpr bool kConst = Fn::kConst;
-	Tret operator()(Targs...);
-
-	CallableBase(Tret(*)(Targs...));
+struct MockSizeof {
+	struct Virtual {
+		virtual void mock() = 0;  // Virtualness may increase "sizeof" of method pointers in some compilers
+	};
+	void (Virtual::*callback)();
+	Virtual *instance;
 };
 
 }  // namespace CallableImpl
 
-template<class ...>
+struct Mock {};
+
+template <class...>
 struct Callable;
 
-template<class Tret, class ...Targs>
-struct Callable<Tret(Targs...)> : CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...> {
-	using CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...>::operator();
-	using CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...>::CallableBase;
+// non-const Callable
 
-	template <typename Tinstance>
-	Callable(Tret(Tinstance::*)(Targs...), Tinstance*);
+template <class Tr, class ...Ta>
+class Callable<Tr(Ta...)> {
+	char memory[sizeof(CallableImpl::MockSizeof)];
+	Mock *instance;
+	Tr (Mock::*callback)(Ta...);
+
+public:
+	Tr operator()(Ta ...aArgs)
+	{
+		return (instance->*callback)(aArgs...);
+	}
+
+	Callable(Tr (*aCallback)(Ta...))
+	{
+		instance = reinterpret_cast<decltype(instance)>(new (memory) typename Rr::Trait::Fn<Tr(Ta...)>::CallableType{aCallback});
+		callback = reinterpret_cast<decltype(callback)>(&Rr::Trait::Fn<Tr(Ta...)>::CallableType::operator());
+	}
+
+	template <class Ti>
+	Callable(Tr (Ti::*aCallback)(Ta...), Ti *aInstance)
+	{
+		// The type a method pointer pertains to is not important
+		instance = reinterpret_cast<decltype(instance)>(new (memory) typename Rr::Trait::Fn<Ti, Tr(Ta...)>::CallableType{aCallback, aInstance});
+		callback = reinterpret_cast<decltype(callback)>(&Rr::Trait::Fn<Ti, Tr(Ta...)>::CallableType::operator());
+	}
 };
 
-template<class Tret, class ...Targs>
-struct Callable<Tret(Targs...) const> : CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...> {
-	using CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...>::operator();
-	using CallableImpl::CallableBase<Tret(Targs...), Tret, Targs...>::CallableBase;
+// const Callable
 
-	template <typename Tinstance>
-	Callable(Tret(Tinstance::*)(Targs...) const, const Tinstance*);
+template <class Tr, class ...Ta>
+class Callable<Tr(Ta...) const> {
+	char memory[sizeof(CallableImpl::MockSizeof)];
+	const Mock *instance;
+	Tr (Mock::*callback)(Ta...)const;
+
+public:
+	Tr operator()(Ta ...aArgs)
+	{
+		return (instance->*callback)(aArgs...);
+	}
+
+	Callable(Tr (*aCallback)(Ta...))
+	{
+		instance = reinterpret_cast<decltype(instance)>(new (memory) typename Rr::Trait::Fn<Tr(Ta...)const>::CallableType{aCallback});
+		callback = reinterpret_cast<decltype(callback)>(&Rr::Trait::Fn<Tr(Ta...)>::CallableType::operator());
+	}
+
+	template <class Ti>
+	Callable(Tr (Ti::*aCallback)(Ta...)const, const Ti *aInstance)
+	{
+		// The type a method pointer pertains to is not important
+		instance = reinterpret_cast<decltype(instance)>(new (memory) typename Rr::Trait::Fn<const Ti, Tr(Ta...) const>::CallableType{aCallback, aInstance});
+		callback = reinterpret_cast<decltype(callback)>(&Rr::Trait::Fn<const Ti, Tr(Ta...) const>::CallableType::operator());
+	}
 };
 
 }  // namespace Util
-}  // namespace Rr
-
-#include "Callable.impl"
+}  // namespace Rrq
 
 #endif // RR_UTIL_CALLABLE_HPP
