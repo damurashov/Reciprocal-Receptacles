@@ -46,7 +46,7 @@ template<class T, class Tret, class ...Targs>
 struct Fn<T, Tret(Targs...) const> {
 	using CallbackType = Tret(T::*)(Targs...)const;
 	using ReturnType = Tret;
-	using InstanceType = T;
+	using InstanceType = const T;
 	using CallableType = FnImpl::MemberCallable<ReturnType, InstanceType, CallbackType, Targs...>;
 	static constexpr bool kConst = true;
 };
