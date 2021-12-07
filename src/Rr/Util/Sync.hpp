@@ -43,7 +43,6 @@ struct MockBasicLockable {
 	constexpr void unlock()
 	{
 	}
-
 };
 
 ///
@@ -59,8 +58,9 @@ struct MockSharedMutex : MockBasicLockable {
 	{
 	}
 
-	constexpr void try_lock_shared()
+	constexpr bool try_lock_shared()
 	{
+		return true;
 	}
 
 	constexpr void unlock_shared()
