@@ -30,12 +30,26 @@ struct S {
 	}
 };
 
-int main(void)
+void callbackTable()
 {
 	S s;
 	Rr::Util::CallbackTable<void(int, char), List> ct{{callMe}, {&S::callMe, &s}};
+	ct.push_back(callMe);
+	ct.emplace_back(callMe);
 
 	for (auto &callable : ct) {
 		callable(42, 'l');
 	}
 }
+
+void callableTable()
+{
+	Rr::Util::ObserverTable<void(int, char) const, std::list> obst;
+	obst.construct(callMe);
+}
+
+int main(void)
+{
+	callbackTable();
+}
+
