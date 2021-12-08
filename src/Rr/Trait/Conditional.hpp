@@ -5,6 +5,9 @@
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
+#if !defined(RR_TRAIT_CONDITIONAL_HPP)
+#define RR_TRAIT_CONDITIONAL_HPP
+
 namespace Rr {
 namespace Trait {
 
@@ -22,3 +25,5 @@ struct Conditional<false, A, B> {
 
 }  // namespace Trait
 }  // namespace Rr
+
+#endif // RR_TRAIT_CONDITIONAL_HPP
