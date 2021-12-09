@@ -1,12 +1,12 @@
 //
-// CallbackTable.cpp
+// CallableTable.cpp
 //
 // Created: 2021-12-06
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
 #include <iostream>
-#include <Rr/Util/CallbackTable.hpp>
+#include <Rr/Util/CallableTable.hpp>
 #include <list>
 
 using namespace std;
@@ -30,10 +30,10 @@ struct S {
 	}
 };
 
-void callbackTable()
+void callableTable()
 {
 	S s;
-	Rr::Util::CallbackTable<void(int, char), List> ct{{callMe}, {&S::callMe, &s}};
+	Rr::Util::CallableTable<void(int, char), List> ct{{callMe}, {&S::callMe, &s}};
 	ct.push_back(callMe);
 	ct.emplace_back(callMe);
 
@@ -42,15 +42,16 @@ void callbackTable()
 	}
 }
 
-void observerTable()
+void syncedCallableTable()
 {
-	Rr::Util::ObserverTable<void(int, char) const, std::list> obst;
-	obst.construct(callMe);
+	Rr::Util::SyncedCallableTable<void(int, char) const, std::list, Rr::Trait::TsyncMut<1>> obst;
+	obst.emplace_back(callMe);
+	cout << obst.back().kGroup << endl;
 }
 
 int main(void)
 {
-	callbackTable();
-	observerTable();
+	callableTable();
+	syncedCallableTable();
 }
 
