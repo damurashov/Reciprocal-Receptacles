@@ -17,12 +17,23 @@
 # else
 #  include <mutex>
 # endif
-#else
-# include <Rr/Util/Sync.hpp>
 #endif
 
 namespace Rr {
 namespace Trait {
+
+struct Empty {};
+
+///
+/// @brief Inheritance helper. Returns mock, if Tsync::kGroup==0, i.e. the type
+/// is subject to group lock, not individual lock. This is used to spare memory
+/// through not
+///
+/// @tparam Tsync. Trait having ::Type, ::ReadLockType, and ::WriteLockType as
+/// nested types
+///
+template <typename Tsync>
+using InheritLockType = typename Rr::Trait::Conditional<Tsync::kGroup == 0, typename Tsync::Type, Empty>::Type;
 
 // Grouped mutex-based read/write locks
 
