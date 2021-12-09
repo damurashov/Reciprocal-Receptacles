@@ -9,6 +9,9 @@
 #define RR_TRAIT_FN_HPP
 
 namespace Rr {
+
+struct RrObject {};
+
 namespace Trait {
 
 template <class ...T>
@@ -16,7 +19,7 @@ struct Fn;
 
 namespace FnImpl {
 	template <class Tret, class Tcb, class ...Targs>
-	struct StaticCallable {
+	struct StaticCallable : RrObject {
 		Tcb callback;
 		Tret operator()(Targs...aArgs) {
 			return callback(aArgs...);
@@ -24,7 +27,7 @@ namespace FnImpl {
 	};
 
 	template <class Tret, class Tinstance, class Tcb, class ...Targs>
-	struct MemberCallable {
+	struct MemberCallable : RrObject {
 		Tcb callback;
 		Tinstance *instance;
 		Tret operator()(Targs...aArgs) {
@@ -68,6 +71,20 @@ struct Fn<Tret(Targs...)const> {
 	using CallableType = FnImpl::StaticCallable<ReturnType, CallbackType, Targs...>;
 	static constexpr bool kConst = true;
 };
+
+#if RRO_SAFE_FN_CONVERSION
+template <class Tsignature, class TcallbackType>
+typename Fn<Tsignature>::CallbackType memberCast(TcallbackType aCallback)
+{
+	return static_cast<typename Fn<RrObject, Tsignature>::CallbackType>(aCallback);
+}
+#else
+template <class Tsignature, class TcallbackType>
+typename Fn<Tsignature>::CallbackType memberCast(TcallbackType aCallback)
+{
+	return reinterpret_cast<typename Fn<RrObject, Tsignature>::CallbackType>(aCallback);
+}
+#endif
 
 }  // namespace Trait
 }  // namespace Rr
