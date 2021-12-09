@@ -5,7 +5,7 @@
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
-#include <Rr/Util/CallbackTable.hpp>
+#include <Rr/Util/CallableTable.hpp>
 #include <Rr/Util/DefaultConfig.hpp>
 #include <Rr/Util/PolymorphicCell.hpp>
 #include <iostream>
