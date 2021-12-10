@@ -72,7 +72,7 @@ struct Fn<Tret(Targs...)const> {
 	static constexpr bool kConst = true;
 };
 
-#if RRO_SAFE_FN_CONVERSION
+#if RRO_STATIC_CAST_FN_CONVERSION
 template <class Tsignature, class TcallbackType>
 typename Fn<Tsignature>::CallbackType memberCast(TcallbackType aCallback)
 {
