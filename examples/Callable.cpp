@@ -5,10 +5,16 @@
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
+
+// Use reinterpret_cast for method pointers conversion
+// No inheritance from Rr::RrObject required
+#define RRO_STATIC_CAST_FN_CONVERSION 0
+
 #include <iostream>
 #include <Rr/Util/Callable.hpp>
 
 using namespace std;
+
 
 struct Base {
 	virtual void call(int a)
@@ -43,32 +49,32 @@ void callMe(int a)
 
 int main(void)
 {
-	using Callable = Rr::Util::Callable<void(int)>;
-
-	Base base;
-	Derived derived;
-	A a;
-
-	Callable cBase{&Base::call, &base};
-	Callable cDerived{&Base::call, (Base *)&derived};
-	Callable cA{&A::callMe, &a};
-	Callable cStatic{callMe};
-
-	cBase(42);
-	cDerived(42);
-	cA(42);
-	cStatic(42);
-
-	// cout << Callable::kConst << endl;
-
-	using ConstCallable = Rr::Util::Callable<void(int)const>;
-
-	ConstCallable ccStatic{callMe};
-	ccStatic(43);
 	{
-		const A a;
-		ConstCallable ccA{&A::callMe, &a};
+		using ConstCallable = Rr::Util::Callable<void(int)const>;
 
-		ccA(43);
+		ConstCallable ca{callMe};
+
+		const A a;
+		ConstCallable ca2{&A::callMe, &a};
+
+		ca(42);
+		ca2(42);
+	}
+
+	{
+		using Callable = Rr::Util::Callable<void(int)>;
+
+		Callable ca{callMe};
+		A a;
+		Callable ca2{&A::callMe, &a};
+		Base base;
+		Callable ca3{&Base::call, &base};
+		Derived derived;
+		Callable ca4{&Base::call, static_cast<Base *>(&derived)};
+
+		ca(42);
+		ca2(42);
+		ca3(42);
+		ca4(42);
 	}
 }
