@@ -12,79 +12,111 @@ namespace Rr {
 
 struct RrObject {};
 
+#if RRO_STATIC_CAST_FN_CONVERSION
+# define rr_fn_cast static_cast
+#else
+# define rr_fn_cast reinterpret_cast
+#endif
+
 namespace Trait {
+
+template <class Tret, class Ti, class Trr, class TiCb, class TrrCb, class ...Ta>
+struct FnImplMember : RrObject {
+	using CallbackType = TiCb;
+	using ReturnType = Tret;
+	using InstanceType = Ti;
+
+	Trr *instance;
+	TrrCb callback;
+
+	Tret operator()(Ta... aArgs)
+	{
+		return (instance->*callback)(aArgs...);
+	}
+
+	Tret operator()(Ta... aArgs) const
+	{
+		return (instance->*callback)(aArgs...);
+	}
+
+	template <class TanyCallback, class TanyInstance>
+	FnImplMember(TanyCallback aCallback, TanyInstance aInstance):
+		instance(rr_fn_cast<decltype(instance)>(aInstance)),
+		callback(rr_fn_cast<decltype(callback)>(aCallback))
+	{
+	}
+};
+
+template <class Treturn, class ...Ta>
+struct FnImplStatic : RrObject {
+	using CallbackType = Treturn(*)(Ta...);
+	using ReturnType = Treturn;
+
+	CallbackType callback;
+
+	Treturn operator()(Ta ...aArgs)
+	{
+		return callback(aArgs...);
+	}
+
+	Treturn operator()(Ta ...aArgs) const
+	{
+		return callback(aArgs...);
+	}
+
+	FnImplStatic(Treturn (*aCallback)(Ta...)): callback(aCallback)
+	{
+	}
+};
 
 template <class ...T>
 struct Fn;
 
-namespace FnImpl {
-	template <class Tret, class Tcb, class ...Targs>
-	struct StaticCallable : RrObject {
-		Tcb callback;
-		Tret operator()(Targs...aArgs) {
-			return callback(aArgs...);
-		}
-	};
-
-	template <class Tret, class Tinstance, class Tcb, class ...Targs>
-	struct MemberCallable : RrObject {
-		Tcb callback;
-		Tinstance *instance;
-		Tret operator()(Targs...aArgs) {
-			return (instance->*callback)(aArgs...);
-		}
-	};
-}  // namespace FnImpl
-
 template<class T, class Tret, class ...Targs>
-struct Fn<T, Tret(Targs...)> {
-	using CallbackType = Tret(T::*)(Targs...);
-	using ReturnType = Tret;
-	using InstanceType = T;
-	using CallableType = FnImpl::MemberCallable<ReturnType, InstanceType, CallbackType, Targs...>;
-	static constexpr bool kConst = false;
+struct Fn<T, Tret(Targs...)> :
+	FnImplMember<Tret, T, RrObject, Tret(T::*)(Targs...), Tret(RrObject::*)(Targs...), Targs...>
+{
+	using BaseType = FnImplMember<Tret, T, RrObject, Tret(T::*)(Targs...), Tret(RrObject::*)(Targs...), Targs...>;
+	using BaseType::BaseType;
+	using BaseType::operator();
+
+	using BaseType::CallbackType;
+	using BaseType::InstanceType;
+	using BaseType::ReturnType;
 };
 
 template<class T, class Tret, class ...Targs>
-struct Fn<T const, Tret(Targs...) const> {
-	using CallbackType = Tret(T::*)(Targs...)const;
-	using ReturnType = Tret;
-	using InstanceType = const T;
-	using CallableType = FnImpl::MemberCallable<ReturnType, InstanceType, CallbackType, Targs...>;
-	static constexpr bool kConst = true;
+struct Fn<const T, Tret(Targs...)const> :
+	FnImplMember<Tret, const T, const RrObject, Tret(T::*)(Targs...)const, Tret(RrObject::*)(Targs...)const, Targs...>
+{
+	using BaseType = FnImplMember<Tret, const T, const RrObject, Tret(T::*)(Targs...)const, Tret(RrObject::*)(Targs...)const, Targs...>;
+	using BaseType::BaseType;
+	using BaseType::operator();
+
+	using BaseType::CallbackType;
+	using BaseType::InstanceType;
+	using BaseType::ReturnType;
 };
 
 template<class Tret, class ...Targs>
-struct Fn<Tret(Targs...)> {
-	using CallbackType = Tret(*)(Targs...);
-	using ReturnType = Tret;
-	using InstanceType = void;
-	using CallableType = FnImpl::StaticCallable<ReturnType, CallbackType, Targs...>;
-	static constexpr bool kConst = false;
+struct Fn<Tret(Targs...)> : FnImplStatic<Tret, Targs...> {
+	using BaseType = FnImplStatic<Tret, Targs...>;
+	using BaseType::BaseType;
+	using BaseType::operator();
+
+	using BaseType::CallbackType;
+	using BaseType::ReturnType;
 };
 
 template<class Tret, class ...Targs>
-struct Fn<Tret(Targs...)const> {
-	using CallbackType = Tret(*)(Targs...);
-	using ReturnType = Tret;
-	using InstanceType = void;
-	using CallableType = FnImpl::StaticCallable<ReturnType, CallbackType, Targs...>;
-	static constexpr bool kConst = true;
-};
+struct Fn<Tret(Targs...)const> : FnImplStatic<Tret, Targs...> {
+	using BaseType = FnImplStatic<Tret, Targs...>;
+	using BaseType::BaseType;
+	using BaseType::operator();
 
-#if RRO_STATIC_CAST_FN_CONVERSION
-template <class Tsignature, class TcallbackType>
-typename Fn<Tsignature>::CallbackType memberCast(TcallbackType aCallback)
-{
-	return static_cast<typename Fn<RrObject, Tsignature>::CallbackType>(aCallback);
-}
-#else
-template <class Tsignature, class TcallbackType>
-typename Fn<Tsignature>::CallbackType memberCast(TcallbackType aCallback)
-{
-	return reinterpret_cast<typename Fn<RrObject, Tsignature>::CallbackType>(aCallback);
-}
-#endif
+	using BaseType::CallbackType;
+	using BaseType::ReturnType;
+};
 
 }  // namespace Trait
 }  // namespace Rr
