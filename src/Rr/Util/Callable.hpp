@@ -16,20 +16,6 @@ namespace Util {
 
 namespace CallableImpl {
 
-struct Virtual {
-	virtual void v() = 0;
-	char mem[sizeof(&Virtual::v) + sizeof(Virtual *)];  // The struct we adjust to will contain a member function pointer, plus an instance pointer
-};
-
-// A shortcut for determining max sizeof() of stored types, which are Fn<SIGNATURE>::CallableType
-template<class TrrObject, class Tsignature>
-struct MaxSizeof {
-	static constexpr auto value = Rr::Trait::MaxSizeof<
-		Virtual,  // Some compilers may use a different size of pointers to virtual function members
-		typename Rr::Trait::Fn<TrrObject, Tsignature>,  // Callable encapsulating instance pointer and method pointer
-		typename Rr::Trait::Fn<Tsignature>>::value;  // Callable encapsulating static function pointer
-};
-
 ///
 /// @brief Polymorphic wrapper obfuscating underlying representation which may be either
 ///        static function pointer encapsulation, or that of member pointer
@@ -43,34 +29,36 @@ struct MaxSizeof {
 template <class Tret, class Trr, class TrrCb, class Tsignature, class ...Ta>
 class CallableImpl {
 protected:
-	char memory[MaxSizeof<Trr, Tsignature>::value];
-	Trr *instance;
+	union VariantCallable {
+		typename Rr::Trait::Fn<Trr, Tsignature> member;  // Callable encapsulating instance pointer and method pointer
+		typename Rr::Trait::Fn<Tsignature> nonmember;  // Callable encapsulating static function pointer
+		VariantCallable() {
+		}
+	} callable;
 	TrrCb callback;
 
 public:
 	Tret operator()(Ta ...aArgs)
 	{
-		return (instance->*callback)(aArgs...);
+		return (static_cast<Trr *>(&callable.member)->*callback)(aArgs...);
 	}
 
 	Tret operator()(Ta ...aArgs) const
 	{
-		return (instance->*callback)(aArgs...);
+		return (static_cast<Trr *>(&callable.member)->*callback)(aArgs...);
 	}
 
 	CallableImpl(Tret (*aCallback)(Ta...))
 	{
-		auto mem = new (memory) typename Rr::Trait::Fn<Tsignature>{aCallback};
+		new (&callable.nonmember) typename Rr::Trait::Fn<Tsignature>{aCallback};
 		// CallableType has RrObject as its base, hence use of static_cast
-		instance = static_cast<decltype(instance)>(mem);
 		callback = static_cast<decltype(callback)>(&Rr::Trait::Fn<Tsignature>::operator());
 	}
 
 	template <class Tc, class Ti>
 	CallableImpl(Tc aCallback, Ti *aInstance)
 	{
-		auto mem = new (memory) typename Rr::Trait::Fn<Trr, Tsignature>{aCallback, aInstance};
-		instance = static_cast<decltype(instance)>(mem);
+		new (&callable.member) typename Rr::Trait::Fn<Trr, Tsignature>{aCallback, aInstance};
 		callback = static_cast<decltype(callback)>(&Rr::Trait::Fn<Trr, Tsignature>::operator());
 	}
 };
