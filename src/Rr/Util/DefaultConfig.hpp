@@ -24,6 +24,6 @@
 // way. With this flag in place, one would be able to use the library in the
 // same way, but with deriving the callable objects from Rr::RrObject
 // https://stackoverflow.com/questions/37662100/calling-derived-class-through-base-class-function-pointer
-#if !defined(RRO_SAFE_FN_CONVERSION)
-# define RRO_SAFE_FN_CONVERSION 0
+#if !defined(RRO_STATIC_CAST_FN_CONVERSION)
+# define RRO_STATIC_CAST_FN_CONVERSION 0
 #endif
