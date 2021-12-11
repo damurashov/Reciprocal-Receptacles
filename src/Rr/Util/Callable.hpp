@@ -121,6 +121,6 @@ public:
 };
 
 }  // namespace Util
-}  // namespace Rrq
+}  // namespace Rr
 
 #endif // RR_UTIL_CALLABLE_HPP
