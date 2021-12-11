@@ -28,8 +28,28 @@ namespace CallableImpl {
 ///
 template <class Tret, class Trr, class TrrCb, class Tsignature, class ...Ta>
 class CallableImpl {
+private:
+
+#if !RRO_STATIC_CAST_FN_CONVERSION
+	struct Virtual {
+		virtual void v() {}
+		void (Virtual::*callback)();
+		Virtual *instance;
+	};
+#endif
+
 protected:
 	union VariantCallable {
+
+// To make sure that Fn<...>::Callable will fit. This is because
+// virtual member callbacks may differ in sizes from non-virtual ones.
+// static_cast guarantees that everything is smooth, which is not the
+// case with reinterpret_cast'ing of member pointers which is used
+// when RRO_STATIC_CAST_FN_CONVERSION = 0
+#if !RRO_STATIC_CAST_FN_CONVERSION
+		Virtual v;
+#endif
+
 		typename Rr::Trait::Fn<Trr, Tsignature> member;  // Callable encapsulating instance pointer and method pointer
 		typename Rr::Trait::Fn<Tsignature> nonmember;  // Callable encapsulating static function pointer
 		VariantCallable() {
