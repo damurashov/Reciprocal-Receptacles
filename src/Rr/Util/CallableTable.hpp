@@ -12,6 +12,7 @@
 #include <Rr/Trait/Conditional.hpp>
 #include <Rr/Trait/EnableIf.hpp>
 #include <Rr/Trait/Sync.hpp>
+#include <Rr/Trait/LockType.hpp>
 #include <Rr/Util/Sync.hpp>
 
 namespace Rr {
@@ -86,7 +87,10 @@ using GroupSyncedCallableTable = Tcontainer<Rr::Util::GroupSyncedCallable<Tsigna
 ///
 template <class Tsignature, template<class...> class Tcontainer, class Tsync>
 struct CallableTableType {
-	using Type = GroupSyncedCallableTable<Tsignature, Tcontainer, Tsync>;
+	static constexpr auto kIsGroup = Rr::Trait::IsGroupLock<Tsignature, Tsync>::value;
+	using Type = typename Rr::Trait::Conditional<kIsGroup, GroupSyncedCallableTable<Tsignature, Tcontainer, Tsync>, void>::Type;
+
+	static_assert(!Rr::Trait::IsSame<Type, void>::value, "");
 };
 
 }  // namespace Util
