@@ -39,6 +39,9 @@ struct GroupLockType {
 		typename Conditional<kIsConst, R, W>::Type>::Type;
 };
 
+///
+/// @brief Policy-defined lock type
+///
 template <class Tsignature, class Tsync>
 struct LockType {
 	static constexpr bool kIsGroup = IsGroupSync<Tsync>::value;
@@ -50,6 +53,30 @@ struct LockType {
 
 	static_assert(!IsSame<Type, void>::value, "Unknown lock type");
 };
+
+///
+/// @brief Useful when it is necessary to provide an exclusive access
+///
+template <class Tsync>
+struct UniqueLockType {
+	static constexpr bool kIsGroup = IsGroupSync<Tsync>::value;
+
+	///
+	/// @brief The inferred type
+	///
+	using Type = typename Conditional<kIsGroup, typename Tsync::WriteLockType, void>::Type;
+};
+
+template <class Tsync>
+struct SharedLockType {
+	static constexpr bool kIsGroup = IsGroupSync<Tsync>::value;
+
+	///
+	/// @brief The inferred type
+	///
+	using Type = typename Conditional<kIsGroup, typename Tsync::ReadLockType, void>::Type;
+};
+
 
 }  // namespace Trait
 }  // namespace Rr
