@@ -71,6 +71,20 @@ void syncedCallableTable()
 	}
 }
 
+void callableWrapper()
+{
+	struct CameraConnected;
+	using StaticTable = typename Rr::Util::SyncedCallableWrapperStaticTable<void(int, char)const, CameraConnected, std::list, Rr::Trait::GroupMutSyncTypes<1>>;
+
+	const S s;
+	auto callable = Rr::Util::SyncedCallableType<void(int, char) const, Rr::Trait::GroupMutSyncTypes<1>>::Type{&S::callMe, &s};
+	auto callableWrapper = Rr::Util::SyncedCallableWrapper<void(int, char) const, Rr::Trait::GroupMutSyncTypes<1>>{true, callable};
+
+	StaticTable::asUniqueLockWrap().getInstance().emplace_back(true, callable);
+	StaticTable::asUniqueLockWrap().getInstance().push_back({true, callable});
+	StaticTable::asUniqueLockWrap().getInstance().push_back(callableWrapper);
+}
+
 int main(void)
 {
 	callableTable();

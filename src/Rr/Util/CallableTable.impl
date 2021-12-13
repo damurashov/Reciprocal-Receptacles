@@ -1,0 +1,25 @@
+//
+// CallableTable.impl
+//
+// Created: 2021-12-13
+//  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
+//
+
+// SyncedCallableWrapper
+
+template<class Tsignature, class Tsync>
+inline bool Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>::setEnabled(bool aEnabled)
+{
+	typename Rr::Trait::UniqueLockType<Tsync>::Type lock{callable.getSyncPrimitive()};
+	enabled = aEnabled;
+}
+
+// SyncedCallableWrapperStaticTable
+
+template<class Tsignature, class Ttopic, template<class...> class Tcontainer, class Tsync>
+Tcontainer<typename Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>>
+Rr::Util::SyncedCallableWrapperStaticTable<Tsignature, Ttopic, Tcontainer, Tsync>::table{};
+
+template<class Tsignature, class Ttopic, template<class...> class Tcontainer, class Tsync>
+typename Tsync::Type
+Rr::Util::SyncedCallableWrapperStaticTable<Tsignature, Ttopic, Tcontainer, Tsync>::syncPrimitive{};
