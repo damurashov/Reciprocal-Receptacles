@@ -1,0 +1,33 @@
+//
+// LockWrap.impl
+//
+// Created: 2021-12-13
+//  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
+//
+
+template<class Tlock, class Tinstance>
+inline Rr::Util::LockWrap<Tlock, Tinstance>::LockWrap(Rr::Util::LockWrap<Tlock, Tinstance> &&aRhs): lock{aRhs.lock},
+	instance{aRhs.instance}
+{
+	aRhs.lock = nullptr;
+	aRhs.instance = nullptr;
+}
+
+
+template<class Tlock, class Tinstance>
+inline Rr::Util::LockWrap<Tlock, Tinstance> &
+Rr::Util::LockWrap<Tlock, Tinstance>::operator=(Rr::Util::LockWrap<Tlock, Tinstance> &&aRhs)
+{
+	lock = aRhs.lock;
+	instance = aRhs.instance;
+	aRhs.lock = nullptr;
+}
+
+
+template<class Tlock, class Tinstance>
+inline Rr::Util::LockWrap<Tlock, Tinstance>::~LockWrap()
+{
+	if (lock) {
+		delete lock;
+	}
+}
