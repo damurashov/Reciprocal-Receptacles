@@ -2,7 +2,7 @@ BUILD_DIR := build
 
 build:
 	mkdir -p $(BUILD_DIR) 
-	cd build && cmake .. && cmake --build .
+	cd build && cmake .. && make -j$(shell nproc)
 .PHONY: build
 
 clean:
