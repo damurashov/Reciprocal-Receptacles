@@ -27,7 +27,7 @@ struct Empty {};
 // Grouped mutex-based read/write locks
 
 template <unsigned Igroup>
-struct GroupSyncMutTypesMock {
+struct GroupMutSyncTypesMock {
 	using Type = Rr::Util::Sync::MockBasicLockable;
 	using ReadLockType = Rr::Util::Sync::LockGuard<Rr::Util::Sync::MockBasicLockable>;
 	using WriteLockType = Rr::Util::Sync::LockGuard<Rr::Util::Sync::MockBasicLockable>;
@@ -37,7 +37,7 @@ struct GroupSyncMutTypesMock {
 #if RRO_STL_USED
 # if __cplusplus > 201402L
 template <unsigned Igroup>
-struct GroupSyncMutTypes {
+struct GroupMutSyncTypes {
 	using Type = std::shared_timed_mutex;
 	using ReadLockType = std::shared_lock<std::shared_timed_mutex>;
 	using WriteLockType = std::unique_lock<std::shared_timed_mutex>;
@@ -45,7 +45,7 @@ struct GroupSyncMutTypes {
 }
 # else
 template <unsigned Igroup>
-struct GroupSyncMutTypes {
+struct GroupMutSyncTypes {
 	using Type = std::mutex;
 	using ReadLockType = std::lock_guard<std::mutex>;
 	using WriteLockType = std::lock_guard<std::mutex>;
@@ -54,7 +54,7 @@ struct GroupSyncMutTypes {
 # endif
 #else
 template <unsigned Igroup>
-using GroupSyncMutTypes = GroupSyncMutTypesMock<Igroup>;
+using GroupMutSyncTypes = GroupMutSyncTypesMock<Igroup>;
 #endif
 
 }  // namespace Trait

@@ -8,6 +8,7 @@
 // #define RRO_STATIC_CAST_FN_CONVERSION 1
 #include <iostream>
 #include <Rr/Util/CallableTable.hpp>
+#include <Rr/Trait/Sync.hpp>
 #include <list>
 
 using namespace std;
@@ -54,7 +55,7 @@ void callableTable()
 void syncedCallableTable()
 {
 	const S s;
-	Rr::Util::GroupSyncedCallableTable<void(int, char) const, std::list, Rr::Trait::GroupSyncMutTypes<1>> sct {
+	Rr::Util::SyncedCallableTable<void(int, char) const, std::list, Rr::Trait::GroupMutSyncTypes<1>> sct {
 		{callMe},
 		{&S::callMe, &s}
 	};
