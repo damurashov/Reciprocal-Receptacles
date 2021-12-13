@@ -38,17 +38,27 @@ typename Tsync::Type GroupSync<Tsync, Igroup>::value;
 /// @brief Group lock variant
 ///
 template <class Tsync, unsigned Igroup>
-struct GroupSyncedCallableBase {
+class GroupSyncedCallableBase {
 	typename Tsync::Type &syncPrimitive;
+public:
 	GroupSyncedCallableBase(): syncPrimitive(GroupSync<Tsync, Igroup>::value) {}
+	typename Tsync::Type &getSyncPrimitive()
+	{
+		return syncPrimitive;
+	}
 };
 
 ///
 /// @brief Individual lock variant
 ///
 template <class Tsync>
-struct GroupSyncedCallableBase<Tsync, 0> {
+class GroupSyncedCallableBase<Tsync, 0> {
 	typename Tsync::Type syncPrimitive;
+public:
+	typename Tsync::Type &getSyncPrimitive()
+	{
+		return syncPrimitive;
+	}
 };
 
 }  // namespace GroupSyncedCallableImpl
