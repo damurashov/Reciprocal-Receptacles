@@ -83,6 +83,8 @@ struct Fn<T, Tret(Targs...)> :
 	using BaseType::CallbackType;
 	using BaseType::InstanceType;
 	using BaseType::ReturnType;
+
+	static constexpr auto kConst = false;
 };
 
 template<class T, class Tret, class ...Targs>
@@ -96,6 +98,8 @@ struct Fn<const T, Tret(Targs...)const> :
 	using BaseType::CallbackType;
 	using BaseType::InstanceType;
 	using BaseType::ReturnType;
+
+	static constexpr auto kConst = true;
 };
 
 template<class Tret, class ...Targs>
@@ -106,6 +110,8 @@ struct Fn<Tret(Targs...)> : FnImplStatic<Tret, Targs...> {
 
 	using BaseType::CallbackType;
 	using BaseType::ReturnType;
+
+	static constexpr auto kConst = false;
 };
 
 template<class Tret, class ...Targs>
@@ -116,6 +122,8 @@ struct Fn<Tret(Targs...)const> : FnImplStatic<Tret, Targs...> {
 
 	using BaseType::CallbackType;
 	using BaseType::ReturnType;
+
+	static constexpr auto kConst = true;
 };
 
 }  // namespace Trait
