@@ -11,7 +11,7 @@ template<class Tsignature, class Tsync>
 inline bool Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>::setEnabled(bool aEnabled)
 {
 	typename Rr::Trait::UniqueLockType<Tsync>::Type lock{callable.getSyncPrimitive()};
-	enabled = aEnabled;
+	*enabled = aEnabled;
 }
 
 // SyncedCallableWrapperStaticTable

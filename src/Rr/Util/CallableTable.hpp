@@ -23,7 +23,7 @@ using SyncedCallableTable = Tcontainer<typename Rr::Util::SyncedCallableType<Tsi
 
 template <class Tsignature, class Tsync>
 class SyncedCallableWrapper {
-	bool enabled;
+	bool *enabled;  // TODO: won't leak, because a growing-only container is used. However, the solution is far from being perfect. Consider shared_ptr
 	typename SyncedCallableType<Tsignature, Tsync>::Type &callable;
 
 public:
@@ -40,7 +40,7 @@ public:
 		return {callable.getSyncPrimitive, callable};
 	}
 
-	SyncedCallableWrapper(bool aEnabled, decltype(callable) aCallable): enabled(aEnabled), callable{aCallable}
+	SyncedCallableWrapper(bool aEnabled, decltype(callable) aCallable): enabled(new bool{aEnabled}), callable{aCallable}
 	{
 	}
 
