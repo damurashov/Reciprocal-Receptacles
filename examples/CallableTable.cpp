@@ -54,7 +54,7 @@ void callableTable()
 void syncedCallableTable()
 {
 	const S s;
-	Rr::Util::GroupSyncedCallableTable<void(int, char) const, std::list, Rr::Trait::TsyncMut<1>> sct {
+	Rr::Util::GroupSyncedCallableTable<void(int, char) const, std::list, Rr::Trait::GroupSyncMutTypes<1>> sct {
 		{callMe},
 		{&S::callMe, &s}
 	};
