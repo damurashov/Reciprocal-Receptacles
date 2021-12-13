@@ -17,7 +17,7 @@ template <typename Tsignature, template <class ...> class Tcontainer>
 using CallableTable = Tcontainer<Rr::Util::Callable<Tsignature>>;
 
 template <class Tsignature, template<class...> class Tcontainer, class Tsync>
-using SyncedCallableTable = Tcontainer<Rr::Util::GroupSyncedCallable<Tsignature, Tsync>>;
+using SyncedCallableTable = Tcontainer<typename Rr::Util::SyncedCallableType<Tsignature, Tsync>::Type>;
 
 }  // namespace Util
 }  // namespace Rr
