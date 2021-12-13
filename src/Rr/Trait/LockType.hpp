@@ -40,9 +40,12 @@ struct GroupLockType {
 };
 
 template <class Tsignature, class Tsync>
-struct LockType
-{
-	static constexpr bool kIsGroup = IsGroupSync<Tsignature, Tsync>::value;
+struct LockType {
+	static constexpr bool kIsGroup = IsGroupSync<Tsync>::value;
+
+	///
+	/// @brief The inferred type
+	///
 	using Type = typename Conditional<kIsGroup, typename GroupLockType<Tsignature, Tsync>::Type, void>::Type;
 
 	static_assert(!IsSame<Type, void>::value, "Unknown lock type");

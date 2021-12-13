@@ -76,7 +76,7 @@ public:
 template <class Tsignature, class Tsync>
 struct SyncedCallableType
 {
-	static constexpr auto kIsGroup = Rr::Trait::IsGroupSync<Tsignature, Tsync>::value;
+	static constexpr auto kIsGroup = Rr::Trait::IsGroupSync<Tsync>::value;
 	using Type = typename Rr::Trait::Conditional<kIsGroup, GroupSyncedCallable<Tsignature, Tsync>, void>::Type;
 	static_assert(!Rr::Trait::IsSame<Type, void>::value, "");
 };
