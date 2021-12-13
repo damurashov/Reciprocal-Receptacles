@@ -60,7 +60,7 @@ using GroupMutSyncTypes = GroupMutSyncTypesMock<Igroup>;
 ///
 /// @brief Mock, extension point for other types of sync types
 ///
-template <class Tsignature, class Tsync>
+template <class Tsync>
 struct IsGroupSync
 {
 	static constexpr bool value = true;
