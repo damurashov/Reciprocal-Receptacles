@@ -11,6 +11,7 @@
 #include <Rr/Trait/IsSame.hpp>
 #include <Rr/Trait/Conditional.hpp>
 #include <Rr/Trait/Fn.hpp>
+#include <Rr/Trait/Sync.hpp>
 
 namespace Rr {
 namespace Trait {
@@ -18,10 +19,8 @@ namespace Trait {
 // Group lock traits
 
 ///
-/// @brief Applies a strategy for inferring an appropriate lock type based on
+/// @brief Applies a policy for inferring an appropriate lock type based on
 /// callable signature and \arg `Tsync` trait.
-///
-/// Strategy: isGroupedLock ? WriteLock : isConst ? ReadLock : WriteLock
 ///
 /// @tparam Tsignature Signature of a callable ( \see Callable.hpp )
 /// @tparam Tsync Synchronization traits ( \see Trait/Sync.hpp )
@@ -35,23 +34,15 @@ struct GroupLockType {
 	using W = typename Tsync::WriteLockType;
 	using R = typename Tsync::ReadLockType;
 
+	// isGroupedLock ? WriteLock : isConst ? ReadLock : WriteLock
 	using Type = typename Conditional<kIsGroup, W,  // Group lock should always be unique
 		typename Conditional<kIsConst, R, W>::Type>::Type;
-};
-
-///
-/// @brief Mock, extension point for other types of locks
-///
-template <class Tsignature, class Tsync>
-struct IsGroupLock
-{
-	static constexpr bool value = true;
 };
 
 template <class Tsignature, class Tsync>
 struct LockType
 {
-	static constexpr bool kIsGroup = IsGroupLock<Tsignature, Tsync>::value;
+	static constexpr bool kIsGroup = IsGroupSync<Tsignature, Tsync>::value;
 	using Type = typename Conditional<kIsGroup, typename GroupLockType<Tsignature, Tsync>::Type, void>::Type;
 
 	static_assert(!IsSame<Type, void>::value, "Unknown lock type");

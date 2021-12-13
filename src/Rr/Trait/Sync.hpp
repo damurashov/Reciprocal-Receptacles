@@ -57,6 +57,15 @@ template <unsigned Igroup>
 using GroupMutSyncTypes = GroupMutSyncTypesMock<Igroup>;
 #endif
 
+///
+/// @brief Mock, extension point for other types of sync types
+///
+template <class Tsignature, class Tsync>
+struct IsGroupSync
+{
+	static constexpr bool value = true;
+};
+
 }  // namespace Trait
 }  // namespace Rr
 
