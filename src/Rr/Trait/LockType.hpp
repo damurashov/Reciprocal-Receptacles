@@ -11,7 +11,7 @@
 #include <Rr/Trait/IsSame.hpp>
 #include <Rr/Trait/Conditional.hpp>
 #include <Rr/Trait/Fn.hpp>
-#include <Rr/Trait/Sync.hpp>
+#include <Rr/Trait/SyncType.hpp>
 
 namespace Rr {
 namespace Trait {
@@ -23,7 +23,7 @@ namespace Trait {
 /// callable signature and \arg `Tsync` trait.
 ///
 /// @tparam Tsignature Signature of a callable ( \see Callable.hpp )
-/// @tparam Tsync Synchronization traits ( \see Trait/Sync.hpp )
+/// @tparam Tsync Synchronization traits ( \see Trait/SyncType.hpp )
 ///
 template <class Tsignature, class Tsync>
 struct GroupLockType {
