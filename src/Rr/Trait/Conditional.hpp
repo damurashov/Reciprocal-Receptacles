@@ -19,8 +19,8 @@ struct Conditional {
 
 template <class A, class B>
 struct Conditional<false, A, B> {
-	using type = A;
-	using Type = A;
+	using type = B;
+	using Type = B;
 };
 
 }  // namespace Trait

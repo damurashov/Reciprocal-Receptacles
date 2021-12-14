@@ -1,5 +1,5 @@
 //
-// Sync.hpp
+// SyncType.hpp
 //
 // Created: 2021-12-07
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
@@ -10,6 +10,8 @@
 
 #include <Rr/Util/DefaultConfig.hpp>
 #include <Rr/Util/Sync.hpp>
+#include <Rr/Trait/Conditional.hpp>
+#include <Rr/Trait/IsSame.hpp>
 
 #if RRO_STL_USED
 # if __cplusplus > 201402L
@@ -24,21 +26,10 @@ namespace Trait {
 
 struct Empty {};
 
-///
-/// @brief Inheritance helper. Returns mock, if Tsync::kGroup==0, i.e. the type
-/// is subject to group lock, not individual lock. This is used to spare memory
-/// through not
-///
-/// @tparam Tsync. Trait having ::Type, ::ReadLockType, and ::WriteLockType as
-/// nested types
-///
-template <typename Tsync>
-using InheritLockType = typename Rr::Trait::Conditional<Tsync::kGroup == 0, typename Tsync::Type, Empty>::Type;
-
 // Grouped mutex-based read/write locks
 
 template <unsigned Igroup>
-struct TsyncMutMock {
+struct GroupMutSyncTypesMock {
 	using Type = Rr::Util::Sync::MockBasicLockable;
 	using ReadLockType = Rr::Util::Sync::LockGuard<Rr::Util::Sync::MockBasicLockable>;
 	using WriteLockType = Rr::Util::Sync::LockGuard<Rr::Util::Sync::MockBasicLockable>;
@@ -48,7 +39,7 @@ struct TsyncMutMock {
 #if RRO_STL_USED
 # if __cplusplus > 201402L
 template <unsigned Igroup>
-struct TsyncMut {
+struct GroupMutSyncTypes {
 	using Type = std::shared_timed_mutex;
 	using ReadLockType = std::shared_lock<std::shared_timed_mutex>;
 	using WriteLockType = std::unique_lock<std::shared_timed_mutex>;
@@ -56,7 +47,7 @@ struct TsyncMut {
 }
 # else
 template <unsigned Igroup>
-struct TsyncMut {
+struct GroupMutSyncTypes {
 	using Type = std::mutex;
 	using ReadLockType = std::lock_guard<std::mutex>;
 	using WriteLockType = std::lock_guard<std::mutex>;
@@ -65,8 +56,25 @@ struct TsyncMut {
 # endif
 #else
 template <unsigned Igroup>
-using TsyncMut = TsyncMutMock<Igroup>;
+using GroupMutSyncTypes = GroupMutSyncTypesMock<Igroup>;
 #endif
+
+///
+/// @brief Mock, extension point for other types of sync types
+///
+template <class Tsync>
+struct IsGroupSync
+{
+	static constexpr bool value = true;
+};
+
+template <class Tsync>
+struct SyncType {
+	static constexpr auto kIsGroup = IsGroupSync<Tsync>::value;
+	using Type = typename Rr::Trait::Conditional<kIsGroup, typename Rr::Util::GroupSync<Tsync, Tsync::kGroup>,
+		void>::Type;
+	static_assert(!Rr::Trait::IsSame<Type, void>::value, "");
+};
 
 }  // namespace Trait
 }  // namespace Rr

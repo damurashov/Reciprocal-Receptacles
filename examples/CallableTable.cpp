@@ -8,6 +8,7 @@
 // #define RRO_STATIC_CAST_FN_CONVERSION 1
 #include <iostream>
 #include <Rr/Util/CallableTable.hpp>
+#include <Rr/Trait/Sync.hpp>
 #include <list>
 
 using namespace std;
@@ -54,7 +55,7 @@ void callableTable()
 void syncedCallableTable()
 {
 	const S s;
-	Rr::Util::GroupSyncedCallableTable<void(int, char) const, std::list, Rr::Trait::TsyncMut<1>> sct {
+	Rr::Util::SyncedCallableTable<void(int, char) const, std::list, Rr::Trait::GroupMutSyncTypes<1>> sct {
 		{callMe},
 		{&S::callMe, &s}
 	};
@@ -68,6 +69,20 @@ void syncedCallableTable()
 	for (auto &callable : sct) {
 		callable(42, 'l');
 	}
+}
+
+void callableWrapper()
+{
+	struct CameraConnected;
+	using StaticTable = typename Rr::Util::SyncedCallableWrapperStaticTable<void(int, char)const, CameraConnected, std::list, Rr::Trait::GroupMutSyncTypes<1>>;
+
+	const S s;
+	auto callable = Rr::Util::SyncedCallableType<void(int, char) const, Rr::Trait::GroupMutSyncTypes<1>>::Type{&S::callMe, &s};
+	auto callableWrapper = Rr::Util::SyncedCallableWrapper<void(int, char) const, Rr::Trait::GroupMutSyncTypes<1>>{true, callable};
+
+	StaticTable::asUniqueLockWrap().getInstance().emplace_back(true, callable);
+	StaticTable::asUniqueLockWrap().getInstance().push_back({true, callable});
+	StaticTable::asUniqueLockWrap().getInstance().push_back(callableWrapper);
 }
 
 int main(void)
