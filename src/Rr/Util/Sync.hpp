@@ -1,74 +1,76 @@
 //
 // Sync.hpp
 //
-// Author: Dmitry Murashov
-//  Email: dmtr D murashov A gmail D com (Obfuscated to protect from spambots. Replace "D" with ".", "A" with "@")
+//  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
 #if !defined(RR_UTIL_SYNC_HPP_)
 #define RR_UTIL_SYNC_HPP_
 
+#include <Rr/Util/SyncMock.hpp>
+
 namespace Rr {
 namespace Util {
-namespace Sync {
+
+// GroupSync
+
+namespace GroupSyncImpl {
 
 ///
-/// @brief Mocks STL's lock_guard: https://en.cppreference.com/w/cpp/thread/lock_guard
+/// @brief Static storage for whatever sync primitive is being used
 ///
-/// @tparam Mutex
+/// @tparam Tsync  See Trait/Sync
+/// @tparam Igroup If `Igroup != 0`, common (group) lock instance is used
 ///
-template <typename Mutex>
-struct LockGuard final {
+template <class Tsync, unsigned Igroup>
+struct SyncInstance {
+	static typename Tsync::Type value;
+};
+
+template <class Tsync, unsigned Igroup>
+typename Tsync::Type SyncInstance<Tsync, Igroup>::value;
+
+}  // namespace GroupSyncImpl
+
+///
+/// @brief Group lock variant
+///
+template <class Tsync, unsigned Igroup>
+class GroupSync {
+	typename Tsync::Type &syncPrimitive;
+protected:
+	void deleteSyncPrimitive()
+	{
+	}
 public:
-	LockGuard(Mutex &aMutex) : mutex(aMutex)
+	GroupSync(): syncPrimitive(GroupSyncImpl::SyncInstance<Tsync, Igroup>::value) {}
+	typename Tsync::Type &getSyncPrimitive()
 	{
-		mutex.lock();
-	}
-	~LockGuard()
-	{
-		mutex.unlock();
-	}
-private:
-	Mutex &mutex;
-};
-
-///
-/// @brief STL BasicLockable trait https://en.cppreference.com/w/cpp/named_req/BasicLockable
-///
-struct MockBasicLockable {
-	constexpr void lock()
-	{
-	}
-
-	constexpr void unlock()
-	{
+		return syncPrimitive;
 	}
 };
 
 ///
-/// @brief STL SharedMutex trait https://en.cppreference.com/w/cpp/named_req/SharedMutex
+/// @brief Individual lock variant
 ///
-struct MockSharedMutex : MockBasicLockable {
-	constexpr bool try_lock()
+template <class Tsync>
+class GroupSync<Tsync, 0> {
+	typename Tsync::Type *syncPrimitive;
+protected:
+	void deleteSyncPrimitive()
 	{
-		return true;
+		delete syncPrimitive;
 	}
-
-	constexpr void lock_shared()
+public:
+	GroupSync(): syncPrimitive{new typename Tsync::Type()}
 	{
 	}
-
-	constexpr bool try_lock_shared()
+	typename Tsync::Type &getSyncPrimitive()
 	{
-		return true;
-	}
-
-	constexpr void unlock_shared()
-	{
+		return syncPrimitive;
 	}
 };
 
-}  // namespace Sync
 }  // namespace Util
 }  // namespace Rr
 

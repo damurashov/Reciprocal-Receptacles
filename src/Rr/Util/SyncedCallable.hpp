@@ -65,13 +65,15 @@ public:
 
 template <class Tsignature, class Tsync>
 class GroupSyncedCallable :
-	protected GroupSyncedCallableImpl::GroupSyncedCallableBase<Tsync, Tsync::kGroup>,
+	public GroupSyncedCallableImpl::GroupSyncedCallableBase<Tsync, Tsync::kGroup>,
 	public Rr::Util::Callable<Tsignature>
 {
-public:
-	using GroupSyncedCallableImpl::GroupSyncedCallableBase<Tsync, Tsync::kGroup>::GroupSyncedCallableBase;
+protected:
 	using Rr::Util::Callable<Tsignature>::Callable;
+	using GroupSyncedCallableImpl::GroupSyncedCallableBase<Tsync, Tsync::kGroup>::GroupSyncedCallableBase;
+public:
 	using Rr::Util::Callable<Tsignature>::operator();
+	using GroupSyncedCallableImpl::GroupSyncedCallableBase<Tsync, Tsync::kGroup>::getSyncPrimitive;
 
 	template <class ...TtArgs>
 	GroupSyncedCallable(TtArgs &&...aArgs):

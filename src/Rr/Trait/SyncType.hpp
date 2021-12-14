@@ -1,5 +1,5 @@
 //
-// Sync.hpp
+// SyncType.hpp
 //
 // Created: 2021-12-07
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
@@ -10,6 +10,9 @@
 
 #include <Rr/Util/DefaultConfig.hpp>
 #include <Rr/Util/Sync.hpp>
+#include <Rr/Trait/Conditional.hpp>
+#include <Rr/Trait/SyncType.hpp>
+#include <Rr/Trait/IsSame.hpp>
 
 #if RRO_STL_USED
 # if __cplusplus > 201402L
@@ -64,6 +67,14 @@ template <class Tsync>
 struct IsGroupSync
 {
 	static constexpr bool value = true;
+};
+
+template <class Tsync>
+struct SyncType {
+	static constexpr auto kIsGroup = IsGroupSync<Tsync>::value;
+	using Type = typename Rr::Trait::Conditional<kIsGroup, typename Rr::Util::GroupSync<typename Tsync::Type,
+		Tsync::kGroup>, void>::Type;
+	static_assert(!Rr::Trait::IsSame<Type, void>::value, "");
 };
 
 }  // namespace Trait
