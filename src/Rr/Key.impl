@@ -5,3 +5,36 @@
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline void Rr::Key<Tsignature, Ttopic, Tstorage, Tsync>::setEnabled(bool aEnabled)
+{
+	typename Rr::Trait::UniqueLockType<Tsync>::Type lock{this->getSyncPrimitive()};
+	Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>::setEnabled(aEnabled);
+}
+
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+template<class... Ta>
+inline void Rr::Key<Tsignature, Ttopic, Tstorage, Tsync>::notify(Ta &&...aArgs)
+{
+	using IteratorType = decltype(WrapperTableType::asSharedLockWrap().getInstance().begin());
+
+	IteratorType itBegin;
+	IteratorType itEnd;
+
+	// The iterator boundaries will remain valid. Hence the short duration of table lock.
+	{
+		auto tableLock = WrapperTableType::asSharedLockWrap();
+
+		itBegin = tableLock.getInstance().begin();
+		itEnd = tableLock.getInstance().end();
+	}
+
+	for (auto it = itBegin; it != itEnd; ++it) {
+		auto lockWrap = it->asLockWrap();
+		auto &instance = lockWrap.getInstance();
+
+		if (instance.isEnabled()) {
+			instance(static_cast<Ta &&>(aArgs)...);
+		}
+	}
+}

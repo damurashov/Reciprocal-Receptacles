@@ -31,11 +31,7 @@ public:
 		setEnabled(false);  // Safely disable the instance, so no attempts to invoke it will be made
 	}
 
-	void setEnabled(bool aEnabled)
-	{
-		typename Rr::Trait::UniqueLockType<Tsync>::Type lock{this->getSyncPrimitive()};
-		Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>::setEnabled(aEnabled);
-	}
+	void setEnabled(bool aEnabled);
 
 	Key() = delete;
 
@@ -54,30 +50,7 @@ public:
 	}
 
 	template <class ...Ta>
-	static void notify(Ta &&...aArgs)
-	{
-		using IteratorType = decltype(WrapperTableType::asSharedLockWrap().getInstance().begin());
-
-		IteratorType itBegin;
-		IteratorType itEnd;
-
-		// The iterator boundaries will remain valid. Hence the short duration of table lock.
-		{
-			auto tableLock = WrapperTableType::asSharedLockWrap();
-
-			itBegin = tableLock.getInstance().begin();
-			itEnd = tableLock.getInstance().end();
-		}
-
-		for (auto it = itBegin; it != itEnd; ++it) {
-			auto lockWrap = it->asLockWrap();
-			auto &instance = lockWrap.getInstance();
-
-			if (instance.isEnabled()) {
-				instance(static_cast<Ta &&>(aArgs)...);
-			}
-		}
-	}
+	static void notify(Ta &&...aArgs);
 };
 
 }  // namespace Rr
