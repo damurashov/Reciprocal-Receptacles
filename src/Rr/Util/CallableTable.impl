@@ -5,15 +5,6 @@
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
-// SyncedCallableWrapper
-
-template<class Tsignature, class Tsync>
-inline void Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>::setEnabled(bool aEnabled)
-{
-	typename Rr::Trait::UniqueLockType<Tsync>::Type lock{getSyncPrimitive()};
-	*enabled = aEnabled;
-}
-
 // SyncedCallableWrapperStaticTable
 
 template<class Tsignature, class Ttopic, template<class...> class Tcontainer, class Tsync>

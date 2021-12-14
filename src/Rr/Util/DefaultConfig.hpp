@@ -27,3 +27,10 @@
 #if !defined(RRO_STATIC_CAST_FN_CONVERSION)
 # define RRO_STATIC_CAST_FN_CONVERSION 0
 #endif
+
+#if defined(RRO_ENABLE_CASSERT)
+# include <cassert>
+# define rr_assert assert
+#else
+# define rr_assert(...)
+#endif

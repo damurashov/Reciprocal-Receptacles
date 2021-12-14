@@ -9,9 +9,7 @@
 #define RR_UTIL_CALLBACK_HPP
 
 #include <Rr/Util/SyncedCallable.hpp>
-#include <Rr/Util/LockWrap.hpp>
-#include <Rr/Trait/LockType.hpp>
-#include <Rr/Trait/SyncType.hpp>
+#include <Rr/Util/CallableWrapper.hpp>
 
 namespace Rr {
 namespace Util {
@@ -21,44 +19,6 @@ using CallableTable = Tcontainer<Rr::Util::Callable<Tsignature>>;
 
 template <class Tsignature, template<class...> class Tcontainer, class Tsync>
 using SyncedCallableTable = Tcontainer<typename Rr::Util::SyncedCallableType<Tsignature, Tsync>::Type>;
-
-template <class Tsignature, class Tsync>
-class SyncedCallableWrapper : public Rr::Trait::SyncType<Tsync>::Type {
-	bool *enabled;  // TODO: won't leak, because a growing-only container is used. However, the solution is far from being perfect. Consider shared_ptr
-	typename Rr::Util::Callable<Tsignature> &callable;
-
-	using BaseSyncType = typename Rr::Trait::SyncType<Tsync>::Type;
-protected:
-	using BaseSyncType::BaseSyncType;
-	using BaseSyncType::getSyncPrimitive;
-
-	SyncedCallableWrapper(): BaseSyncType{}, enabled{new bool(false)}, callable(*reinterpret_cast<Rr::Util::Callable<Tsignature> *>(enabled))
-	{
-	}
-
-	SyncedCallableWrapper(bool aEnabled, decltype(callable) &aCallable): BaseSyncType{},
-		enabled(new bool{aEnabled}), callable{aCallable}
-	{
-	}
-
-	SyncedCallableWrapper(decltype(callable) aCallable): SyncedCallableWrapper(true, aCallable)
-	{
-	}
-
-public:
-	///
-	/// @brief Safely locks the wrapped instance using whatever lock type is
-	/// defined by its policy, and returns an instance of LockWrap. For lock
-	/// policy inference, \see Trait/LockType.hpp
-	///
-	typename Rr::Util::LockWrap<typename Rr::Trait::LockType<Tsignature, Tsync>::Type,
-		typename Rr::Util::Callable<Tsignature>> asLockWrap()
-	{
-		return {getSyncPrimitive(), callable};
-	}
-
-	void setEnabled(bool);
-};
 
 template <class Tsignature, class Ttopic, template <class ...> class Tcontainer, class Tsync>
 class SyncedCallableWrapperStaticTable {
