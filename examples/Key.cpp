@@ -19,36 +19,36 @@ struct CameraConnected;
 
 using KeyCameraConnected = Key<void(int), Topic::CameraConnected>;
 
-void call(int)
+void call(int aInt)
 {
-	std::cout << "call(int)" << std::endl;
+	std::cout << "call(int) " << aInt << std::endl;
 }
 
 struct St {
-	void call(int)
+	void call(int aInt)
 	{
-		std::cout << "St::call(int)" << std::endl;
+		std::cout << "St::call(int) " << aInt << std::endl;
 	}
-	void call(int) const
+	void call(int aInt) const
 	{
-		std::cout << "St::call(int)const" << std::endl;
+		std::cout << "St::call(int)const " << aInt << std::endl;
 	}
-	void callMe(int)
+	void callMe(int aInt)
 	{
-		std::cout << "St::callMe(int)" << std::endl;
+		std::cout << "St::callMe(int) " << aInt << std::endl;
 	}
 };
 
 int main(void)
 {
+	St st;
 	KeyCameraConnected key{call};
 	KeyCameraConnected key2{true, call};
-
-	St st;
 	KeyCameraConnected key3{(void(St::*)(int))&St::call, &st};
 	KeyCameraConnected key4{false, (void(St::*)(int))&St::call, &st};
-	key4.setEnabled(true);
 	KeyCameraConnected key5{true, &St::callMe, &st};
 
 	KeyCameraConnected::notify(42);
+	key4.setEnabled(false);
+	KeyCameraConnected::notify(777);
 }
