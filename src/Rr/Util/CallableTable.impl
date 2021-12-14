@@ -8,9 +8,9 @@
 // SyncedCallableWrapper
 
 template<class Tsignature, class Tsync>
-inline bool Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>::setEnabled(bool aEnabled)
+inline void Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>::setEnabled(bool aEnabled)
 {
-	typename Rr::Trait::UniqueLockType<Tsync>::Type lock{callable.getSyncPrimitive()};
+	typename Rr::Trait::UniqueLockType<Tsync>::Type lock{getSyncPrimitive()};
 	*enabled = aEnabled;
 }
 
