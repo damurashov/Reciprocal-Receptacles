@@ -18,13 +18,12 @@ class Key :
 	protected Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>
 {
 private:
-	using WrapperTableType = typename Rr::Util::SyncedCallableWrapperStaticTable<Tsignature, Ttopic, Tstorage, Tsync>;
-
-protected:
 	static void registerTable(Key &aInstance)
 	{
 		WrapperTableType::asUniqueLockWrap().getInstance().push_back(aInstance);
 	}
+protected:
+	using WrapperTableType = typename Rr::Util::SyncedCallableWrapperStaticTable<Tsignature, Ttopic, Tstorage, Tsync>;
 
 public:
 	~Key() {
