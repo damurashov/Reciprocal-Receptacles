@@ -29,19 +29,10 @@ class SyncedCallableWrapper : public Rr::Trait::SyncType<Tsync>::Type {
 
 	using BaseSyncType = typename Rr::Trait::SyncType<Tsync>::Type;
 protected:
-	using BaseSyncType::BaseSyncType;
 	using BaseSyncType::getSyncPrimitive;
-
-	SyncedCallableWrapper(): BaseSyncType{}, enabled{new bool(false)}, callable(*reinterpret_cast<Rr::Util::Callable<Tsignature> *>(enabled))
-	{
-	}
 
 	SyncedCallableWrapper(bool aEnabled, decltype(callable) &aCallable): BaseSyncType{},
 		enabled(new bool{aEnabled}), callable{aCallable}
-	{
-	}
-
-	SyncedCallableWrapper(decltype(callable) aCallable): SyncedCallableWrapper(true, aCallable)
 	{
 	}
 
@@ -49,7 +40,7 @@ public:
 	///
 	/// @brief Safely locks the wrapped instance using whatever lock type is
 	/// defined by its policy, and returns an instance of LockWrap. For lock
-	/// policy inference, \see Trait/LockType.hpp
+	/// policy inference, \see "Trait/LockType.hpp"
 	///
 	typename Rr::Util::LockWrap<typename Rr::Trait::LockType<Tsignature, Tsync>::Type,
 		typename Rr::Util::Callable<Tsignature>> asLockWrap()
