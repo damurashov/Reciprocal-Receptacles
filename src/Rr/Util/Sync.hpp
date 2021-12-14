@@ -55,7 +55,7 @@ public:
 ///
 template <class Tsync>
 class GroupSync<Tsync, 0> {
-	typename Tsync::Type *syncPrimitive;
+	typename Tsync::Type *syncPrimitive;  // TODO: use shared pointer
 protected:
 	void deleteSyncPrimitive()
 	{
