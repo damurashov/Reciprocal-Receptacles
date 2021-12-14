@@ -67,7 +67,7 @@ public:
 	}
 	typename Tsync::Type &getSyncPrimitive()
 	{
-		return syncPrimitive;
+		return *syncPrimitive;
 	}
 };
 
