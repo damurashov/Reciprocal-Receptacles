@@ -22,6 +22,34 @@ using CallableTable = Tcontainer<Rr::Util::Callable<Tsignature>>;
 template <class Tsignature, template<class...> class Tcontainer, class Tsync>
 using SyncedCallableTable = Tcontainer<typename Rr::Util::SyncedCallableType<Tsignature, Tsync>::Type>;
 
+
+template <class Tsignature, class Tsync>
+class ToggleableCallableWrapper {
+	bool &enabled;
+	typename Rr::Util::Callable<Tsignature> &callable;
+
+public:
+	ToggleableCallableWrapper(bool &aEnabled, decltype(callable) &aCallable): enabled(aEnabled), callable(aCallable)
+	{
+	}
+
+	bool isEnabled()
+	{
+		return enabled;
+	}
+
+	void setEnabled(bool aEnabled)
+	{
+		enabled = aEnabled;
+	}
+
+	template <class ...Ta>
+	typename Rr::Trait::Fn<Tsignature>::ReturnType operator()(Ta &&...aArgs)
+	{
+		return callable(static_cast<Ta &&>(aArgs)...);
+	}
+};
+
 template <class Tsignature, class Tsync>
 class SyncedCallableWrapper : public Rr::Trait::SyncType<Tsync>::Type {
 	bool *enabled;  // TODO: won't leak, because a growing-only container is used. However, the solution is far from being perfect. Consider shared_ptr
