@@ -44,7 +44,7 @@ public:
 	}
 
 	template <class ...Ta>
-	Key(bool aEnabled, Ta &&...aArgs): CallableType(static_cast<Ta &&>(aArgs)...), WrapperType(*this, aEnabled)
+	Key(bool aEnabled, Ta &&...aArgs): CallableType(static_cast<Ta &&>(aArgs)...), WrapperType(aEnabled, *this)
 	{
 		registerTable(*this);
 	}
