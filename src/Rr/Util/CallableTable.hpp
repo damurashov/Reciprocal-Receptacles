@@ -23,10 +23,16 @@ template <class Tsignature, template<class...> class Tcontainer, class Tsync>
 using SyncedCallableTable = Tcontainer<typename Rr::Util::SyncedCallableType<Tsignature, Tsync>::Type>;
 
 
-template <class Tsignature, class Tsync>
+template <class Tsignature>
 class ToggleableCallableWrapper {
 	bool &enabled;
 	typename Rr::Util::Callable<Tsignature> &callable;
+
+protected:
+	void setEnabled(bool aEnabled)
+	{
+		enabled = aEnabled;
+	}
 
 public:
 	ToggleableCallableWrapper(bool &aEnabled, decltype(callable) &aCallable): enabled(aEnabled), callable(aCallable)
@@ -38,29 +44,26 @@ public:
 		return enabled;
 	}
 
-	void setEnabled(bool aEnabled)
-	{
-		enabled = aEnabled;
-	}
-
 	template <class ...Ta>
 	typename Rr::Trait::Fn<Tsignature>::ReturnType operator()(Ta &&...aArgs)
 	{
+		rr_assert(enabled);
 		return callable(static_cast<Ta &&>(aArgs)...);
 	}
 };
 
 template <class Tsignature, class Tsync>
-class SyncedCallableWrapper : public Rr::Trait::SyncType<Tsync>::Type {
-	bool *enabled;  // TODO: won't leak, because a growing-only container is used. However, the solution is far from being perfect. Consider shared_ptr
-	typename Rr::Util::Callable<Tsignature> &callable;
-
-	using BaseSyncType = typename Rr::Trait::SyncType<Tsync>::Type;
+class SyncedCallableWrapper :
+	public Rr::Trait::SyncType<Tsync>::Type,
+	protected ToggleableCallableWrapper<Tsignature>
+{
 protected:
-	using BaseSyncType::getSyncPrimitive;
+	using Rr::Trait::SyncType<Tsync>::Type::getSyncPrimitive;
+	using ToggleableCallableWrapper<Tsignature>::setEnabled;
 
-	SyncedCallableWrapper(bool aEnabled, decltype(callable) &aCallable): BaseSyncType{},
-		enabled(new bool{aEnabled}), callable{aCallable}
+	SyncedCallableWrapper(bool aEnabled, Rr::Util::Callable<Tsignature> &aCallable):
+		Rr::Trait::SyncType<Tsync>::Type{},
+		ToggleableCallableWrapper<Tsignature>{*(new bool(aEnabled)), aCallable}  // Won't leak, because it is statically stored in a growing-only container, but WARNING: TODO: error-prone solution
 	{
 	}
 
@@ -71,12 +74,10 @@ public:
 	/// policy inference, \see "Trait/LockType.hpp"
 	///
 	typename Rr::Util::LockWrap<typename Rr::Trait::LockType<Tsignature, Tsync>::Type,
-		typename Rr::Util::Callable<Tsignature>> asLockWrap()
+		ToggleableCallableWrapper<Tsignature>> asLockWrap()
 	{
-		return {getSyncPrimitive(), callable};
+		return {getSyncPrimitive(), *this};
 	}
-
-	void setEnabled(bool);
 };
 
 template <class Tsignature, class Ttopic, template <class ...> class Tcontainer, class Tsync>
