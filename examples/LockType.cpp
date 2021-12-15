@@ -22,9 +22,9 @@ void groupLockType() {
 	std::cout << Rr::Trait::LockTypeImpl::GroupLockType<void(int), GroupSyncTrait<0>>::kIsConst << std::endl;
 	std::cout << Rr::Trait::LockTypeImpl::GroupLockType<void(int)const, GroupSyncTrait<0>>::kIsConst << std::endl;
 
-	static_assert(std::is_same<GroupSyncTrait<1>::WriteLockType, typename Rr::Trait::LockType<void(int),       GroupSyncTrait<1>>::Type>::value, "");
-	static_assert(std::is_same<GroupSyncTrait<1>::WriteLockType, typename Rr::Trait::LockType<void(int) const, GroupSyncTrait<1>>::Type>::value, "");
-	static_assert(std::is_same<GroupSyncTrait<0>::ReadLockType,  typename Rr::Trait::LockType<void(int) const, GroupSyncTrait<0>>::Type>::value, "");
+	static_assert(std::is_same<GroupSyncTrait<1>::WriteLockType, typename Rr::Trait::LockPolicy<void(int),       GroupSyncTrait<1>>::Type>::value, "");
+	static_assert(std::is_same<GroupSyncTrait<1>::WriteLockType, typename Rr::Trait::LockPolicy<void(int) const, GroupSyncTrait<1>>::Type>::value, "");
+	static_assert(std::is_same<GroupSyncTrait<0>::ReadLockType,  typename Rr::Trait::LockPolicy<void(int) const, GroupSyncTrait<0>>::Type>::value, "");
 }
 
 int main(void)

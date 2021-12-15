@@ -65,7 +65,7 @@ public:
 	/// defined by its policy, and returns an instance of LockWrap. For lock
 	/// policy inference, \see "Trait/LockType.hpp"
 	///
-	typename Rr::Util::LockWrap<typename Rr::Trait::LockType<Tsignature, Tsync>::Type,
+	typename Rr::Util::LockWrap<typename Rr::Trait::LockPolicy<Tsignature, Tsync>::Type,
 		ToggleableCallableWrapper<Tsignature>> asLockWrap()
 	{
 		return {getSyncPrimitive(), *this};

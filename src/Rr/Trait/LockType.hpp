@@ -47,7 +47,7 @@ struct GroupLockType {
 /// @brief Policy-defined lock type
 ///
 template <class Tsignature, class Tsync>
-struct LockType {
+struct LockPolicy {
 	static constexpr bool kIsGroup = IsGroupSync<Tsync>::value;
 
 	///
