@@ -21,6 +21,18 @@ private:
 	using TableIterator = decltype (KeyType::WrapperTableType::asSharedLockWrap().getInstance().begin());
 public:
 
+	///
+	/// @brief A wrapper over the iterator pertaining to the static table
+	/// storing callable instances. Using LockWrap<...> instances can be rather
+	/// cumbersome. This iterator encapsulates all the complexities that go
+	/// along. Not thread safe.
+	///
+	/// The principle is that when the underlying instance is referenced by`->`
+	/// or `*`, the lock gets acquired, which is expressed in the form of
+	/// allocating a new Rr::Util::LockWrap<...> instance. When the wrapped
+	/// iterator is increased, the lock gets released. So is it on object
+	/// destruction phase.
+	///
 	class Iterator {
 	private:
 		TableIterator it;
@@ -51,9 +63,14 @@ public:
 		{
 		}
 
+		~Iterator()
+		{
+			releaseLock();
+		}
+
 		Iterator(const Iterator &aIterator): it{aIterator.it}, callableLockWrap{nullptr}
 		{
-			const_cast<Iterator *>(&aIterator)->releaseLock();
+			const_cast<Iterator *>(&aIterator)->releaseLock();  // In case when a unique lock is used instead of read (shared) lock, so we are less likely to acquire the mutex twice
 		}
 
 		Iterator(Iterator &&aIterator): it{aIterator.it}, callableLockWrap{aIterator.callableLockWrap}
@@ -100,14 +117,13 @@ public:
 		}
 	};
 
-	class Iterators {
+	///
+	/// @brief Iterable wrapper. \see getIterators()
+	///
+	///
+	struct Iterators {
 		Iterator itBegin;
 		Iterator itEnd;
-
-	public:
-		Iterators(TableIterator aBegin, TableIterator aEnd): itBegin{aBegin}, itEnd{aEnd}
-		{
-		}
 
 		Iterator &begin()
 		{
@@ -120,10 +136,22 @@ public:
 		}
 	};
 
+	///
+	/// @brief A shortcut enabling us to get ourselves a wrapper suitable for
+	/// use in range-based `for` loop.
+	///
+	/// The reason why we make is so much compicated is that it must be certain
+	/// that "begin" and "end" iterators are acquired atomically. After that,
+	/// the list of callables will only grow w/o relocating the previously
+	/// stored instances into a new memory. Therefore, the iterators will remain
+	/// valid, and there is no need to keep the table locked.
+	///
+	/// @return Iterators A pair of iterators
+	///
 	static Iterators getIterators()
 	{
 		auto tableLockWrap = KeyType::WrapperTableType::asSharedLockWrap();
-		return Iterators(tableLockWrap.getInstance().begin(), tableLockWrap.getInstance().end());
+		return Iterators{{tableLockWrap.getInstance().begin()}, {tableLockWrap.getInstance().end()}};
 	}
 
 	using KeyType::KeyType;
