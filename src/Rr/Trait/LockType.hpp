@@ -16,6 +16,8 @@
 namespace Rr {
 namespace Trait {
 
+namespace LockTypeImpl {
+
 // Group lock traits
 
 ///
@@ -39,6 +41,8 @@ struct GroupLockType {
 		typename Conditional<kIsConst, R, W>::Type>::Type;
 };
 
+}  // namespace LockTypeImpl
+
 ///
 /// @brief Policy-defined lock type
 ///
@@ -49,7 +53,7 @@ struct LockType {
 	///
 	/// @brief The inferred type
 	///
-	using Type = typename Conditional<kIsGroup, typename GroupLockType<Tsignature, Tsync>::Type, void>::Type;
+	using Type = typename Conditional<kIsGroup, typename LockTypeImpl::GroupLockType<Tsignature, Tsync>::Type, void>::Type;
 
 	static_assert(!IsSame<Type, void>::value, "Unknown lock type");
 };
