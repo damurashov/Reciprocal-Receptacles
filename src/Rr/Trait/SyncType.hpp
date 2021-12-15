@@ -76,6 +76,43 @@ struct SyncType {
 	static_assert(!Rr::Trait::IsSame<Type, void>::value, "");
 };
 
+template <class Tsync>
+struct SyncTraitId {
+public:
+	enum EnumLockType {
+		NoLock = 0,
+		// Mutex-based locks
+		GroupUnique,
+		IndividualUnique,
+		IndividualShared,
+	};
+
+private:
+	template <EnumLockType Ielt>
+	using Value = Rr::Trait::IntegralConstant<EnumLockType, Ielt>;
+
+	template <unsigned ...>
+	struct Sfinae;
+
+	// The following is used to infer the trait by looking at what members are
+	// present.
+
+	template <class T>
+	static Value<NoLock> getType(...);
+
+	template <class T>
+	static Value<IndividualUnique> getType(Sfinae<sizeof(typename T::SyncType) + sizeof(typename T::UniqueLockType)> *);
+
+	template <class T>
+	static Value<IndividualShared> getType(Sfinae<sizeof(typename T::SyncType) + sizeof(typename T::UniqueLockType) + sizeof(typename T::SharedLockType)> *);
+
+	template <class T>
+	static Value<GroupUnique> getType(Sfinae<sizeof(typename T::GroupLockType) + sizeof(T::groupMutex)> *);
+
+public:
+	static constexpr EnumLockType value = decltype(getType<Tsync>(nullptr))::value;
+};
+
 }  // namespace Trait
 }  // namespace Rr
 
