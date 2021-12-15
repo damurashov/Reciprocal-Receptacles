@@ -12,6 +12,7 @@
 #include <Rr/Util/Sync.hpp>
 #include <Rr/Trait/Conditional.hpp>
 #include <Rr/Trait/IsSame.hpp>
+#include <Rr/Trait/IntegralToType.hpp>
 
 #if RRO_STL_USED
 # if __cplusplus > 201402L
@@ -79,17 +80,18 @@ struct SyncType {
 template <class Tsync>
 struct SyncTraitId {
 public:
-	enum EnumLockType {
+	enum EnumTraitId {
 		NoLock = 0,
 		// Mutex-based locks
 		GroupUnique,
 		IndividualUnique,
 		IndividualShared,
+		Max,
 	};
 
 private:
-	template <EnumLockType Ielt>
-	using Value = Rr::Trait::IntegralConstant<EnumLockType, Ielt>;
+	template <EnumTraitId Ielt>
+	using Value = Rr::Trait::IntegralConstant<EnumTraitId, Ielt>;
 
 	template <unsigned ...>
 	struct Sfinae;
@@ -110,7 +112,13 @@ private:
 	static Value<GroupUnique> getType(Sfinae<sizeof(typename T::GroupLockType) + sizeof(T::groupMutex)> *);
 
 public:
-	static constexpr EnumLockType value = decltype(getType<Tsync>(nullptr))::value;
+	static constexpr EnumTraitId value = decltype(getType<Tsync>(nullptr))::value;
+
+	template <EnumTraitId Ival, class ...Ta>
+	struct ToType {
+		static_assert(sizeof...(Ta) == EnumTraitId::Max, "Wrong number of types");
+		using Type = typename Rr::Trait::IntegralToType<EnumTraitId, Ival, Ta...>::Type;
+	};
 };
 
 }  // namespace Trait
