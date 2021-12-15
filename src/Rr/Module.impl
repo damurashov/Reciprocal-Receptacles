@@ -1,0 +1,63 @@
+//
+// Module.impl
+//
+// Created: 2021-12-15
+//  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
+//
+
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline void Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::acquireLock()
+{
+	if (!callableLockWrap) {
+		callableLockWrap = new LockWrapType{it->asLockWrap()};
+	}
+}
+
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline void Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::releaseLock()
+{
+	if (callableLockWrap) {
+		delete callableLockWrap;
+		callableLockWrap = nullptr;
+	}
+}
+
+
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &
+Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator=(Iterator &&aIterator)
+{
+	it = Rr::Trait::move(aIterator.it);
+	callableLockWrap = aIterator.callableLockWrap;
+	aIterator.callableLockWrap = nullptr;
+
+	return *this;
+}
+
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline typename  Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &
+Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator++()
+{
+	releaseLock();
+	++it;
+	return *this;
+}
+
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::InstanceType &
+Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator*()
+{
+	acquireLock();
+	return callableLockWrap->getInstance();
+}
+
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::InstanceType *
+Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator->()
+{
+	acquireLock();
+	return &callableLockWrap->getInstance();
+}
+
+
+

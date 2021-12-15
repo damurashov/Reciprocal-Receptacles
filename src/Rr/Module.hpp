@@ -43,20 +43,8 @@ public:
 		LockWrapType *callableLockWrap;
 
 	private:
-		void acquireLock()
-		{
-			if (!callableLockWrap) {
-				callableLockWrap = new LockWrapType{it->asLockWrap()};
-			}
-		}
-
-		void releaseLock()
-		{
-			if (callableLockWrap) {
-				delete callableLockWrap;
-				callableLockWrap = nullptr;
-			}
-		}
+		void acquireLock();
+		void releaseLock();
 
 	public:
 		Iterator(TableIterator aIt): it{aIt}, callableLockWrap{nullptr}
@@ -78,33 +66,10 @@ public:
 			aIterator.callableLockWrap = nullptr;
 		}
 
-		Iterator &operator=(Iterator &&aIterator)
-		{
-			it = Rr::Trait::move(aIterator.it);
-			callableLockWrap = aIterator.callableLockWrap;
-			aIterator.callableLockWrap = nullptr;
-
-			return *this;
-		}
-
-		Iterator &operator++()
-		{
-			releaseLock();
-			++it;
-			return *this;
-		}
-
-		InstanceType &operator*()
-		{
-			acquireLock();
-			return callableLockWrap->getInstance();
-		}
-
-		InstanceType *operator->()
-		{
-			acquireLock();
-			return &callableLockWrap->getInstance();
-		}
+		Iterator &operator=(Iterator &&aIterator);
+		Iterator &operator++();
+		InstanceType &operator*();
+		InstanceType *operator->();
 
 		bool operator==(const Iterator &aIterator)
 		{
@@ -161,5 +126,7 @@ public:
 };
 
 }  // namespace Rr
+
+#include "Module.impl"
 
 #endif // RR_MODULE_HPP
