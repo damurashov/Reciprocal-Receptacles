@@ -11,12 +11,6 @@
 #include <Rr/Key.hpp>
 #include <Rr/Trait/Move.hpp>
 
-template <class T1, class T2>
-bool operator==(const T1&, const T2&);
-
-template <class T1, class T2>
-bool operator!=(const T1&, const T2&);
-
 namespace Rr {
 
 template <class Tsignature, class Ttopic, template <class...> class Tstorage, class Tsync>
@@ -28,42 +22,82 @@ private:
 public:
 
 	class Iterator {
+	private:
 		TableIterator it;
-		decltype(it->asLockWrap()) callableLockWrap;
-	public:
-		Iterator(TableIterator aIt): it{aIt}, callableLockWrap{it->asLockWrap()}
+
+		using LockWrapType = typename Rr::Trait::RemoveReference<decltype(it->asLockWrap())>::Type;
+		using InstanceType = typename Rr::Trait::RemoveReference<decltype(it->asLockWrap().getInstance())>::Type;
+
+		LockWrapType *callableLockWrap;
+
+	private:
+		void acquireLock()
 		{
+			if (!callableLockWrap) {
+				callableLockWrap = new LockWrapType{it->asLockWrap()};
+			}
+		}
+
+		void releaseLock()
+		{
+			if (callableLockWrap) {
+				delete callableLockWrap;
+				callableLockWrap = nullptr;
+			}
+		}
+
+	public:
+		Iterator(TableIterator aIt): it{aIt}, callableLockWrap{nullptr}
+		{
+		}
+
+		Iterator(const Iterator &aIterator): it{aIterator.it}, callableLockWrap{nullptr}
+		{
+			const_cast<Iterator *>(&aIterator)->releaseLock();
 		}
 
 		Iterator(Iterator &&aIterator): it{aIterator.it}, callableLockWrap{aIterator.callableLockWrap}
 		{
+			aIterator.callableLockWrap = nullptr;
 		}
 
 		Iterator &operator=(Iterator &&aIterator)
 		{
 			it = Rr::Trait::move(aIterator.it);
-			callableLockWrap = Rr::Trait::move(aIterator.callableLockWrap);
+			callableLockWrap = aIterator.callableLockWrap;
+			aIterator.callableLockWrap = nullptr;
+
 			return *this;
 		}
 
 		Iterator &operator++()
 		{
+			releaseLock();
 			++it;
 			return *this;
 		}
 
-		decltype(callableLockWrap.getInstance()) &operator*()
+		InstanceType &operator*()
 		{
-			return callableLockWrap.getInstance();
+			acquireLock();
+			return callableLockWrap->getInstance();
 		}
 
-		decltype(&callableLockWrap.getInstance()) operator->()
+		InstanceType *operator->()
 		{
-			return &callableLockWrap.getInstance();
+			acquireLock();
+			return &callableLockWrap->getInstance();
 		}
 
-		friend bool operator==<>(const Iterator &aLhs, const Iterator &aRhs);
-		friend bool operator!=<>(const Iterator &aLhs, const Iterator &aRhs);
+		bool operator==(const Iterator &aIterator)
+		{
+			return it == aIterator.it;
+		}
+
+		bool operator!=(const Iterator &aIterator)
+		{
+			return it != aIterator.it;
+		}
 	};
 
 	class Iterators {
@@ -99,21 +133,5 @@ public:
 };
 
 }  // namespace Rr
-
-// impl
-
-template <class Tsignature, class Ttopic, template <class...> class Tstorage, class Tsync>
-bool operator==(const typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &aLhs,
-	const typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &aRhs)
-{
-	return aLhs.it == aRhs.it;
-}
-
-template <class Tsignature, class Ttopic, template <class...> class Tstorage, class Tsync>
-bool operator!=(const typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &aLhs,
-	const typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &aRhs)
-{
-	return aLhs.it != aRhs.it;
-}
 
 #endif // RR_MODULE_HPP
