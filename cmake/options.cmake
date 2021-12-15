@@ -19,3 +19,6 @@ rr_bin_option(RRO_STATIC_CAST_FN_CONVERSION "Use static_cast to convert callback
 
 # Do use c assert() method
 rr_bin_option(RRO_ENABLE_CASSERT "Use static_cast to convert callbacks. Requires deriving from base type" OFF)
+
+# Enable debug output
+rr_bin_option(RRO_ENABLE_DEBUG "Use debug output" ON)
