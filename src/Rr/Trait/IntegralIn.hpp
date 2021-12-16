@@ -34,7 +34,7 @@ struct IntToPos : IntToPosBase<sizeof...(Ia), sizeof...(Ia) + 1, Ibase, 0, Ia...
 };
 
 template <class Tintegral, Tintegral ...Ia>
-struct IntegralToPos : IntegralConstant<Tintegral, (Tintegral)IntToPos<Ia...>::value> {
+struct IntegralToPos : IntegralConstant<int, IntToPos<((int)Ia)...>::value> {
 };
 
 template <int Ibase, int ...Ia>
