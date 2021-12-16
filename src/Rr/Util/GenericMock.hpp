@@ -21,6 +21,11 @@ struct GenericMock {
 	constexpr GenericMock()
 	{
 	}
+
+	constexpr GenericMock getSyncPrimitive()
+	{
+		return {};
+	}
 };
 
 }  // namespace Util
