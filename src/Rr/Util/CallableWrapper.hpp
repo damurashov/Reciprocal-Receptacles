@@ -80,16 +80,16 @@ public:
 
 template <class Tsignature, class Tsync>
 class SyncedCallableWrapper :
-	public Rr::Trait::SyncType<Tsync>::Type,
+	public CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveHolderType,
 	protected ToggleableCallableWrapper<Tsignature>
 {
 
 protected:
-	using Rr::Trait::SyncType<Tsync>::Type::getSyncPrimitive;
+	using CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveHolderType::getSyncPrimitive;
 	using ToggleableCallableWrapper<Tsignature>::setEnabled;
 
 	SyncedCallableWrapper(bool aEnabled, Rr::Util::Callable<Tsignature> &aCallable):
-		Rr::Trait::SyncType<Tsync>::Type{},
+		CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveHolderType{},
 		ToggleableCallableWrapper<Tsignature>{*(new bool(aEnabled)), aCallable}  // Won't leak, because it is statically stored in a growing-only container, but WARNING: TODO: error-prone solution
 	{
 	}
