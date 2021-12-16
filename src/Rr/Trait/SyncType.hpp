@@ -26,41 +26,6 @@
 namespace Rr {
 namespace Trait {
 
-struct Empty {};
-
-// Grouped mutex-based read/write locks
-
-template <unsigned Igroup>
-struct GroupMutSyncTypesMock {
-	using Type = Rr::Util::Sync::MockBasicLockable;
-	using ReadLockType = Rr::Util::Sync::LockGuard<Rr::Util::Sync::MockBasicLockable>;
-	using WriteLockType = Rr::Util::Sync::LockGuard<Rr::Util::Sync::MockBasicLockable>;
-	static constexpr auto kGroup = Igroup;
-};
-
-#if RRO_STL_USED
-# if __cplusplus > 201402L
-template <unsigned Igroup>
-struct GroupMutSyncTypes {
-	using Type = std::shared_timed_mutex;
-	using ReadLockType = std::shared_lock<std::shared_timed_mutex>;
-	using WriteLockType = std::unique_lock<std::shared_timed_mutex>;
-	static constexpr auto kGroup = Igroup;
-}
-# else
-template <unsigned Igroup>
-struct GroupMutSyncTypes {
-	using Type = std::mutex;
-	using ReadLockType = std::lock_guard<std::mutex>;
-	using WriteLockType = std::lock_guard<std::mutex>;
-	static constexpr auto kGroup = Igroup;
-};
-# endif
-#else
-template <unsigned Igroup>
-using GroupMutSyncTypes = GroupMutSyncTypesMock<Igroup>;
-#endif
-
 ///
 /// @brief A kind of a synchronization primitive that is being used
 ///
@@ -214,6 +179,60 @@ public:
 	static constexpr SyncTraitId kNonSfinaeValue = decltype(getType<Tsync>(nullptr))::kNonSfinaeValue;
 	static_assert(value != SyncTraitId::Unknown, "Unknown trait");
 };
+
+// Grouped mutex-based read/write locks
+
+template <unsigned Igroup>
+struct GroupMutSyncTypesMock {
+	// Legacy
+	using Type = Rr::Util::GenericMock;
+	using ReadLockType = Rr::Util::GenericMock;
+	using WriteLockType = Rr::Util::GenericMock;
+	static constexpr auto kGroup = Igroup;
+
+	static constexpr auto kSyncTraitId = SyncTraitId::NoSync;
+};
+
+#if RRO_STL_USED
+# if __cplusplus > 201402L
+template <unsigned Igroup>
+struct GroupMutSyncTypes {
+	// Legacy
+	using Type = std::shared_timed_mutex;
+	using ReadLockType = std::shared_lock<std::shared_timed_mutex>;
+	using WriteLockType = std::unique_lock<std::shared_timed_mutex>;
+	static constexpr auto kGroup = Igroup;
+
+	using MutexType = Type;
+	using LockType = WriteLockType;
+	using SharedLockType = ReadLockType;
+	static typename Rr::Trait::Conditional<Igroup == 0, typename Rr::Util::GenericMock, Type>::Type mutexInstance;
+	static constexpr auto kSyncTraitId = Rr::Trait::Conditional<Igroup == 0,
+		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::IndividualShared>,
+		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::GroupUnique>>::Type::value;
+}
+# else
+template <unsigned Igroup>
+struct GroupMutSyncTypes {
+	// Legacy
+	using Type = std::mutex;
+	using ReadLockType = std::lock_guard<std::mutex>;
+	using WriteLockType = std::lock_guard<std::mutex>;
+	static constexpr auto kGroup = Igroup;
+
+	using MutexType = Type;
+	using LockType = WriteLockType;
+	using SharedLockType = ReadLockType;
+	static typename Rr::Trait::Conditional<Igroup == 0, typename Rr::Util::GenericMock, Type>::Type mutexInstance;
+	static constexpr auto kSyncTraitId = Rr::Trait::Conditional<Igroup == 0,
+		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::IndividualUnique>,
+		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::GroupUnique>>::Type::value;
+};
+# endif
+#else
+template <unsigned Igroup>
+using GroupMutSyncTypes = GroupMutSyncTypesMock<Igroup>;
+#endif
 
 }  // namespace Trait
 }  // namespace Rr
