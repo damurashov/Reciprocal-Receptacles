@@ -27,15 +27,30 @@ void accept(std::string)
 }
 
 enum Types {
-	Bool,
+	Bool = 1,
 	Char,
 	String
 };
 
+template <int ...Ia>
+struct Ilist;
+
+template <Types ...>
+struct ItList;
+
+template <class ...Ta>
+struct Tlist;
+
 int main()
 {
-	typename Rr::Trait::Switch<Types, String, void(bool, char, std::string), Bool, Char, String>::Type t{};
-	typename Rr::Trait::SwitchInt<1, void(bool, char, std::string), 0, 1, 2>::Type t2{};
-	accept(t);
+
+	typename Rr::Trait::SwitchInt<1, Ilist<1, 2, 3>, Tlist<bool, char, std::string>>::Type t1{};
+	typename Rr::Trait::SwitchInt<2, Tlist<bool, char, std::string>, Ilist<1, 2, 3>>::Type t2{};
+	typename Rr::Trait::Switch<Types, String, ItList<Bool, Char, String>, Tlist<bool, char, std::string>>::Type t3{};
+	typename Rr::Trait::Switch<Types, Bool, Tlist<bool, char, std::string>, ItList<Bool, Char, String>>::Type t4{};
+
+	accept(t1);
 	accept(t2);
+	accept(t3);
+	accept(t4);
 }

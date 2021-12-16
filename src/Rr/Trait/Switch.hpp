@@ -14,27 +14,32 @@
 namespace Rr {
 namespace Trait {
 
-namespace SwitchImpl {
+template <int, class T1, class T2>
+struct SwitchInt;
 
-template <int, class>
-struct TypePack;
-
-template <int Ipos, class Tmock, class ...Ta>
-struct TypePack<Ipos, Tmock(Ta...)> {
-	using Type = typename IntToType<Ipos, Ta...>::Type;
+template <int Ival, int ...Ia, template <int ...> class TiList, class ...Ta, template <class...> class TtList>
+struct SwitchInt<Ival, TiList<Ia...>, TtList<Ta...>> {
+	static constexpr auto kPos = IntToPos<Ival, Ia...>::value;
+	static_assert(kPos != -1, "Wrong switch argument Ival");
+	using Type = typename IntToType<kPos, Ta...>::Type;
 };
 
-}  // namespace SwitchImpl
-
-template <int Ival, class TtypePack, int ...Ia>
-class SwitchInt {
-	static constexpr auto kIntPos = IntToPos<Ival, Ia...>::value;
-public:
-	using Type = typename SwitchImpl::TypePack<kIntPos, TtypePack>::Type;
+template <int Ival, int ...Ia, template <int ...> class TiList, class ...Ta, template <class...> class TtList>
+struct SwitchInt<Ival, TtList<Ta...>, TiList<Ia...>> : SwitchInt<Ival, TiList<Ia...>, TtList<Ta...>>  {
 };
 
-template <class Tintegral, Tintegral Ival, class TtypePack, Tintegral ...Ia>
-struct Switch : SwitchInt<(int)Ival, TtypePack, ((int)Ia)...> {
+template <class Ti, Ti, class, class>
+struct Switch;
+
+template <class Tintegral, Tintegral Ival, Tintegral ...Ia, template <Tintegral ...> class TiList, class ...Ta, template <class...> class TtList>
+struct Switch<Tintegral, Ival, TtList<Ta...>, TiList<Ia...>> {
+	static constexpr auto kPos = IntegralToPos<Tintegral, Ival, Ia...>::value;
+	static_assert(kPos != -1, "Wrong switch argument Ival");
+	using Type = typename IntToType<kPos, Ta...>::Type;
+};
+
+template <class Tintegral, Tintegral Ival, Tintegral ...Ia, template <Tintegral ...> class TiList, class ...Ta, template <class...> class TtList>
+struct Switch<Tintegral, Ival, TiList<Ia...>, TtList<Ta...>> : Switch<Tintegral, Ival, TtList<Ta...>, TiList<Ia...>> {
 };
 
 }  // namespace Trait
