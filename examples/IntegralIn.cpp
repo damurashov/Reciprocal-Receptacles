@@ -20,4 +20,5 @@ int main(void)
 	std::cout << Rr::Trait::IntToPos<8, 1, 8, 8>::value << std::endl;
 	std::cout << Rr::Trait::IntIn<42, 1, 2, 3>::value << std::endl;
 	std::cout << Rr::Trait::IntegralIn<Integral, (Integral)42, One, Two>::value << std::endl;
+	std::cout << Rr::Trait::IntegralIn<Integral, (Integral)1, One, Two>::value << std::endl;
 }

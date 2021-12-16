@@ -17,20 +17,20 @@ namespace IntegralInImpl {
 constexpr int kMarkerInt = 0xffffffff;
 }  // namespace IntegralInImpl
 
-template <int Ibase, unsigned Ipos, int Icurrent, int... Ia>
-struct IntToPosBase : IntegralConstant<int, IntToPosBase<Ibase, Ipos + 1, Ia...>::value> {
+template <unsigned Isizeof, unsigned ImaxSizeof, int Ibase, unsigned Ipos, int Icurrent, int... Ia>
+struct IntToPosBase : IntegralConstant<int, IntToPosBase<Isizeof, ImaxSizeof, Ibase, Ipos + 1, Ia...>::value> {
 };
 
-template <int Ibase, unsigned Ipos, int ...Ia>
-struct IntToPosBase<Ibase, Ipos, Ibase, Ia...> : IntegralConstant<int, Ipos> {
+template <unsigned Isizeof, unsigned ImaxSizeof, int Ibase, unsigned Ipos, int ...Ia>
+struct IntToPosBase<Isizeof, ImaxSizeof, Ibase, Ipos, Ibase, Ia...> : IntegralConstant<int, Ipos> {
 };
 
-template <int Ibase, unsigned Ipos>
-struct IntToPosBase<Ibase, Ipos, IntegralInImpl::kMarkerInt>: IntegralConstant<int, -1> {
+template <unsigned Isizeof, unsigned ImaxSizeof, int Ibase, int Icurrent>
+struct IntToPosBase<Isizeof, ImaxSizeof, Ibase, ImaxSizeof, Icurrent> : IntegralConstant<int, -1> {
 };
 
 template <int Ibase, int ...Ia>
-struct IntToPos : IntToPosBase<Ibase, 0, Ia..., IntegralInImpl::kMarkerInt> {
+struct IntToPos : IntToPosBase<sizeof...(Ia), sizeof...(Ia) + 1, Ibase, 0, Ia..., Ibase - 1, Ibase - 1> {
 };
 
 template <class Tintegral, Tintegral ...Ia>
