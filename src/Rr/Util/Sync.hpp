@@ -88,16 +88,19 @@ public:
 	}
 };
 
-template <class TmutType>
-struct MutexHolder : SyncPrimitiveHolder<TmutType>{
-	MutexHolder(): SyncPrimitiveHolder<TmutType>{*(new TmutType())}
+template <class TprimitiveType>
+struct HeapSyncPrimitiveHolder : SyncPrimitiveHolder<TprimitiveType>{
+	HeapSyncPrimitiveHolder(): SyncPrimitiveHolder<TprimitiveType>{*(new TprimitiveType())}
 	{
 	}
 };
 
 template <class Tsync>
-struct StaticMutexHolder : SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type> {
-	StaticMutexHolder(): SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type>{Tsync::syncPrimitive}
+using StaticSyncPrimitiveType = typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>;
+
+template <class Tsync>
+struct StaticSyncPrimitiveHolder : StaticSyncPrimitiveType<Tsync>::Type {
+	StaticSyncPrimitiveHolder(): StaticSyncPrimitiveType<Tsync>::Type{Tsync::syncPrimitive}
 	{
 	}
 };
