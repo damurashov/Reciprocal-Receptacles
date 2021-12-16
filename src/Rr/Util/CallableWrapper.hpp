@@ -14,6 +14,7 @@
 #include <Rr/Util/Callable.hpp>
 #include <Rr/Trait/IntegralIn.hpp>
 #include <Rr/Util/GenericMock.hpp>
+#include <Rr/Trait/Switch.hpp>
 
 namespace Rr {
 namespace Util {
@@ -27,8 +28,7 @@ private:
 	static constexpr auto kNonSfinaeSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::kNonSfinaeValue;
 	static constexpr auto kIsConstFn = Rr::Trait::Fn<Tsignature>::kIsConst;
 	static constexpr auto kIsGroup = (kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::GroupUnique);
-	static constexpr auto kIsShared = Rr::Trait::IntegralIn<decltype(kNonSfinaeSyncTraitId),
-		Rr::Trait::SyncTraitId::IndividualShared>::value;
+	static constexpr auto kIsShared = (kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::IndividualShared);
 	static constexpr auto kIsMutexBased = Rr::Trait::IntegralIn<decltype(kNonSfinaeSyncTraitId),
 		kNonSfinaeSyncTraitId, Rr::Trait::SyncTraitId::IndividualShared, Rr::Trait::SyncTraitId::IndividualUnique,
 		Rr::Trait::SyncTraitId::GroupUnique>::value;
@@ -37,13 +37,39 @@ private:
 
 	using MutTrait = typename Rr::Trait::AsMutTrait<Tsync>::Type;  // Unified trait format storing user types
 
+	template <Rr::Trait::SyncTraitId ...>
+	class Ilist;
+
+	template <class ...>
+	class Tlist;
+
 public:
-	using SyncPrimitiveHolderType = typename Rr::Trait::Conditional<kIsGroup,
-		Rr::Util::StaticSyncPrimitiveHolder<Tsync>, Rr::Util::HeapSyncPrimitiveHolder<typename MutTrait::Mut>>::Type;
+	///
+	/// @brief (1) Static storage for group lock, (2) Mock storage, when no sync
+	/// is used, (3) MutTrait::Mut infferred from user-provided types in other
+	/// cases
+	///
+	using SyncPrimitiveHolderType = typename Rr::Trait::Switch<Rr::Trait::SyncTraitId, kNonSfinaeSyncTraitId,
+		Ilist</* case 1 */Rr::Trait::SyncTraitId::GroupUnique, /* case 2 */Rr::Trait::SyncTraitId::NoSync>,
+		Tlist</* then 1 */typename Rr::Util::StaticSyncPrimitiveHolder<Tsync>,
+		/* then 2 */typename Rr::Util::GenericMock,
+		/* then default */typename Rr::Util::HeapSyncPrimitiveHolder<typename MutTrait::Mut>>>::Type;
 
-	using GetNotifyLockType = typename Rr::Trait::Conditional<kIsShared && kIsConstFn,
-		typename MutTrait::SharedLock, typename MutTrait::UniqueLock>::Type;
+	///
+	/// @brief Lock for notifying callables.
+	///
+	/// Read-lock (shared lock) is used for locking const non-group function
+	/// signature callables. Mock locks are used for group locks. Unique lock
+	/// for any other type.
+	///
+	using GetNotifyLockType = typename Rr::Trait::Conditional</* if */kIsShared && kIsConstFn,
+		typename MutTrait::SharedLock, typename Rr::Trait::Conditional</* elif */kIsGroup, Rr::Util::GenericMock,
+		/* else */typename MutTrait::UniqueLock>::Type>::Type;
 
+	///
+	/// @brief Just use default MutTrait::Unique lock. It will take mocks into
+	/// consideration as well
+	///
 	using SetEnabledLockType = typename MutTrait::UniqueLock;
 };
 
