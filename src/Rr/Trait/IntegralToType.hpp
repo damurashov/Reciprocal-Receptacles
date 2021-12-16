@@ -23,6 +23,10 @@ struct IntToTypeBase<Icurrent, Icurrent, T, Ta...> {
 	using Type = T;
 };
 
+template <int Ival, class ...Ta>
+struct IntToType : IntToTypeBase<Ival, 0, Ta...> {
+};
+
 template <class Tintegral, Tintegral Ival, class ...Ta>
 struct IntegralToType {
 	using Type = typename IntToTypeBase<(int)Ival, 0, Ta...>::Type;
