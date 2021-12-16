@@ -13,6 +13,7 @@
 #include <Rr/Trait/Conditional.hpp>
 #include <Rr/Trait/IsSame.hpp>
 #include <Rr/Trait/IntegralToType.hpp>
+#include <Rr/Util/GenericMock.hpp>
 
 #if RRO_STL_USED
 # if __cplusplus > 201402L
@@ -61,6 +62,25 @@ using GroupMutSyncTypes = GroupMutSyncTypesMock<Igroup>;
 #endif
 
 ///
+/// @brief A kind of a synchronization primitive that is being used
+///
+enum class SyncTraitId : unsigned {
+	NoSync = 0,
+
+	// Mutex-based locks, implicitly specified by user
+	IndividualUnique,
+	IndividualShared,
+	GroupUnique,
+
+	// Mutex-based locks, inferred through use of SFINAE
+	SfinaeIndividualUnique,
+	SfinaeIndividualShared,
+	SfinaeGroupUnique,
+
+	Unknown,
+};
+
+///
 /// @brief Mock, extension point for other types of sync types
 ///
 template <class Tsync>
@@ -70,55 +90,111 @@ struct IsGroupSync
 };
 
 template <class Tsync>
-struct SyncType {
+struct ToSyncTraitId;
+
+///
+/// @brief Obsolete
+///
+template <class Tsync>
+class SyncType {
+public:
 	static constexpr auto kIsGroup = IsGroupSync<Tsync>::value;
 	using Type = typename Rr::Trait::Conditional<kIsGroup, typename Rr::Util::GroupSync<Tsync, Tsync::kGroup>,
 		void>::Type;
 	static_assert(!Rr::Trait::IsSame<Type, void>::value, "");
 };
 
-template <class Tsync>
-struct SyncTraitId {
-public:
-	enum EnumTraitId {
-		NoLock = 0,
-		// Mutex-based locks
-		GroupUnique,
-		IndividualUnique,
-		IndividualShared,
-		Max,
-	};
+// AsMutTrait
 
+///
+/// @brief Hidden implementation details of `AsMutTrait<...>` converter
+///
+namespace AsMutTraitImpl {
+
+template <class Tm, class Tlu, class Tls>
+struct AsMutTrait {
+	using Mut = Tm;
+	using LockUnique = Tlu;
+	using LockShared = Tls;
+};
+
+template <class Tsync>
+struct Mock : AsMutTrait<Rr::Util::GenericMock, Rr::Util::GenericMock, Rr::Util::GenericMock> {
+};
+
+template <class Tsync>
+struct InUnique : AsMutTrait<typename Tsync::MutexType, typename Tsync::LockType, void> {
+};
+
+template <class Tsync>
+struct InShared : AsMutTrait<typename Tsync::MutexType, typename Tsync::LockType, typename Tsync::SharedLockType> {
+};
+
+template <class Tsync>
+struct GrUnique : AsMutTrait<decltype(Tsync::mutexInstance), typename Tsync::LockType, void> {
+};
+
+// TODO: SFINAE-part of the enum
+
+}  // namespace AsMutTraitImpl
+
+///
+/// @brief Converts a trait to a mutex-based trait
+///
+/// @tparam Tsync Synchronization trait
+/// @tparam Ival  Target type it should be converted to
+///
+template <class Tsync, SyncTraitId Ival = ToSyncTraitId<Tsync>::value>
+using AsMutTrait = typename Rr::Trait::IntegralToType<SyncTraitId, Ival,
+	typename AsMutTraitImpl::Mock<Tsync>,
+	typename AsMutTraitImpl::InUnique<Tsync>,
+	typename AsMutTraitImpl::InShared<Tsync>,
+	typename AsMutTraitImpl::GrUnique<Tsync>>::Type;
+
+///
+/// @brief Infers the type of a requested synchronization strategy by the
+/// structure of a type it is provided with.
+///
+/// @tparam Tsync A type that has certain fields among its public members, i.e.
+/// adhering to certain naming conventions. see getType(1)
+///
+template <class Tsync>
+struct ToSyncTraitId {
 private:
-	template <EnumTraitId Ielt>
-	using Value = Rr::Trait::IntegralConstant<EnumTraitId, Ielt>;
+	template <SyncTraitId Ielt>
+	using Value = Rr::Trait::IntegralConstant<SyncTraitId, Ielt>;
+
+	template <class T>
+	struct UserValue {
+		static constexpr auto value = T::kSyncTraitId;
+	};
 
 	template <unsigned ...>
 	struct Sfinae;
 
-	// The following is used to infer the trait by looking at what members are
-	// present.
+	// The following is used to infer the synchronization strategy by looking at
+	// what members are present. If no synchronization is used, the user must
+	// specify that explicitly by adding `constexpr static auto kSyncTraitId =
+	// Rr::SyncTraitId::NoSync`
 
 	template <class T>
-	static Value<NoLock> getType(...);
+	static Value<SyncTraitId::Unknown> getType(...);  ///< SFINAE-fallback
 
 	template <class T>
-	static Value<IndividualUnique> getType(Sfinae<sizeof(typename T::SyncType) + sizeof(typename T::UniqueLockType)> *);
+	static UserValue<T> getType(Sfinae<sizeof(T::kSyncTraitId)> *);  ///< The strategy has been explicitly specified by user
 
 	template <class T>
-	static Value<IndividualShared> getType(Sfinae<sizeof(typename T::SyncType) + sizeof(typename T::UniqueLockType) + sizeof(typename T::SharedLockType)> *);
+	static Value<SyncTraitId::SfinaeIndividualUnique> getType(Sfinae<sizeof(typename T::UniqueMutexType)> *);  ///< Individual lock through unique mutex
 
 	template <class T>
-	static Value<GroupUnique> getType(Sfinae<sizeof(typename T::GroupLockType) + sizeof(T::groupMutex)> *);
+	static Value<SyncTraitId::SfinaeIndividualShared> getType(Sfinae<sizeof(typename T::SharedMutexType)> *);  ///< Individual lock through shared mutex
+
+	template <class T>
+	static Value<SyncTraitId::SfinaeGroupUnique> getType(Sfinae<sizeof(typename T::GroupUniqueLockType)> *);  ///< Group lock through unique mutex
 
 public:
-	static constexpr EnumTraitId value = decltype(getType<Tsync>(nullptr))::value;
-
-	template <EnumTraitId Ival, class ...Ta>
-	struct ToType {
-		static_assert(sizeof...(Ta) == EnumTraitId::Max, "Wrong number of types");
-		using Type = typename Rr::Trait::IntegralToType<EnumTraitId, Ival, Ta...>::Type;
-	};
+	static constexpr SyncTraitId value = decltype(getType<Tsync>(nullptr))::value;
+	static_assert(value != SyncTraitId::Unknown, "Unknown trait");
 };
 
 }  // namespace Trait
