@@ -174,12 +174,16 @@ using AsMutTrait = typename Rr::Trait::IntegralToType<SyncTraitId, Ival,
 template <class Tsync>
 struct ToSyncTraitId {
 private:
-	template <SyncTraitId Ielt>
-	using Value = Rr::Trait::IntegralConstant<SyncTraitId, Ielt>;
+	template <SyncTraitId Ival, SyncTraitId InonSfinaeVal>
+	struct Value {
+		static constexpr auto value = Ival;
+		static constexpr auto kNonSfinaeValue = InonSfinaeVal;
+	};
 
 	template <class T>
 	struct UserValue {
 		static constexpr auto value = T::kSyncTraitId;
+		static constexpr auto kNonSfinaeValue = value;
 	};
 
 	template <unsigned ...>
@@ -191,22 +195,23 @@ private:
 	// Rr::SyncTraitId::NoSync`
 
 	template <class T>
-	static Value<SyncTraitId::Unknown> getType(...);  ///< SFINAE-fallback
+	static Value<SyncTraitId::Unknown, SyncTraitId::Unknown> getType(...);  ///< SFINAE-fallback
 
 	template <class T>
 	static UserValue<T> getType(Sfinae<sizeof(T::kSyncTraitId)> *);  ///< The strategy has been explicitly specified by user
 
 	template <class T>
-	static Value<SyncTraitId::SfinaeIndividualUnique> getType(Sfinae<sizeof(typename T::UniqueMutexType)> *);  ///< Individual lock through unique mutex
+	static Value<SyncTraitId::SfinaeIndividualUnique, SyncTraitId::IndividualUnique> getType(Sfinae<sizeof(typename T::UniqueMutexType)> *);  ///< Individual lock through unique mutex
 
 	template <class T>
-	static Value<SyncTraitId::SfinaeIndividualShared> getType(Sfinae<sizeof(typename T::SharedMutexType)> *);  ///< Individual lock through shared mutex
+	static Value<SyncTraitId::SfinaeIndividualShared, SyncTraitId::IndividualShared> getType(Sfinae<sizeof(typename T::SharedMutexType)> *);  ///< Individual lock through shared mutex
 
 	template <class T>
-	static Value<SyncTraitId::SfinaeGroupUnique> getType(Sfinae<sizeof(typename T::GroupUniqueLockType)> *);  ///< Group lock through unique mutex
+	static Value<SyncTraitId::SfinaeGroupUnique, SyncTraitId::GroupUnique> getType(Sfinae<sizeof(typename T::GroupUniqueLockType)> *);  ///< Group lock through unique mutex
 
 public:
 	static constexpr SyncTraitId value = decltype(getType<Tsync>(nullptr))::value;
+	static constexpr SyncTraitId kNonSfinaeValue = decltype(getType<Tsync>(nullptr))::kNonSfinaeValue;
 	static_assert(value != SyncTraitId::Unknown, "Unknown trait");
 };
 
