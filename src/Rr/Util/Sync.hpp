@@ -8,6 +8,7 @@
 #define RR_UTIL_SYNC_HPP_
 
 #include <Rr/Util/SyncMock.hpp>
+#include <Rr/Trait/RemoveReference.hpp>
 
 namespace Rr {
 namespace Util {
@@ -71,12 +72,34 @@ public:
 	}
 };
 
-template <class TmutType>
-class MutexHolder {
+template <class Tprimitive, class TholderType = Tprimitive *>
+class SyncPrimitiveHolder {
+	TholderType syncPrimitive;
+
+protected:
+	Tprimitive &getSyncPrimitive()
+	{
+		return *syncPrimitive;
+	}
+
+public:
+	SyncPrimitiveHolder(Tprimitive &aPrimitive): syncPrimitive{&aPrimitive}
+	{
+	}
 };
 
 template <class TmutType>
-class StaticMutexHolder {
+struct MutexHolder : SyncPrimitiveHolder<TmutType>{
+	MutexHolder(): SyncPrimitiveHolder<TmutType>{*(new TmutType())}
+	{
+	}
+};
+
+template <class Tsync>
+struct StaticMutexHolder : SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::mutexInstance)>::Type> {
+	StaticMutexHolder(): SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::mutexInstance)>::Type>{Tsync::mutexInstance}
+	{
+	}
 };
 
 }  // namespace Util
