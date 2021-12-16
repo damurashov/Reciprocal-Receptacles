@@ -39,7 +39,7 @@ private:
 
 public:
 	using SyncPrimitiveHolderType = typename Rr::Trait::Conditional<kIsGroup,
-		Rr::Util::StaticMutexHolder<typename MutTrait::Mut>, Rr::Util::MutexHolder<typename MutTrait::Mut>>::Type;
+		Rr::Util::StaticMutexHolder<Tsync>, Rr::Util::MutexHolder<typename MutTrait::Mut>>::Type;
 
 	using GetNotifyLockType = typename Rr::Trait::Conditional<kIsShared && kIsConstFn,
 		typename MutTrait::SharedLock, typename MutTrait::UniqueLock>::Type;
