@@ -46,7 +46,7 @@ struct IndShared {
 
 struct GroupUnique {
 	using GroupUniqueLockType = int;
-	int mutexInstance;
+	int syncPrimitive;
 };
 
 void asSyncTrait()

@@ -96,8 +96,8 @@ struct MutexHolder : SyncPrimitiveHolder<TmutType>{
 };
 
 template <class Tsync>
-struct StaticMutexHolder : SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::mutexInstance)>::Type> {
-	StaticMutexHolder(): SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::mutexInstance)>::Type>{Tsync::mutexInstance}
+struct StaticMutexHolder : SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type> {
+	StaticMutexHolder(): SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type>{Tsync::syncPrimitive}
 	{
 	}
 };

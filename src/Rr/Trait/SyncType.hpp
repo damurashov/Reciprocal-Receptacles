@@ -96,7 +96,7 @@ struct InShared : AsMutTrait<typename Tsync::MutexType, typename Tsync::LockType
 };
 
 template <class Tsync>
-struct GrUnique : AsMutTrait<decltype(Tsync::mutexInstance), typename Tsync::LockType, void> {
+struct GrUnique : AsMutTrait<decltype(Tsync::syncPrimitive), typename Tsync::LockType, void> {
 };
 
 template <class Tsync>
@@ -108,7 +108,7 @@ struct SfinaeInShared : AsMutTrait<typename Tsync::SharedMutexType, typename Tsy
 };
 
 template <class Tsync>
-struct SfinaeGrUnique : AsMutTrait<decltype(Tsync::mutexInstance), typename Tsync::GroupUniqueLockType, void> {
+struct SfinaeGrUnique : AsMutTrait<decltype(Tsync::syncPrimitive), typename Tsync::GroupUniqueLockType, void> {
 };
 
 }  // namespace AsMutTraitImpl
@@ -206,7 +206,7 @@ struct GroupMutSyncTypes {
 	using MutexType = Type;
 	using LockType = WriteLockType;
 	using SharedLockType = ReadLockType;
-	static typename Rr::Trait::Conditional<Igroup == 0, typename Rr::Util::GenericMock, Type>::Type mutexInstance;
+	static typename Rr::Trait::Conditional<Igroup == 0, typename Rr::Util::GenericMock, Type>::Type syncPrimitive;
 	static constexpr auto kSyncTraitId = Rr::Trait::Conditional<Igroup == 0,
 		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::IndividualShared>,
 		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::GroupUnique>>::Type::value;
@@ -223,7 +223,7 @@ struct GroupMutSyncTypes {
 	using MutexType = Type;
 	using LockType = WriteLockType;
 	using SharedLockType = ReadLockType;
-	static typename Rr::Trait::Conditional<Igroup == 0, typename Rr::Util::GenericMock, Type>::Type mutexInstance;
+	static typename Rr::Trait::Conditional<Igroup == 0, typename Rr::Util::GenericMock, Type>::Type syncPrimitive;
 	static constexpr auto kSyncTraitId = Rr::Trait::Conditional<Igroup == 0,
 		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::IndividualUnique>,
 		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::GroupUnique>>::Type::value;
