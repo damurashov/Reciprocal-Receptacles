@@ -12,9 +12,42 @@
 #include <Rr/Trait/LockType.hpp>
 #include <Rr/Trait/SyncType.hpp>
 #include <Rr/Util/Callable.hpp>
+#include <Rr/Trait/IntegralIn.hpp>
+#include <Rr/Util/GenericMock.hpp>
 
 namespace Rr {
 namespace Util {
+
+namespace CallableWrapperImpl {
+
+template <class Tsignature, class Tsync>
+class LockPolicy {
+private:
+	static constexpr auto kSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::value;
+	static constexpr auto kNonSfinaeSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::kNonSfinaeValue;
+	static constexpr auto kIsConstFn = Rr::Trait::Fn<Tsignature>::kIsConst;
+	static constexpr auto kIsGroup = (kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::GroupUnique);
+	static constexpr auto kIsShared = Rr::Trait::IntegralIn<decltype(kNonSfinaeSyncTraitId),
+		Rr::Trait::SyncTraitId::IndividualShared>::value;
+	static constexpr auto kIsMutexBased = Rr::Trait::IntegralIn<decltype(kNonSfinaeSyncTraitId),
+		kNonSfinaeSyncTraitId, Rr::Trait::SyncTraitId::IndividualShared, Rr::Trait::SyncTraitId::IndividualUnique,
+		Rr::Trait::SyncTraitId::GroupUnique>::value;
+
+	static_assert(kIsMutexBased, "Non mutex-based sync strategies are not supported yet");
+
+	using MutTrait = typename Rr::Trait::AsMutTrait<Tsync>::Type;  // Unified trait format storing user types
+
+public:
+	using SyncPrimitiveHolderType = typename Rr::Trait::Conditional<kIsGroup,
+		Rr::Util::StaticMutexHolder<typename MutTrait::Mut>, Rr::Util::MutexHolder<typename MutTrait::Mut>>::Type;
+
+	using GetNotifyLockType = typename Rr::Trait::Conditional<kIsShared && kIsConstFn,
+		typename MutTrait::SharedLock, typename MutTrait::UniqueLock>::Type;
+
+	using SetEnabledLockType = typename MutTrait::UniqueLock;
+};
+
+}  // namespace CallableWrapperImpl
 
 template <class Tsignature>
 class ToggleableCallableWrapper {
@@ -50,6 +83,7 @@ class SyncedCallableWrapper :
 	public Rr::Trait::SyncType<Tsync>::Type,
 	protected ToggleableCallableWrapper<Tsignature>
 {
+
 protected:
 	using Rr::Trait::SyncType<Tsync>::Type::getSyncPrimitive;
 	using ToggleableCallableWrapper<Tsignature>::setEnabled;
