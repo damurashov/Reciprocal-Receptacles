@@ -210,8 +210,14 @@ struct GroupMutSyncTypes {
 	static constexpr auto kSyncTraitId = Rr::Trait::Conditional<Igroup == 0,
 		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::IndividualShared>,
 		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::GroupUnique>>::Type::value;
-}
+};
+
+template <unsigned Igroup>
+typename Rr::Trait::Conditional<Igroup == 0, typename Rr::Util::GenericMock, typename GroupMutSyncTypes<Igroup>::Type>::Type
+GroupMutSyncTypes<Igroup>::syncPrimitive;
+
 # else
+
 template <unsigned Igroup>
 struct GroupMutSyncTypes {
 	// Legacy
@@ -228,6 +234,11 @@ struct GroupMutSyncTypes {
 		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::IndividualUnique>,
 		Rr::Trait::IntegralConstant<SyncTraitId, SyncTraitId::GroupUnique>>::Type::value;
 };
+
+template <unsigned Igroup>
+typename Rr::Trait::Conditional<Igroup == 0, typename Rr::Util::GenericMock, typename GroupMutSyncTypes<Igroup>::Type>::Type
+GroupMutSyncTypes<Igroup>::syncPrimitive;
+
 # endif
 #else
 template <unsigned Igroup>
