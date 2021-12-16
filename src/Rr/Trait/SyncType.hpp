@@ -79,8 +79,8 @@ namespace AsMutTraitImpl {
 template <class Tm, class Tlu, class Tls>
 struct AsMutTrait {
 	using Mut = Tm;
-	using LockUnique = Tlu;
-	using LockShared = Tls;
+	using UniqueLock = Tlu;
+	using SharedLock = Tls;
 };
 
 template <class Tsync>
@@ -127,7 +127,7 @@ using AsMutTrait = typename Rr::Trait::IntegralToType<SyncTraitId, Ival,
 	typename AsMutTraitImpl::GrUnique<Tsync>,
 	typename AsMutTraitImpl::SfinaeInUnique<Tsync>,
 	typename AsMutTraitImpl::SfinaeInShared<Tsync>,
-	typename AsMutTraitImpl::SfinaeGrUnique<Tsync>>::Type;
+	typename AsMutTraitImpl::SfinaeGrUnique<Tsync>>;
 
 ///
 /// @brief Infers the type of a requested synchronization strategy by the
