@@ -71,6 +71,14 @@ public:
 	}
 };
 
+template <class TmutType>
+class MutexHolder {
+};
+
+template <class TmutType>
+class StaticMutexHolder {
+};
+
 }  // namespace Util
 }  // namespace Rr
 
