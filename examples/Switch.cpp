@@ -26,10 +26,16 @@ void accept(std::string)
 	cout << "string" << endl;
 }
 
+void accept(int)
+{
+	cout << "int" << endl;
+}
+
 enum Types {
 	Bool = 1,
 	Char,
-	String
+	String,
+	Echo,
 };
 
 template <int ...Ia>
@@ -44,13 +50,15 @@ struct Tlist;
 int main()
 {
 
-	typename Rr::Trait::SwitchInt<1, Ilist<1, 2, 3>, Tlist<bool, char, std::string>>::Type t1{};
+	typename Rr::Trait::SwitchInt<-1, Ilist<1, 2, 3>, Tlist<bool, char, std::string, int>>::Type t1{};
 	typename Rr::Trait::SwitchInt<2, Tlist<bool, char, std::string>, Ilist<1, 2, 3>>::Type t2{};
 	typename Rr::Trait::Switch<Types, String, ItList<Bool, Char, String>, Tlist<bool, char, std::string>>::Type t3{};
 	typename Rr::Trait::Switch<Types, Bool, Tlist<bool, char, std::string>, ItList<Bool, Char, String>>::Type t4{};
+	typename Rr::Trait::Switch<Types, Echo, Tlist<bool, char, std::string, int>, ItList<Bool, Char, String>>::Type t5{};
 
 	accept(t1);
 	accept(t2);
 	accept(t3);
 	accept(t4);
+	accept(t5);
 }
