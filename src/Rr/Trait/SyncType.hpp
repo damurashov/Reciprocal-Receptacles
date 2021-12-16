@@ -134,7 +134,17 @@ template <class Tsync>
 struct GrUnique : AsMutTrait<decltype(Tsync::mutexInstance), typename Tsync::LockType, void> {
 };
 
-// TODO: SFINAE-part of the enum
+template <class Tsync>
+struct SfinaeInUnique : AsMutTrait<typename Tsync::UniqueMutexType, typename Tsync::LockType, void> {
+};
+
+template <class Tsync>
+struct SfinaeInShared : AsMutTrait<typename Tsync::SharedMutexType, typename Tsync::LockType, typename Tsync::SharedLockType> {
+};
+
+template <class Tsync>
+struct SfinaeGrUnique : AsMutTrait<decltype(Tsync::mutexInstance), typename Tsync::GroupUniqueLockType, void> {
+};
 
 }  // namespace AsMutTraitImpl
 
@@ -149,7 +159,10 @@ using AsMutTrait = typename Rr::Trait::IntegralToType<SyncTraitId, Ival,
 	typename AsMutTraitImpl::Mock<Tsync>,
 	typename AsMutTraitImpl::InUnique<Tsync>,
 	typename AsMutTraitImpl::InShared<Tsync>,
-	typename AsMutTraitImpl::GrUnique<Tsync>>::Type;
+	typename AsMutTraitImpl::GrUnique<Tsync>,
+	typename AsMutTraitImpl::SfinaeInUnique<Tsync>,
+	typename AsMutTraitImpl::SfinaeInShared<Tsync>,
+	typename AsMutTraitImpl::SfinaeGrUnique<Tsync>>::Type;
 
 ///
 /// @brief Infers the type of a requested synchronization strategy by the
