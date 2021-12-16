@@ -11,6 +11,7 @@
 #include <Rr/Util/LockWrap.hpp>
 #include <Rr/Trait/LockType.hpp>
 #include <Rr/Trait/SyncType.hpp>
+#include <Rr/Util/Callable.hpp>
 
 namespace Rr {
 namespace Util {
