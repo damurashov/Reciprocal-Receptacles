@@ -93,16 +93,18 @@ struct HeapSyncPrimitiveHolder : SyncPrimitiveHolder<TprimitiveType>{
 	HeapSyncPrimitiveHolder(): SyncPrimitiveHolder<TprimitiveType>{*(new TprimitiveType())}
 	{
 	}
+protected:
+	using SyncPrimitiveHolder<TprimitiveType>::getSyncPrimitive;
 };
 
 template <class Tsync>
-using StaticSyncPrimitiveType = typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>;
-
-template <class Tsync>
-struct StaticSyncPrimitiveHolder : StaticSyncPrimitiveType<Tsync>::Type {
-	StaticSyncPrimitiveHolder(): StaticSyncPrimitiveType<Tsync>::Type{Tsync::syncPrimitive}
+struct StaticSyncPrimitiveHolder : SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type> {
+	StaticSyncPrimitiveHolder(): SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type>{Tsync::syncPrimitive}
 	{
 	}
+
+protected:
+	using SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type>::getSyncPrimitive;
 };
 
 }  // namespace Util
