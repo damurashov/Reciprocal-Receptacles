@@ -13,19 +13,19 @@
 namespace Rr {
 namespace Trait {
 
-template <class Tintegral, Tintegral Ibase, Tintegral Icurrent, class T, class ...Ta>
-struct IntegralToTypeImpl {
-	using Type = typename IntegralToTypeImpl<Tintegral, Ibase, Icurrent + 1, Ta...>::Type;
+template <int Ibase, int Icurrent, class T, class ...Ta>
+struct IntToTypeBase {
+	using Type = typename IntToTypeBase<Ibase, Icurrent + 1, Ta...>::Type;
 };
 
-template <class Tintegral, Tintegral Icurrent, class T, class ...Ta>
-struct IntegralToTypeImpl<Tintegral, Icurrent, Icurrent, T, Ta...> {
+template <int Icurrent, class T, class ...Ta>
+struct IntToTypeBase<Icurrent, Icurrent, T, Ta...> {
 	using Type = T;
 };
 
 template <class Tintegral, Tintegral Ival, class ...Ta>
 struct IntegralToType {
-	using Type = typename IntegralToTypeImpl<Tintegral, Ival, 0, Ta...>::Type;
+	using Type = typename IntToTypeBase<(int)Ival, 0, Ta...>::Type;
 };
 
 }  // namespace Trait
