@@ -51,7 +51,7 @@ int main()
 {
 
 	typename Rr::Trait::SwitchInt<-1, Ilist<1, 2, 3>, Tlist<bool, char, std::string, int>>::Type t1{};
-	typename Rr::Trait::SwitchInt<2, Tlist<bool, char, std::string>, Ilist<1, 2, 3>>::Type t2{};
+	typename Rr::Trait::SwitchInt<1, Tlist<bool, char, std::string>, Ilist<1, 2, 3>>::Type t2{};
 	typename Rr::Trait::Switch<Types, String, ItList<Bool, Char, String>, Tlist<bool, char, std::string>>::Type t3{};
 	typename Rr::Trait::Switch<Types, Bool, Tlist<bool, char, std::string>, ItList<Bool, Char, String>>::Type t4{};
 	typename Rr::Trait::Switch<Types, Echo, ItList<Bool, Char, String>, Tlist<bool, char, std::string, int>>::Type t5{};
