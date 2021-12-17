@@ -8,7 +8,6 @@
 #if !defined(RR_UTIL_CALLBACK_HPP)
 #define RR_UTIL_CALLBACK_HPP
 
-#include <Rr/Util/SyncedCallable.hpp>
 #include <Rr/Util/CallableWrapper.hpp>
 
 namespace Rr {
@@ -17,8 +16,31 @@ namespace Util {
 template <class Tsignature, template <class ...> class Tcontainer>
 using CallableTable = Tcontainer<Rr::Util::Callable<Tsignature>>;
 
-template <class Tsignature, template<class...> class Tcontainer, class Tsync>
-using SyncedCallableTable = Tcontainer<typename Rr::Util::SyncedCallableType<Tsignature, Tsync>::Type>;
+namespace CallableTableImpl {
+
+template <class Tsignature, class Tsync>
+class LockPolicy {
+private:
+	static constexpr auto kSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::value;
+	static constexpr auto kNonSfinaeSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::kNonSfinaeValue;
+	static constexpr auto kIsMutexBased = Rr::Trait::IntegralIn<Rr::Trait::SyncTraitId, /* operand */kSyncTraitId,
+		/* list */Rr::Trait::SyncTraitId::IndividualShared, Rr::Trait::SyncTraitId::IndividualUnique,
+		Rr::Trait::SyncTraitId::GroupUnique>::value;
+	static constexpr auto kIsMock = (kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::NoSync);
+
+	static_assert(kIsMutexBased || kIsMock, "Non mutex-based sync types are not supported yet");
+
+	using MutexTrait = typename Rr::Trait::AsMutTrait<Tsync>::Type;
+
+public:
+	using SyncPrimitiveType = typename MutexTrait::Mut;
+	using UniqueLockType = typename MutexTrait::UniqueLock;
+	using SharedLockType = typename Rr::Trait::Conditional</* if */kNonSfinaeSyncTraitId ==
+		Rr::Trait::SyncTraitId::IndividualShared, typename MutexTrait::SharedLock, /* else */ typename
+		MutexTrait::UniqueLock>::Type;
+};
+
+}  // namespace CallableTableImpl
 
 template <class Tsignature, class Ttopic, template <class ...> class Tcontainer, class Tsync>
 class SyncedCallableWrapperStaticTable {
@@ -28,13 +50,14 @@ class SyncedCallableWrapperStaticTable {
 	///
 	static Tcontainer<SyncedCallableWrapper<Tsignature, Tsync>> table;
 
-	static typename Tsync::Type syncPrimitive;
+	static typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveType syncPrimitive;
 public:
 	///
 	/// @brief Lock wrap for iterating over table items()
 	///
-	static typename Rr::Util::LockWrap<typename Rr::Trait::SharedLockType<Tsync>::Type,
-		decltype(table)> asSharedLockWrap()
+	static typename Rr::Util::LockWrap<typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::SharedLockType,
+		decltype(table)>
+	asSharedLockWrap()
 	{
 		return {syncPrimitive, table};
 	}
@@ -42,10 +65,10 @@ public:
 	///
 	/// @brief Lock wrap for amending the table
 	///
-	static typename Rr::Util::LockWrap<typename Rr::Trait::SharedLockType<Tsync>::Type,
-		decltype(table)> asUniqueLockWrap()
+	static typename Rr::Util::LockWrap< typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::UniqueLockType,
+		decltype(table)>
+	asUniqueLockWrap()
 	{
-		// return static_cast<decltype(asUniqueLockWrap()) &&>(decltype(asUniqueLockWrap()){syncPrimitive, table});
 		return {syncPrimitive, table};
 	}
 };

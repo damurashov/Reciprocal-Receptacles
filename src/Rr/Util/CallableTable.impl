@@ -12,5 +12,5 @@ Tcontainer<typename Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>>
 Rr::Util::SyncedCallableWrapperStaticTable<Tsignature, Ttopic, Tcontainer, Tsync>::table{};
 
 template<class Tsignature, class Ttopic, template<class...> class Tcontainer, class Tsync>
-typename Tsync::Type
+typename Rr::Util::CallableTableImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveType
 Rr::Util::SyncedCallableWrapperStaticTable<Tsignature, Ttopic, Tcontainer, Tsync>::syncPrimitive{};

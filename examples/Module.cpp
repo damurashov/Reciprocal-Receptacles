@@ -1,41 +1,70 @@
-#include <Rr/Module.hpp>
+//
+// Module.cpp
+//
+// Created: 2021-12-14
+//  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
+//
+
 #include <iostream>
+#include <list>
+#include <Rr/Module.hpp>
 
-using namespace std;
+template <class Tsignature, class Ttopic>
+using Module1 = Rr::Module<Tsignature, Ttopic, std::list, Rr::Trait::GroupMutSyncTypes<1>>;
 
-template <typename T>
-using Module = Rr::Module::Mod<T, Rr::Module::Stl11SyncTrait>;
+namespace ModuleType {
+struct Socket;
+struct HighSpeedSocket;
+}  // namespace ModuleType
 
-struct Camera : Module<Camera> {
-	Camera()
+using ClientCounter = Module1<int(), ModuleType::Socket>;
+using SpecialClientCounter = Module1<int(), ModuleType::HighSpeedSocket>;
+
+int countClients()
+{
+	return 1;
+}
+
+int countSpecialClients()
+{
+	return 1;
+}
+
+struct Backend {
+	int countClients()
 	{
-	}
+		auto nSpecialClients = 0;
 
-	void configure(int mode)
-	{
-		std::cout << "configured" << endl;
-	}
+		for (auto &callable : SpecialClientCounter::getIterators()) {
+			if (callable.isEnabled()) {
+				nSpecialClients += callable();
+			}
+		}
 
-	int getMode() const 
-	{
-		std::cout << "get mode" << std::endl;
-		return 42;
+		return 1 + nSpecialClients;
 	}
 };
 
-void initCamera()
+void poll()
 {
-	static Camera camera;
-	Module<Camera>::setInstance(camera);
+	auto nClients = 0;
+	for (auto &callable : ClientCounter::getIterators()) {
+		if (callable.isEnabled()) {
+			nClients += callable();
+		}
+	}
+
+	std::cout << "nClients: " << nClients << std::endl;
 }
 
-int main()
+int main(void)
 {
-	initCamera();
-	cout << Module<const Camera>().isValid() << endl;
-	std::cout << Module<const Camera>().getInstance().getMode() << std::endl;
-	std::cout << Module<Camera>().getInstance().getMode() << std::endl;
-	// Module<const Camera>{}.getInstance().configure(42);  // Error: const reference
-	Module<Camera>{}.getInstance().configure(42);
-	return 0;
+	Backend backend;
+	ClientCounter scm1{countClients};
+	ClientCounter scm2{&Backend::countClients, &backend};
+	SpecialClientCounter scm3{countSpecialClients};
+
+	poll();  // 3
+	scm2.setEnabled(false);
+	poll();  // 1
 }

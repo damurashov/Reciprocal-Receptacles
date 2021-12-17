@@ -1,42 +1,63 @@
 //
-// Module.hpp
-// 
-// Author: Dmitry Murashov
-//   Mail: dmtrDOTmurashovATgmailDOTcom (gmail.com)
+// Module.impl
+//
+// Created: 2021-12-15
+//  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
-#include <cassert>
-
-namespace Rr {
-namespace Module {
-
-template <typename Tinterface, typename TsyncTrait>
-inline Mod<Tinterface, TsyncTrait>::Mod(): lock(mutex)
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline void Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::acquireLock()
 {
+	if (!callableLockWrap) {
+		callableLockWrap = new LockWrapType{it->asLockWrap()};
+	}
 }
 
-template <typename Tinterface, typename TsyncTrait>
-inline bool Mod<Tinterface, TsyncTrait>::isValid() const 
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline void Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::releaseLock()
 {
-	return instance != nullptr;
+	if (callableLockWrap) {
+		delete callableLockWrap;
+		callableLockWrap = nullptr;
+	}
 }
 
-template <typename Tinterface, typename TsyncTrait>
-inline typename Util::DecayPreserveConst<Tinterface>::type &Mod<Tinterface, TsyncTrait>::getInstance()
+
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &
+Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator=(Iterator &&aIterator)
 {
-	assert(instance != nullptr);
-	return *instance;
+	it = Rr::Trait::move(aIterator.it);
+	callableLockWrap = aIterator.callableLockWrap;
+	aIterator.callableLockWrap = nullptr;
+
+	return *this;
 }
 
-template <typename Tinterface, typename TsyncTrait>
-inline void Mod<Tinterface, TsyncTrait>::setInstance(typename std::decay<Tinterface>::type &aInstance)
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline typename  Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &
+Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator++()
 {
-	static typename TsyncTrait::MutexType mutex;
-	typename TsyncTrait::WriteLockType lock{mutex};
-	
-	assert(instance == nullptr);
-	instance = &aInstance;
+	releaseLock();
+	++it;
+	return *this;
 }
 
-}  // namespace Module
-}  // namespace Rr
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::InstanceType &
+Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator*()
+{
+	acquireLock();
+	return callableLockWrap->getInstance();
+}
+
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::InstanceType *
+Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator->()
+{
+	acquireLock();
+	return &callableLockWrap->getInstance();
+}
+
+
+

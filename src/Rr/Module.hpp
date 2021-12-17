@@ -1,113 +1,132 @@
 //
 // Module.hpp
-// 
-// Author: Dmitry Murashov
-//   Mail: dmtrDOTmurashovATgmailDOTcom (gmail.com)
+//
+// Created: 2021-12-14
+//  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
-#if !defined(RR_SUBSCRIPTION_SUBSCRIPTION_HPP)
-#define RR_SUBSCRIPTION_SUBSCRIPTION_HPP
+#if !defined(RR_MODULE_HPP)
+#define RR_MODULE_HPP
 
-#include <type_traits>
-#include <Rr/Util/DefaultConfig.hpp>
-#include <Rr/Util/Sync.hpp>
-
-#if RRO_STL_USED
-# if __cplusplus < 201402L
-#  include <mutex>
-# else
-#  include <shared_mutex>
-# endif
-#endif
+#include <Rr/Key.hpp>
+#include <Rr/Trait/Move.hpp>
 
 namespace Rr {
-namespace Module {
 
-struct DefaultSyncTrait {
-	using MutexType = Rr::Util::Sync::MockSharedMutex;
-	using WriteLockType = Rr::Util::Sync::LockGuard<Rr::Util::Sync::MockSharedMutex>;
-	using ReadLockType = Rr::Util::Sync::LockGuard<Rr::Util::Sync::MockSharedMutex>;
-};
+template <class Tsignature, class Ttopic, template <class...> class Tstorage, class Tsync>
+class Module : public Rr::Key<Tsignature, Ttopic, Tstorage, Tsync> {
+private:
+	using KeyType = Rr::Key<Tsignature, Ttopic, Tstorage, Tsync>;
 
-#if RRO_STL_USED
-struct Stl11SyncTrait {
-	using MutexType = std::mutex;
-	using ReadLockType = std::lock_guard<MutexType>;
-	using WriteLockType = std::lock_guard<MutexType>;
-};
-
-# if __cplusplus > 201402L
-struct Stl14SyncTrait {
-	using MutexType = std::shared_timed_mutex;
-	using ReadLockType = std::shared_lock<MutexType>;
-	using WriteLockType = std::shared_lock<MutexType>;
-};
-# endif
-
-# if __cplusplus > 201402L
-using StlSyncTrait = Stl14SyncTrait;
-# else
-using StlSyncTrait = Stl11SyncTrait;
-# endif
-
-#endif
-
-// Useful shortcuts
-
-namespace Util {
-
-template <typename T>
-using DecayPreserveConst = std::remove_volatile<typename std::remove_pointer<typename std::remove_reference<T>::type>::type>;
-
-// LockType
-
-template <typename Tinterface, typename TsyncTrait>
-struct LockType {
-	using Type = typename TsyncTrait::WriteLockType;
-};
-
-template <typename Tinterface, typename TsyncTrait>
-struct LockType<const Tinterface, TsyncTrait> {
-	using Type = typename TsyncTrait::ReadLockType;
-};
-
-// The storage for a given type
-
-template <typename Tinterface, typename TsyncTrait>
-struct InstanceStorage {
-	static Tinterface *instance;
-	static typename TsyncTrait::MutexType mutex;
-};
-
-template <typename Tinterface, typename TsyncTrait>
-Tinterface *InstanceStorage<Tinterface, TsyncTrait>::instance = nullptr;
-
-template <typename Tinterface, typename TsyncTrait>
-typename TsyncTrait::MutexType InstanceStorage<Tinterface, TsyncTrait>::mutex;
-
-}  // namespace Util
-
-// Rr::Module::Mod<...>::* implementation
-
-template <typename Tinterface, typename TsyncTrait>
-class Mod : private Rr::Module::Util::InstanceStorage<typename std::decay<Tinterface>::type, TsyncTrait> {  // Use `::decay` to prevent from creating multiple instances for different types
+	using TableIterator = decltype (KeyType::WrapperTableType::asSharedLockWrap().getInstance().begin());
 public:
-	using Rr::Module::Util::InstanceStorage<typename std::decay<Tinterface>::type, TsyncTrait>::InstanceStorage;
-	using Rr::Module::Util::InstanceStorage<typename std::decay<Tinterface>::type, TsyncTrait>::mutex;
-	using Rr::Module::Util::InstanceStorage<typename std::decay<Tinterface>::type, TsyncTrait>::instance;
 
-	typename Rr::Module::Util::LockType<typename Util::DecayPreserveConst<Tinterface>::type, TsyncTrait>::Type lock;
+	///
+	/// @brief A wrapper over the iterator pertaining to the static table
+	/// storing callable instances. Using LockWrap<...> instances can be rather
+	/// cumbersome. This iterator encapsulates all the complexities that go
+	/// along. Not thread safe.
+	///
+	/// The principle is that when the underlying instance is referenced by`->`
+	/// or `*`, the lock gets acquired, which is expressed in the form of
+	/// allocating a new Rr::Util::LockWrap<...> instance. When the wrapped
+	/// iterator is increased, the lock gets released. So is it on object
+	/// destruction phase.
+	///
+	class Iterator {
+	private:
+		TableIterator it;
 
-public:
-	Mod();
-	bool isValid() const;
-	typename Rr::Module::Util::DecayPreserveConst<Tinterface>::type &getInstance();
-	static void setInstance(typename std::decay<Tinterface>::type &instance);
+		using LockWrapType = typename Rr::Trait::RemoveReference<decltype(it->asLockWrap())>::Type;
+		using InstanceType = typename Rr::Trait::RemoveReference<decltype(it->asLockWrap().getInstance())>::Type;
+
+		LockWrapType *callableLockWrap;
+
+	private:
+		void acquireLock();
+		void releaseLock();
+
+	public:
+		Iterator(TableIterator aIt): it{aIt}, callableLockWrap{nullptr}
+		{
+		}
+
+		~Iterator()
+		{
+			releaseLock();
+		}
+
+		Iterator(const Iterator &aIterator): it{aIterator.it}, callableLockWrap{nullptr}
+		{
+			const_cast<Iterator *>(&aIterator)->releaseLock();  // In case when a unique lock is used instead of read (shared) lock, so we are less likely to acquire the mutex twice
+		}
+
+		Iterator(Iterator &&aIterator): it{aIterator.it}, callableLockWrap{aIterator.callableLockWrap}
+		{
+			aIterator.callableLockWrap = nullptr;
+		}
+
+		Iterator &operator=(Iterator &&aIterator);
+		Iterator &operator++();
+		InstanceType &operator*();
+		InstanceType *operator->();
+
+		bool operator==(const Iterator &aIterator)
+		{
+			return it == aIterator.it;
+		}
+
+		bool operator!=(const Iterator &aIterator)
+		{
+			return it != aIterator.it;
+		}
+	};
+
+	///
+	/// @brief Iterable wrapper. \see getIterators()
+	///
+	///
+	struct Iterators {
+		Iterator itBegin;
+		Iterator itEnd;
+
+		Iterator &begin()
+		{
+			return itBegin;
+		}
+
+		Iterator &end()
+		{
+			return itEnd;
+		}
+	};
+
+	///
+	/// @brief A shortcut enabling us to get ourselves a wrapper suitable for
+	/// use in range-based `for` loop.
+	///
+	/// The reason why we make is so much compicated is that it must be certain
+	/// that "begin" and "end" iterators are acquired atomically. After that,
+	/// the list of callables will only grow w/o relocating the previously
+	/// stored instances into a new memory. Therefore, the iterators will remain
+	/// valid, and there is no need to keep the table locked.
+	///
+	/// @return Iterators A pair of iterators
+	///
+	static Iterators getIterators()
+	{
+		auto tableLockWrap = KeyType::WrapperTableType::asSharedLockWrap();
+		return Iterators{{tableLockWrap.getInstance().begin()}, {tableLockWrap.getInstance().end()}};
+	}
+
+	using KeyType::KeyType;
+
+	using KeyType::setEnabled;
+	using KeyType::notify;
 };
 
-}  // namespace Module
 }  // namespace Rr
 
-#include "Rr/Module.impl"
+#include "Module.impl"
 
-#endif // RR_SUBSCRIPTION_SUBSCRIPTION_HPP
+#endif // RR_MODULE_HPP
