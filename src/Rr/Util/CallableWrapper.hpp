@@ -9,7 +9,6 @@
 #define RR_UTIL_CALLABLEWRAPPER_HPP
 
 #include <Rr/Util/LockWrap.hpp>
-#include <Rr/Trait/LockType.hpp>
 #include <Rr/Trait/SyncType.hpp>
 #include <Rr/Util/Callable.hpp>
 #include <Rr/Trait/IntegralIn.hpp>
