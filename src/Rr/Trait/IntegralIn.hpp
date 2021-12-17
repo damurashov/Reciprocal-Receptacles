@@ -13,10 +13,6 @@
 namespace Rr {
 namespace Trait {
 
-namespace IntegralInImpl {
-constexpr int kMarkerInt = 0xffffffff;
-}  // namespace IntegralInImpl
-
 ///
 /// @brief Underlying engine for IntToPos<...>
 ///
