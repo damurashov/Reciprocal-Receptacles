@@ -179,6 +179,11 @@ struct GroupMutSyncTypesMock {
 	static constexpr auto kGroup = Igroup;
 
 	static constexpr auto kSyncTraitId = SyncTraitId::NoSync;
+
+	Rr::Util::GenericMock syncPrimitive;
+	using MutexType = Rr::Util::GenericMock;
+	using LockType = Rr::Util::GenericMock;
+	using SharedLockType = Rr::Util::GenericMock;
 };
 
 #if RRO_STL_USED
