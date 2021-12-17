@@ -57,18 +57,6 @@ struct IsGroupSync
 template <class Tsync>
 struct ToSyncTraitId;
 
-///
-/// @brief Obsolete
-///
-template <class Tsync>
-class SyncType {
-public:
-	static constexpr auto kIsGroup = IsGroupSync<Tsync>::value;
-	using Type = typename Rr::Trait::Conditional<kIsGroup, typename Rr::Util::GroupSync<Tsync, Tsync::kGroup>,
-		void>::Type;
-	static_assert(!Rr::Trait::IsSame<Type, void>::value, "");
-};
-
 // AsMutTrait
 
 ///
