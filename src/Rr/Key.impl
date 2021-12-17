@@ -8,7 +8,7 @@
 template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
 inline void Rr::Key<Tsignature, Ttopic, Tstorage, Tsync>::setEnabled(bool aEnabled)
 {
-	typename Rr::Trait::UniqueLockType<Tsync>::Type lock{this->getSyncPrimitive()};
+	typename Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>::SetEnabledLockType lock{this->getSyncPrimitive()};
 	Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>::setEnabled(aEnabled);
 }
 
