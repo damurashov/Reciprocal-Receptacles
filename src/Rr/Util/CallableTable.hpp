@@ -32,12 +32,6 @@ private:
 
 	using MutType = typename Rr::Trait::AsMutTrait<Tsync>::Type;
 
-	template <class ...>
-	struct Tlist;
-
-	template <Rr::Trait::SyncTraitId ...>
-	struct Ilist;
-
 public:
 	using UniqueLockType = typename MutType::UniqueLock;
 	using SharedLockType = typename Rr::Trait::Conditional</* if */kNonSfinaeSyncTraitId ==
