@@ -60,8 +60,9 @@ public:
 	///
 	/// @brief Lock wrap for iterating over table items()
 	///
-	static typename Rr::Util::LockWrap<typename Rr::Trait::SharedLockType<Tsync>::Type,
-		decltype(table)> asSharedLockWrap()
+	static typename Rr::Util::LockWrap<typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::SharedLockType,
+		decltype(table)>
+	asSharedLockWrap()
 	{
 		return {syncPrimitive, table};
 	}
@@ -69,10 +70,10 @@ public:
 	///
 	/// @brief Lock wrap for amending the table
 	///
-	static typename Rr::Util::LockWrap<typename Rr::Trait::SharedLockType<Tsync>::Type,
-		decltype(table)> asUniqueLockWrap()
+	static typename Rr::Util::LockWrap< typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::UniqueLockType,
+		decltype(table)>
+	asUniqueLockWrap()
 	{
-		// return static_cast<decltype(asUniqueLockWrap()) &&>(decltype(asUniqueLockWrap()){syncPrimitive, table});
 		return {syncPrimitive, table};
 	}
 };
