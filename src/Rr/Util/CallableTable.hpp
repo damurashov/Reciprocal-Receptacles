@@ -30,13 +30,14 @@ private:
 
 	static_assert(kIsMutexBased || kIsMock, "Non mutex-based sync types are not supported yet");
 
-	using MutType = typename Rr::Trait::AsMutTrait<Tsync>::Type;
+	using MutexTrait = typename Rr::Trait::AsMutTrait<Tsync>::Type;
 
 public:
-	using UniqueLockType = typename MutType::UniqueLock;
+	using SyncPrimitiveType = typename MutexTrait::Mut;
+	using UniqueLockType = typename MutexTrait::UniqueLock;
 	using SharedLockType = typename Rr::Trait::Conditional</* if */kNonSfinaeSyncTraitId ==
-		Rr::Trait::SyncTraitId::IndividualShared, typename MutType::SharedLock, /* else */ typename
-		MutType::UniqueLock>::Type;
+		Rr::Trait::SyncTraitId::IndividualShared, typename MutexTrait::SharedLock, /* else */ typename
+		MutexTrait::UniqueLock>::Type;
 };
 
 }  // namespace CallableTableImpl
@@ -49,7 +50,7 @@ class SyncedCallableWrapperStaticTable {
 	///
 	static Tcontainer<SyncedCallableWrapper<Tsignature, Tsync>> table;
 
-	static typename Tsync::Type syncPrimitive;
+	static typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveType syncPrimitive;
 public:
 	///
 	/// @brief Lock wrap for iterating over table items()
