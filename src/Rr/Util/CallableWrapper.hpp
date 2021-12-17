@@ -21,6 +21,18 @@ namespace Util {
 
 namespace CallableWrapperImpl {
 
+///
+/// @brief Based on whatever types a user has provided to us, we infer the the
+/// appropriate lock policy.
+///
+/// For example, when a trait is of "shared lock" family, no group locking is
+/// used, and the callable signature is const, the instance will be notified in
+/// a shared lock mode - that sort of things. As for group lock, no attemts to
+/// lock the instance on notification will be made, but the mutex will still be locked
+/// on `setEnabled()` call.
+///
+/// @tparam Tsignature @tparam Tsync
+///
 template <class Tsignature, class Tsync>
 class LockPolicy {
 private:
@@ -58,11 +70,11 @@ public:
 	///
 	/// @brief Lock for notifying callables.
 	///
-	/// Read-lock (shared lock) is used for locking const non-group function
-	/// signature callables. Mock locks are used for group locks. Unique lock
-	/// for any other type.
+	/// (1) Read-lock (shared lock) is used for locking const non-group function
+	/// signature callables. (2) Mock locks are used for group locks. (3) Unique
+	/// lock for any other type (this covers explicit mock locks as well).
 	///
-	using GetNotifyLockType = typename Rr::Trait::Conditional</* if */kIsShared && kIsConstFn,
+	using NotifyLockType = typename Rr::Trait::Conditional</* if */kIsShared && kIsConstFn,
 		typename MutTrait::SharedLock, typename Rr::Trait::Conditional</* elif */kIsGroup, Rr::Util::GenericMock,
 		/* else */typename MutTrait::UniqueLock>::Type>::Type;
 
@@ -75,6 +87,9 @@ public:
 
 }  // namespace CallableWrapperImpl
 
+///
+/// @brief Basic interface providing a wrapping over whatever callable is stored
+///
 template <class Tsignature>
 class ToggleableCallableWrapper {
 	bool &enabled;
@@ -104,6 +119,11 @@ public:
 	}
 };
 
+///
+/// @brief Extends Toggleable... with synchronization abilities. Provides lock
+/// strategy inference for its subtypes (i.e. Rr::Key and Rr::Module, as for
+/// 2021-12-17).
+///
 template <class Tsignature, class Tsync>
 class SyncedCallableWrapper :
 	public CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveHolderType,
@@ -111,8 +131,8 @@ class SyncedCallableWrapper :
 {
 
 protected:
-	using CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveHolderType::getSyncPrimitive;
 	using ToggleableCallableWrapper<Tsignature>::setEnabled;
+	using SetEnabledLockType = typename CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SetEnabledLockType;
 
 	SyncedCallableWrapper(bool aEnabled, Rr::Util::Callable<Tsignature> &aCallable):
 		CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveHolderType{},
@@ -126,10 +146,12 @@ public:
 	/// defined by its policy, and returns an instance of LockWrap. For lock
 	/// policy inference, \see "Trait/LockType.hpp"
 	///
-	typename Rr::Util::LockWrap<typename Rr::Trait::LockPolicy<Tsignature, Tsync>::Type,
-		ToggleableCallableWrapper<Tsignature>> asLockWrap()
+	typename Rr::Util::LockWrap<
+		typename CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::NotifyLockType,
+		ToggleableCallableWrapper<Tsignature>>
+	asLockWrap()
 	{
-		return {getSyncPrimitive(), *this};
+		return {this->getSyncPrimitive(), *this};
 	}
 };
 
