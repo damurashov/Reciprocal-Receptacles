@@ -14,7 +14,7 @@ namespace Util {
 struct GenericMock {
 
 	template <class ...Ts>
-	constexpr GenericMock()
+	constexpr GenericMock(Ts&&...)
 	{
 	}
 
