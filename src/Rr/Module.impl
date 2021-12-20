@@ -28,6 +28,7 @@ inline typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &
 Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator=(Iterator &&aIterator)
 {
 	it = Rr::Trait::move(aIterator.it);
+	itEnd = Rr::Trait::move(aIterator.itEnd);
 	callableLockWrap = aIterator.callableLockWrap;
 	aIterator.callableLockWrap = nullptr;
 
