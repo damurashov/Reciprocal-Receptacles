@@ -59,6 +59,7 @@ public:
 	public:
 		Iterator(TableIterator aIt, TableIterator aItEnd): it{aIt}, itEnd{aItEnd}, callableLockWrap{nullptr}
 		{
+			advanceNextEnabled();
 		}
 
 		~Iterator()

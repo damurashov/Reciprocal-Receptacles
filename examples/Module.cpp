@@ -36,7 +36,7 @@ struct Backend {
 		auto nSpecialClients = 0;
 
 		for (auto &callable : SpecialClientCounter::getIterators()) {
-			if (callable.isEnabled()) {
+			if (callable.isEnabled()) {  // Not necessary since 0.4.1
 				nSpecialClients += callable();
 			}
 		}
@@ -49,9 +49,7 @@ void poll()
 {
 	auto nClients = 0;
 	for (auto &callable : ClientCounter::getIterators()) {
-		if (callable.isEnabled()) {
-			nClients += callable();
-		}
+		nClients += callable();  // Please note that no `isEnabled()` checks were made
 	}
 
 	std::cout << "nClients: " << nClients << std::endl;

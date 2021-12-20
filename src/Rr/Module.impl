@@ -52,8 +52,8 @@ template<class Tsignature, class Ttopic, template<class...> class Tstorage, clas
 inline typename  Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &
 Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator++()
 {
-	releaseLock();
-	++it;
+	advanceNextEnabled();
+
 	return *this;
 }
 
