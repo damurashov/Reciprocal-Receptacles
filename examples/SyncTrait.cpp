@@ -31,7 +31,8 @@ struct DeviceInfo {
 	} status;
 };
 
-using DeviceModule = Module<DeviceInfo(), Topic::Default, Rr::DefaultGroupMutexTrait<1>>;
+using GroupMutexSyncTrait = Rr::DefaultGroupMutexTrait<1>;
+using DeviceModule = Module<DeviceInfo(), Topic::Default, GroupMutexSyncTrait>;
 // using DeviceModule = Module<DeviceInfo(), Topic::Default, Rr::MockGroupMutexTrait<1>>;
 
 struct Device {
@@ -70,6 +71,8 @@ struct SdCard : Device {
 void countActiveDevices()
 {
 	auto nEnabled = 0;
+
+	Rr::GroupMutexLock<GroupMutexSyncTrait> groupLock{};
 
 	for (auto &callable : DeviceModule::getIterators()) {
 		nEnabled += callable().status == DeviceInfo::Status::Active;

@@ -90,6 +90,16 @@ using DefaultGroupMutexTrait = MockGroupMutexTrait<Igroup>;
 
 #endif
 
+template <class TgroupMutTrait>
+struct GroupMutexLock: Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock {
+	using Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock::UniqueLock;
+	using Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock::operator=;
+
+	GroupMutexLock(): Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock{TgroupMutTrait::syncPrimitive}
+	{
+	}
+};
+
 }  // namespace Rr
 
 #endif // RR_SYNCTRAIT_HPP
