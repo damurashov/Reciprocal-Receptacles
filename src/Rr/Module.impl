@@ -22,6 +22,19 @@ inline void Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::releaseLo
 	}
 }
 
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline void Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::advanceNextEnabled()
+{
+	for (bool enabled = false; it != itEnd && !enabled;) {
+		if (isLock()) {
+			releaseLock();
+			++it;
+		} else {
+			acquireLock();
+			enabled = callableLockWrap->getInstance().isEnabled();
+		}
+	}
+}
 
 template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
 inline typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &

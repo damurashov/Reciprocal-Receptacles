@@ -54,6 +54,8 @@ public:
 
 		Iterator() = delete;
 
+		void advanceNextEnabled();
+
 	public:
 		Iterator(TableIterator aIt, TableIterator aItEnd): it{aIt}, itEnd{aItEnd}, callableLockWrap{nullptr}
 		{
