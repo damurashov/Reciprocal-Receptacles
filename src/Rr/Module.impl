@@ -22,12 +22,26 @@ inline void Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::releaseLo
 	}
 }
 
+template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
+inline void Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::advanceNextEnabled()
+{
+	for (bool enabled = false; it != itEnd && !enabled;) {
+		if (isLock()) {
+			releaseLock();
+			++it;
+		} else {
+			acquireLock();
+			enabled = callableLockWrap->getInstance().isEnabled();
+		}
+	}
+}
 
 template<class Tsignature, class Ttopic, template<class...> class Tstorage, class Tsync>
 inline typename Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &
 Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator=(Iterator &&aIterator)
 {
 	it = Rr::Trait::move(aIterator.it);
+	itEnd = Rr::Trait::move(aIterator.itEnd);
 	callableLockWrap = aIterator.callableLockWrap;
 	aIterator.callableLockWrap = nullptr;
 
@@ -38,8 +52,8 @@ template<class Tsignature, class Ttopic, template<class...> class Tstorage, clas
 inline typename  Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator &
 Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator++()
 {
-	releaseLock();
-	++it;
+	advanceNextEnabled();
+
 	return *this;
 }
 
@@ -58,6 +72,3 @@ Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator->()
 	acquireLock();
 	return &callableLockWrap->getInstance();
 }
-
-
-

@@ -36,6 +36,7 @@ public:
 	class Iterator {
 	private:
 		TableIterator it;
+		TableIterator itEnd;
 
 		using LockWrapType = typename Rr::Trait::RemoveReference<decltype(it->asLockWrap())>::Type;
 		using InstanceType = typename Rr::Trait::RemoveReference<decltype(it->asLockWrap().getInstance())>::Type;
@@ -46,9 +47,19 @@ public:
 		void acquireLock();
 		void releaseLock();
 
-	public:
-		Iterator(TableIterator aIt): it{aIt}, callableLockWrap{nullptr}
+		bool isLock()
 		{
+			return callableLockWrap != nullptr;
+		}
+
+		Iterator() = delete;
+
+		void advanceNextEnabled();
+
+	public:
+		Iterator(TableIterator aIt, TableIterator aItEnd): it{aIt}, itEnd{aItEnd}, callableLockWrap{nullptr}
+		{
+			advanceNextEnabled();
 		}
 
 		~Iterator()
@@ -56,12 +67,12 @@ public:
 			releaseLock();
 		}
 
-		Iterator(const Iterator &aIterator): it{aIterator.it}, callableLockWrap{nullptr}
+		Iterator(const Iterator &aIterator): it{aIterator.it}, itEnd{aIterator.itEnd}, callableLockWrap{nullptr}
 		{
-			const_cast<Iterator *>(&aIterator)->releaseLock();  // In case when a unique lock is used instead of read (shared) lock, so we are less likely to acquire the mutex twice
+			const_cast<Iterator *>(&aIterator)->releaseLock();  // In case when a unique lock is used instead of read (shared) lock, so we won't acquire the same mutex twice
 		}
 
-		Iterator(Iterator &&aIterator): it{aIterator.it}, callableLockWrap{aIterator.callableLockWrap}
+		Iterator(Iterator &&aIterator): it{Rr::Trait::move(aIterator.it)}, itEnd{Rr::Trait::move(aIterator.itEnd)}, callableLockWrap{aIterator.callableLockWrap}
 		{
 			aIterator.callableLockWrap = nullptr;
 		}
@@ -116,7 +127,8 @@ public:
 	static Iterators getIterators()
 	{
 		auto tableLockWrap = KeyType::WrapperTableType::asSharedLockWrap();
-		return Iterators{{tableLockWrap.getInstance().begin()}, {tableLockWrap.getInstance().end()}};
+		return Iterators{{tableLockWrap.getInstance().begin(), tableLockWrap.getInstance().end()},
+			{tableLockWrap.getInstance().end(), tableLockWrap.getInstance().end()}};
 	}
 
 	using KeyType::KeyType;
