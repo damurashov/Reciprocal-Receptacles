@@ -58,6 +58,3 @@ Rr::Module<Tsignature, Ttopic, Tstorage, Tsync>::Iterator::operator->()
 	acquireLock();
 	return &callableLockWrap->getInstance();
 }
-
-
-

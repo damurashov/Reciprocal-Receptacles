@@ -46,6 +46,13 @@ public:
 		void acquireLock();
 		void releaseLock();
 
+		bool isLock()
+		{
+			return callableLockWrap != nullptr;
+		}
+
+		Iterator() = delete;
+
 	public:
 		Iterator(TableIterator aIt): it{aIt}, callableLockWrap{nullptr}
 		{
