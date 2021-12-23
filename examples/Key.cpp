@@ -57,4 +57,5 @@ int main(void)
 	KeyCameraConnected::notify(777);
 
 	NoLockKey<void(int)> nlk{call};
+	NoLockKey<void(int)>::notify(422);
 }
