@@ -58,7 +58,7 @@ Tm GroupMutexTrait<Tm, Tunq, Tshd, Isti, Igroup>::syncPrimitive;
 
 // Mock mutex-based sync traits
 
-using MockMutexTrait = SyncTraitImpl::MutexTrait<Rr::Util::GenericMock, Rr::Util::GenericMock, Rr::Util::GenericMock, SyncTraitId::NoSync>;
+using MockMutexTrait = SyncTraitImpl::MutexTrait<Rr::Util::GenericMock, Rr::Util::GenericMock, Rr::Util::GenericMock, SyncTraitId::IndividualUnique>;
 
 template <unsigned Igroup = 0>
 using MockGroupMutexTrait = typename SyncTraitImpl::GroupMutexTrait<Rr::Util::GenericMock, Rr::Util::GenericMock, Rr::Util::GenericMock, SyncTraitId::GroupUnique, Igroup>;
