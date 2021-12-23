@@ -8,6 +8,7 @@
 #include <iostream>
 #include <list>
 #include <Rr/Key.hpp>
+#include <Rr/SyncTrait.hpp>
 #include <Rr/Trait/SyncType.hpp>
 
 template <class Tsignature, class Ttopic>
@@ -39,6 +40,9 @@ struct St {
 	}
 };
 
+template <class Tsignature>
+using NoLockKey = Rr::Key<Tsignature, void, std::list, Rr::MockMutexTrait>;
+
 int main(void)
 {
 	St st;
@@ -51,4 +55,6 @@ int main(void)
 	KeyCameraConnected::notify(42);
 	key4.setEnabled(false);
 	KeyCameraConnected::notify(777);
+
+	NoLockKey<void(int)> nlk{call};
 }
