@@ -44,7 +44,7 @@ private:
 		kNonSfinaeSyncTraitId, Rr::Trait::SyncTraitId::IndividualShared, Rr::Trait::SyncTraitId::IndividualUnique,
 		Rr::Trait::SyncTraitId::GroupUnique>::value;
 
-	static_assert(kIsMutexBased, "Non mutex-based sync strategies are not supported yet");
+	static_assert(kIsMutexBased || kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::NoSync, "Non mutex-based sync strategies are not supported yet");
 
 	using MutTrait = typename Rr::Trait::AsMutTrait<Tsync>::Type;  // Unified trait format storing user types
 
