@@ -65,4 +65,6 @@ int main(void)
 	poll();  // 3
 	scm2.setEnabled(false);
 	poll();  // 1
+	scm1.setEnabled(false);
+	poll(); // ...
 }
