@@ -7,7 +7,7 @@
 
 
 // Use static_cast for method pointers conversion
-// Requires inheritance from Rr::RrObject
+// Requires inheritance from Rr::Object
 #define RRO_STATIC_CAST_FN_CONVERSION 1
 
 #include <iostream>
@@ -16,7 +16,7 @@
 using namespace std;
 
 
-struct Base : Rr::RrObject {
+struct Base : Rr::Object {
 	virtual void call(int a)
 	{
 		std::cout << "Base::call: " << a << endl;
@@ -31,7 +31,7 @@ struct Derived : Base {
 	}
 };
 
-struct A : Rr::RrObject {
+struct A : Rr::Object {
 	void callMe(int a)
 	{
 		std::cout << "A::callMe: " << a << endl;

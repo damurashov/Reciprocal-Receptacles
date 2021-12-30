@@ -8,117 +8,95 @@
 #if !defined(RR_UTIL_CALLABLE_HPP)
 #define RR_UTIL_CALLABLE_HPP
 
-#include <Rr/Trait/Fn.hpp>
+#include <Rr/Util/DefaultConfig.hpp>
 #include <Rr/Trait/Max.hpp>
+#include <Rr/Trait/MemberDecay.hpp>
+#include <Rr/Trait/RemoveReference.hpp>
 
 namespace Rr {
 namespace Util {
 
 namespace CallableImpl {
 
-///
-/// @brief Polymorphic wrapper obfuscating underlying representation which may be either
-///        static function pointer encapsulation, or that of member pointer
-///
-/// @tparam Tret Return type
-/// @tparam Trr `RrObject` with cv-qualifiers
-/// @tparam TrrCb `Tret(RrObject::*)(Ta...) with cv- and ref-qualifiers
-/// @tparam Tsignature `void(int)`, `void(char, std::string) const &&`, etc.
-/// @tparam Ta variadic parameters to the underlying callable
-///
-template <class Tret, class Trr, class TrrCb, class Tsignature, class ...Ta>
-class CallableImpl {
-private:
+template <class...>
+struct CallWrap;
 
-// See VariantCallable::v
-// To make sure that Fn<...>::Callable will fit. This is because
-// virtual member callbacks may differ in sizes from non-virtual ones.
-// static_cast guarantees that everything is smooth, which is not the
-// case with reinterpret_cast'ing of member pointers which is used
-// when RRO_STATIC_CAST_FN_CONVERSION = 0
-#if !RRO_STATIC_CAST_FN_CONVERSION
-	struct Virtual {
-		virtual ~Virtual() = default;
+template <class...>
+struct CallMember;
+
+template <class...>
+struct CallStatic;
+
+template <class...>
+struct CallVariant;
+
+template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
+struct CallWrap<Tsignature, TtArglist<Targs...>> {
+	virtual typename Trait::MemberDecay<Tsignature>::ReturnType
+	operator()(Targs ...) = 0;
+	virtual ~CallWrap() = default;
+};
+
+template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
+struct CallStatic<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArglist<Targs...>> {
+	typename Trait::MemberDecay<Tsignature>::CallbackType staticFunctionCallback;
+
+	typename Trait::MemberDecay<Tsignature>::ReturnType
+	operator()(Targs ...aArgs) override
+	{
+		return staticFunctionCallback(aArgs...);
+	}
+
+	virtual ~CallStatic() = default;
+};
+
+template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
+struct CallMember<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArglist<Targs...>> {
+	typename Trait::MemberDecay<Tsignature, Rr::Object>::CallbackType memberFunctionCallback;
+	typename Trait::MemberDecay<Tsignature, Rr::Object>::InstanceType *instance;
+
+	typename Trait::MemberDecay<Tsignature>::ReturnType
+	operator()(Targs ...aArgs) override
+	{
+		return (instance->*memberFunctionCallback)(aArgs...);
+	}
+
+	virtual ~CallMember() = default;
+};
+
+template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
+struct CallVariant<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArglist<Targs...>> {
+	union Variant {
+		CallMember<Tsignature, TtArglist<Targs...>> callMember;
+		CallStatic<Tsignature, TtArglist<Targs...>> callStatic;
 	};
-#endif
+	unsigned char variant[sizeof(Variant)];
 
-protected:
-	union VariantCallable {
-
-		typename Rr::Trait::Fn<Trr, Tsignature> member;  // Callable encapsulating instance pointer and method pointer
-		typename Rr::Trait::Fn<Tsignature> nonmember;  // Callable encapsulating static function pointer
-
-#if !RRO_STATIC_CAST_FN_CONVERSION
-		char virtAlign[sizeof(typename Trait::Fn<const Virtual, const Tsignature>::CallbackType) + sizeof(Virtual *)];
-#endif
-		VariantCallable()
-		{
-		}
-	} callable;
-	TrrCb callback;
-
-public:
-	Tret operator()(Ta ...aArgs)
+	typename Trait::MemberDecay<Tsignature>::ReturnType
+	operator()(Targs ...aArgs) override
 	{
-		return (static_cast<Trr *>(&callable.member)->*callback)(aArgs...);
+		return (*reinterpret_cast<CallWrap<Tsignature, TtArglist<Targs...>> *>(variant))(aArgs...);
 	}
 
-	Tret operator()(Ta ...aArgs) const
+	CallVariant(typename Trait::MemberDecay<Tsignature>::CallbackType aCallback)
 	{
-		return (static_cast<Trr *>(&callable.member)->*callback)(aArgs...);
+		auto callStatic = new (variant) CallStatic<Tsignature, TtArglist<Targs...>>();
+		callStatic->staticFunctionCallback = aCallback;
 	}
 
-	CallableImpl(Tret (*aCallback)(Ta...))
+	template<class Tinstance>
+	CallVariant(typename Trait::MemberDecay<Tsignature, Trait::Stript<Tinstance>>::CallbackType aCallback, Tinstance aInstance)
 	{
-		new (&callable.nonmember) typename Rr::Trait::Fn<Tsignature>{aCallback};
-		// CallableType has RrObject as its base, hence use of static_cast
-		callback = static_cast<decltype(callback)>(&Rr::Trait::Fn<Tsignature>::operator());
-	}
-
-	template <class Tc, class Ti>
-	CallableImpl(Tc aCallback, Ti *aInstance)
-	{
-		new (&callable.member) typename Rr::Trait::Fn<Trr, Tsignature>{aCallback, aInstance};
-		callback = static_cast<decltype(callback)>(&Rr::Trait::Fn<Trr, Tsignature>::operator());
+		auto callMember = new (variant) CallMember<Tsignature, TtArglist<Targs...>>();
+		callMember->memberFunctionCallback = rr_fn_cast<typename Trait::MemberDecay<Tsignature, Rr::Object>::CallbackType>(aCallback);
+		callMember->instance = rr_fn_cast<typename Trait::MemberDecay<Tsignature, Rr::Object>::InstanceType *>(aInstance);
 	}
 };
 
 }  // namespace CallableImpl
 
-// non-const Callable
-
-template<class Tsignature>
-class Callable;
-
-template <class Tret, class ...Ta>
-class Callable<Tret(Ta...)> :
-	public CallableImpl::CallableImpl<Tret, RrObject, Tret(RrObject::*)(Ta...), Tret(Ta...), Ta...>
-{
-public:
-	using BaseType = typename CallableImpl::CallableImpl<Tret, RrObject, Tret(RrObject::*)(Ta...), Tret(Ta...), Ta...>;
-	using BaseType::BaseType;
-	using BaseType::operator();
-
-	// To facilitate template arg. deduction
-	template <class Ti>
-	Callable(Tret(Ti::*aCallback)(Ta...), Ti *aInstance): BaseType(aCallback, aInstance) {}
-};
-
-// const Callable
-
-template <class Tret, class ...Ta>
-class Callable<Tret(Ta...)const> :
-	public CallableImpl::CallableImpl<Tret, const RrObject, Tret(RrObject::*)(Ta...)const, Tret(Ta...)const, Ta...>
-{
-public:
-	using BaseType = typename CallableImpl::CallableImpl<Tret, const RrObject, Tret(RrObject::*)(Ta...)const, Tret(Ta...)const, Ta...>;
-	using BaseType::BaseType;
-	using BaseType::operator();
-
-	// To facilitate template arg. deduction
-	template <class Ti>
-	Callable(Tret(Ti::*aCallback)(Ta...)const, const Ti *aInstance): BaseType(aCallback, aInstance) {}
-};
+template <class Tsignature>
+using Callable = typename CallableImpl::CallVariant<Tsignature, typename Trait::MemberDecay<Tsignature>::ArgsList>;
 
 }  // namespace Util
 }  // namespace Rr
