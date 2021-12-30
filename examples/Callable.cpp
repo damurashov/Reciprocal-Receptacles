@@ -47,6 +47,10 @@ void callMe(int a)
 	std::cout << "callMe: " << a << endl;
 }
 
+void newCallable()
+{
+}
+
 int main(void)
 {
 	{

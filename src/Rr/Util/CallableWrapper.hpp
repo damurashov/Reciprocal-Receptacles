@@ -37,7 +37,7 @@ class LockPolicy {
 private:
 	static constexpr auto kSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::value;
 	static constexpr auto kNonSfinaeSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::kNonSfinaeValue;
-	static constexpr auto kIsConstFn = Rr::Trait::Fn<Tsignature>::kIsConst;
+	static constexpr auto kIsConstFn = Rr::Trait::MemberDecay<Tsignature>::kIsConst;
 	static constexpr auto kIsGroup = (kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::GroupUnique);
 	static constexpr auto kIsShared = (kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::IndividualShared);
 	static constexpr auto kIsMutexBased = Rr::Trait::IntegralIn<decltype(kNonSfinaeSyncTraitId),
@@ -111,7 +111,7 @@ public:
 	}
 
 	template <class ...Ta>
-	typename Rr::Trait::Fn<Tsignature>::ReturnType operator()(Ta &&...aArgs)
+	typename Rr::Trait::MemberDecay<Tsignature>::ReturnType operator()(Ta &&...aArgs)
 	{
 		rr_assert(enabled);
 		return callable(static_cast<Ta &&>(aArgs)...);

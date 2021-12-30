@@ -81,5 +81,15 @@ inline void debug(Ta...)
 }  // namespace Rr
 #endif
 
+namespace Rr {
+struct Object {};
+}  // Rr
+
+#if RRO_STATIC_CAST_FN_CONVERSION
+# define rr_fn_cast static_cast
+#else
+# define rr_fn_cast reinterpret_cast
+#endif
+
 
 #endif // RR_UTIL_DEFAULTCONFIG_HPP
