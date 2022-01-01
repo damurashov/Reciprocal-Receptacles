@@ -8,7 +8,7 @@
 #if !defined(RR_UTIL_CALLABLEWRAPPER_HPP)
 #define RR_UTIL_CALLABLEWRAPPER_HPP
 
-#include <Rr/Util/LockWrap.hpp>
+#include <Rr/Sync/LockWrap.hpp>
 #include <Rr/Sync/SyncType.hpp>
 #include <Rr/Util/Callable.hpp>
 #include <Rr/Trait/IntegralIn.hpp>
