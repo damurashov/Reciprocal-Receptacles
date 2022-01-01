@@ -7,7 +7,7 @@
 #if !defined(RR_UTIL_SYNC_HPP_)
 #define RR_UTIL_SYNC_HPP_
 
-#include <Rr/Util/SyncMock.hpp>
+#include <Rr/Sync/SyncMock.hpp>
 #include <Rr/Trait/RemoveReference.hpp>
 
 namespace Rr {
