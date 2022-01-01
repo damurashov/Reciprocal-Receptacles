@@ -62,9 +62,9 @@ public:
 	///
 	using SyncPrimitiveHolderType = typename Rr::Trait::Switch<Rr::Trait::SyncTraitId, kNonSfinaeSyncTraitId,
 		Ilist</* case 1 */Rr::Trait::SyncTraitId::GroupUnique, /* case 2 */Rr::Trait::SyncTraitId::NoSync>,
-		Tlist</* then 1 */typename Rr::Util::StaticSyncPrimitiveHolder<Tsync>,
+		Tlist</* then 1 */typename Rr::Sync::StaticSyncPrimitiveHolder<Tsync>,
 		/* then 2 */typename Rr::Util::GenericMock,
-		/* then default */typename Rr::Util::HeapSyncPrimitiveHolder<typename MutTrait::Mut>>>::Type;
+		/* then default */typename Rr::Sync::HeapSyncPrimitiveHolder<typename MutTrait::Mut>>>::Type;
 
 	///
 	/// @brief Lock for notifying callables.
