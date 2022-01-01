@@ -19,7 +19,7 @@
 #define RR_SYNCTRAIT_HPP
 
 #include <Rr/Util/GenericMock.hpp>
-#include <Rr/Trait/SyncType.hpp>
+#include <Rr/Sync/SyncType.hpp>
 
 #if RRO_STL_USED
 # if __cplusplus > 201402L

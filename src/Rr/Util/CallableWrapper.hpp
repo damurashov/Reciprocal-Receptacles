@@ -9,7 +9,7 @@
 #define RR_UTIL_CALLABLEWRAPPER_HPP
 
 #include <Rr/Util/LockWrap.hpp>
-#include <Rr/Trait/SyncType.hpp>
+#include <Rr/Sync/SyncType.hpp>
 #include <Rr/Util/Callable.hpp>
 #include <Rr/Trait/IntegralIn.hpp>
 #include <Rr/Util/GenericMock.hpp>
