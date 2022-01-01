@@ -9,7 +9,7 @@
 #include <list>
 #include <Rr/Key.hpp>
 #include <Rr/SyncTrait.hpp>
-#include <Rr/Trait/SyncType.hpp>
+#include <Rr/Sync/SyncType.hpp>
 
 template <class Tsignature, class Ttopic>
 using Key = Rr::Key<Tsignature, Ttopic, std::list, Rr::Trait::GroupMutSyncTypes<0>>;

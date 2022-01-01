@@ -8,7 +8,7 @@
 // #define RRO_STATIC_CAST_FN_CONVERSION 1
 #include <iostream>
 #include <Rr/Util/CallableTable.hpp>
-#include <Rr/Trait/SyncType.hpp>
+#include <Rr/Sync/SyncType.hpp>
 #include <list>
 
 using namespace std;

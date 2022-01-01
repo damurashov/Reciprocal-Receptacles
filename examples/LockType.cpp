@@ -5,7 +5,7 @@
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
-#include <Rr/Trait/SyncType.hpp>
+#include <Rr/Sync/SyncType.hpp>
 #include <type_traits>
 #include <iostream>
 
