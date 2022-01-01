@@ -9,7 +9,7 @@
 #define RR_TRAIT_SYNC_HPP
 
 #include <Rr/Util/DefaultConfig.hpp>
-#include <Rr/Util/Sync.hpp>
+#include <Rr/Sync/Sync.hpp>
 #include <Rr/Trait/Conditional.hpp>
 #include <Rr/Trait/IsSame.hpp>
 #include <Rr/Trait/IntegralToType.hpp>

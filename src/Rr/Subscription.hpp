@@ -1,7 +1,7 @@
 #ifndef RR_SUBSCRIPTION_SUBSCRIPTION_HPP
 #define RR_SUBSCRIPTION_SUBSCRIPTION_HPP
 
-#include <Rr/Util/Sync.hpp>
+#include <Rr/Sync/Sync.hpp>
 #include <Rr/Util/DefaultConfig.hpp>
 
 // TODO: Offer an alternative to std::list. For example, ETL library https://github.com/ETLCPP/etl
