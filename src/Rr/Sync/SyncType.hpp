@@ -24,7 +24,7 @@
 #endif
 
 namespace Rr {
-namespace Trait {
+namespace Sync {
 
 ///
 /// @brief A kind of a synchronization primitive that is being used
@@ -238,7 +238,7 @@ template <unsigned Igroup>
 using GroupMutSyncTypes = GroupMutSyncTypesMock<Igroup>;
 #endif
 
-}  // namespace Trait
+}  // namespace Sync
 }  // namespace Rr
 
 #endif // RR_TRAIT_SYNC_HPP
