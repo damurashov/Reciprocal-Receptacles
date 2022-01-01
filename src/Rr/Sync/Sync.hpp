@@ -11,7 +11,7 @@
 #include <Rr/Trait/RemoveReference.hpp>
 
 namespace Rr {
-namespace Util {
+namespace Sync {
 
 template <class Tprimitive, class TholderType = Tprimitive *>
 class SyncPrimitiveHolder {
@@ -48,7 +48,7 @@ protected:
 	using SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type>::getSyncPrimitive;
 };
 
-}  // namespace Util
+}  // namespace Sync
 }  // namespace Rr
 
 #endif // RR_UTIL_SYNC_HPP_
