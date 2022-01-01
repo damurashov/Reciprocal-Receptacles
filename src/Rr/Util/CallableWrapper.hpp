@@ -145,7 +145,7 @@ public:
 	/// defined by its policy, and returns an instance of LockWrap. For lock
 	/// policy inference, \see "Trait/LockType.hpp"
 	///
-	typename Rr::Util::LockWrap<
+	typename Rr::Sync::LockWrap<
 		typename CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::NotifyLockType,
 		ToggleableCallableWrapper<Tsignature>>
 	asLockWrap()

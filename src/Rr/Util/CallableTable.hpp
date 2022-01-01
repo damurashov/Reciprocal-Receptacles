@@ -55,7 +55,7 @@ public:
 	///
 	/// @brief Lock wrap for iterating over table items()
 	///
-	static typename Rr::Util::LockWrap<typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::SharedLockType,
+	static typename Rr::Sync::LockWrap<typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::SharedLockType,
 		decltype(table)>
 	asSharedLockWrap()
 	{
@@ -65,7 +65,7 @@ public:
 	///
 	/// @brief Lock wrap for amending the table
 	///
-	static typename Rr::Util::LockWrap< typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::UniqueLockType,
+	static typename Rr::Sync::LockWrap< typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::UniqueLockType,
 		decltype(table)>
 	asUniqueLockWrap()
 	{

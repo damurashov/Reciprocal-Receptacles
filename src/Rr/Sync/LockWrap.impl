@@ -6,7 +6,7 @@
 //
 
 template<class Tlock, class Tinstance>
-inline Rr::Util::LockWrap<Tlock, Tinstance>::LockWrap(Rr::Util::LockWrap<Tlock, Tinstance> &&aRhs): lock{aRhs.lock},
+inline Rr::Sync::LockWrap<Tlock, Tinstance>::LockWrap(Rr::Sync::LockWrap<Tlock, Tinstance> &&aRhs): lock{aRhs.lock},
 	instance{aRhs.instance}
 {
 	aRhs.lock = nullptr;
@@ -15,8 +15,8 @@ inline Rr::Util::LockWrap<Tlock, Tinstance>::LockWrap(Rr::Util::LockWrap<Tlock, 
 
 
 template<class Tlock, class Tinstance>
-inline Rr::Util::LockWrap<Tlock, Tinstance> &
-Rr::Util::LockWrap<Tlock, Tinstance>::operator=(Rr::Util::LockWrap<Tlock, Tinstance> &&aRhs)
+inline Rr::Sync::LockWrap<Tlock, Tinstance> &
+Rr::Sync::LockWrap<Tlock, Tinstance>::operator=(Rr::Sync::LockWrap<Tlock, Tinstance> &&aRhs)
 {
 	if (lock) {
 		delete lock;
@@ -29,7 +29,7 @@ Rr::Util::LockWrap<Tlock, Tinstance>::operator=(Rr::Util::LockWrap<Tlock, Tinsta
 
 
 template<class Tlock, class Tinstance>
-inline Rr::Util::LockWrap<Tlock, Tinstance>::~LockWrap()
+inline Rr::Sync::LockWrap<Tlock, Tinstance>::~LockWrap()
 {
 	if (lock) {
 		delete lock;
