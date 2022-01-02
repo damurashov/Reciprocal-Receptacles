@@ -13,6 +13,9 @@
 #include <Rr/Trait/Switch.hpp>
 #include <Rr/Util/GenericMock.hpp>
 
+#if !defined(RR_SYNC_POLICY_CALL_HPP)
+#define RR_SYNC_POLICY_CALL_HPP
+
 namespace Rr {
 namespace Sync {
 namespace Policy {
@@ -77,3 +80,5 @@ public:
 }  // namespace Policy
 }  // namespace Sync
 }  // namespace Rr
+
+#endif // RR_SYNC_POLICY_CALL_HPP
