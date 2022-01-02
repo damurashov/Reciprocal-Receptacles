@@ -60,11 +60,11 @@ public:
 	/// is used, (3) MutTrait::Mut infferred from user-provided types in other
 	/// cases
 	///
-	using SyncPrimitiveHolderType = typename Rr::Trait::Switch<Rr::Sync::SyncTraitId, kNonSfinaeSyncTraitId,
+	using PrimitiveHolderType = typename Rr::Trait::Switch<Rr::Sync::SyncTraitId, kNonSfinaeSyncTraitId,
 		Ilist</* case 1 */Rr::Sync::SyncTraitId::GroupUnique, /* case 2 */Rr::Sync::SyncTraitId::NoSync>,
-		Tlist</* then 1 */typename Rr::Sync::StaticSyncPrimitiveHolder<Tsync>,
+		Tlist</* then 1 */typename Rr::Sync::StaticPrimitiveHolder<Tsync>,
 		/* then 2 */typename Rr::Util::GenericMock,
-		/* then default */typename Rr::Sync::HeapSyncPrimitiveHolder<typename MutTrait::Mut>>>::Type;
+		/* then default */typename Rr::Sync::HeapPrimitiveHolder<typename MutTrait::Mut>>>::Type;
 
 	///
 	/// @brief Lock for notifying callables.
@@ -125,7 +125,7 @@ public:
 ///
 template <class Tsignature, class Tsync>
 class SyncedCallableWrapper :
-	public CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveHolderType,
+	public CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::PrimitiveHolderType,
 	protected ToggleableCallableWrapper<Tsignature>
 {
 
@@ -134,7 +134,7 @@ protected:
 	using SetEnabledLockType = typename CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SetEnabledLockType;
 
 	SyncedCallableWrapper(bool aEnabled, Rr::Util::Callable<Tsignature> &aCallable):
-		CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveHolderType{},
+		CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::PrimitiveHolderType{},
 		ToggleableCallableWrapper<Tsignature>{*(new bool(aEnabled)), aCallable}  // Won't leak, because it is statically stored in a growing-only container, but WARNING: TODO: error-prone solution
 	{
 	}

@@ -14,7 +14,7 @@ namespace Rr {
 namespace Sync {
 
 template <class Tprimitive, class TholderType = Tprimitive *>
-class SyncPrimitiveHolder {
+class PrimitiveHolder {
 	TholderType syncPrimitive;
 
 protected:
@@ -24,28 +24,28 @@ protected:
 	}
 
 public:
-	SyncPrimitiveHolder(Tprimitive &aPrimitive): syncPrimitive{&aPrimitive}
+	PrimitiveHolder(Tprimitive &aPrimitive): syncPrimitive{&aPrimitive}
 	{
 	}
 };
 
 template <class TprimitiveType>
-struct HeapSyncPrimitiveHolder : SyncPrimitiveHolder<TprimitiveType>{
-	HeapSyncPrimitiveHolder(): SyncPrimitiveHolder<TprimitiveType>{*(new TprimitiveType())}
+struct HeapPrimitiveHolder : PrimitiveHolder<TprimitiveType>{
+	HeapPrimitiveHolder(): PrimitiveHolder<TprimitiveType>{*(new TprimitiveType())}
 	{
 	}
 protected:
-	using SyncPrimitiveHolder<TprimitiveType>::getSyncPrimitive;
+	using PrimitiveHolder<TprimitiveType>::getSyncPrimitive;
 };
 
 template <class Tsync>
-struct StaticSyncPrimitiveHolder : SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type> {
-	StaticSyncPrimitiveHolder(): SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type>{Tsync::syncPrimitive}
+struct StaticPrimitiveHolder : PrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type> {
+	StaticPrimitiveHolder(): PrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type>{Tsync::syncPrimitive}
 	{
 	}
 
 protected:
-	using SyncPrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type>::getSyncPrimitive;
+	using PrimitiveHolder<typename Rr::Trait::RemoveReference<decltype(Tsync::syncPrimitive)>::Type>::getSyncPrimitive;
 };
 
 }  // namespace Sync
