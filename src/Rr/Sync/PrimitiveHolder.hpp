@@ -1,5 +1,5 @@
 //
-// Sync.hpp
+// PrimitiveHolder.hpp
 //
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
