@@ -19,7 +19,7 @@
 #define RR_SYNCTRAIT_HPP
 
 #include <Rr/Util/GenericMock.hpp>
-#include <Rr/Trait/SyncType.hpp>
+#include <Rr/Sync/SyncType.hpp>
 
 #if RRO_STL_USED
 # if __cplusplus > 201402L
@@ -31,7 +31,7 @@
 
 namespace Rr {
 
-using Rr::Trait::SyncTraitId;
+using Rr::Sync::SyncTraitId;
 
 namespace SyncTraitImpl {
 
@@ -91,11 +91,11 @@ using DefaultGroupMutexTrait = MockGroupMutexTrait<Igroup>;
 #endif
 
 template <class TgroupMutTrait>
-struct GroupMutexLock: Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock {
-	using Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock::UniqueLock;
-	using Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock::operator=;
+struct GroupMutexLock: Rr::Sync::AsMutTrait<TgroupMutTrait>::Type::UniqueLock {
+	using Rr::Sync::AsMutTrait<TgroupMutTrait>::Type::UniqueLock::UniqueLock;
+	using Rr::Sync::AsMutTrait<TgroupMutTrait>::Type::UniqueLock::operator=;
 
-	GroupMutexLock(): Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock{TgroupMutTrait::syncPrimitive}
+	GroupMutexLock(): Rr::Sync::AsMutTrait<TgroupMutTrait>::Type::UniqueLock{TgroupMutTrait::syncPrimitive}
 	{
 	}
 };

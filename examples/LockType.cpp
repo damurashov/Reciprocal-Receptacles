@@ -5,7 +5,7 @@
 //  Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
-#include <Rr/Trait/SyncType.hpp>
+#include <Rr/Sync/SyncType.hpp>
 #include <type_traits>
 #include <iostream>
 
@@ -25,7 +25,7 @@ struct IndUnique {
 };
 
 struct NoSync {
-	static constexpr auto kSyncTraitId = Rr::Trait::SyncTraitId::NoSync;
+	static constexpr auto kSyncTraitId = Rr::Sync::SyncTraitId::NoSync;
 };
 
 struct IndShared {
@@ -41,12 +41,12 @@ struct GroupUnique {
 
 void asSyncTrait()
 {
-	std::cout << (int)Rr::Trait::ToSyncTraitId<NoSync>::value << endl;
-	std::cout << (int)Rr::Trait::ToSyncTraitId<IndUnique>::value << endl;
-	std::cout << (int)Rr::Trait::ToSyncTraitId<IndShared>::value << endl;
-	std::cout << (int)Rr::Trait::ToSyncTraitId<GroupUnique>::value << endl;
+	std::cout << (int)Rr::Sync::ToSyncTraitId<NoSync>::value << endl;
+	std::cout << (int)Rr::Sync::ToSyncTraitId<IndUnique>::value << endl;
+	std::cout << (int)Rr::Sync::ToSyncTraitId<IndShared>::value << endl;
+	std::cout << (int)Rr::Sync::ToSyncTraitId<GroupUnique>::value << endl;
 
-	// using MutTrait = Rr::Trait::AsMutTrait<IndShared>;
+	// using MutTrait = Rr::Sync::AsMutTrait<IndShared>;
 	// MutTrait mt {};
 }
 

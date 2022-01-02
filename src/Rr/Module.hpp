@@ -29,7 +29,7 @@ public:
 	///
 	/// The principle is that when the underlying instance is referenced by`->`
 	/// or `*`, the lock gets acquired, which is expressed in the form of
-	/// allocating a new Rr::Util::LockWrap<...> instance. When the wrapped
+	/// allocating a new Rr::Sync::LockWrap<...> instance. When the wrapped
 	/// iterator is increased, the lock gets released. So is it on object
 	/// destruction phase.
 	///

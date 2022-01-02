@@ -21,22 +21,22 @@ namespace CallableTableImpl {
 template <class Tsignature, class Tsync>
 class LockPolicy {
 private:
-	static constexpr auto kSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::value;
-	static constexpr auto kNonSfinaeSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::kNonSfinaeValue;
-	static constexpr auto kIsMutexBased = Rr::Trait::IntegralIn<Rr::Trait::SyncTraitId, /* operand */kSyncTraitId,
-		/* list */Rr::Trait::SyncTraitId::IndividualShared, Rr::Trait::SyncTraitId::IndividualUnique,
-		Rr::Trait::SyncTraitId::GroupUnique>::value;
-	static constexpr auto kIsMock = (kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::NoSync);
+	static constexpr auto kSyncTraitId = Rr::Sync::ToSyncTraitId<Tsync>::value;
+	static constexpr auto kNonSfinaeSyncTraitId = Rr::Sync::ToSyncTraitId<Tsync>::kNonSfinaeValue;
+	static constexpr auto kIsMutexBased = Rr::Trait::IntegralIn<Rr::Sync::SyncTraitId, /* operand */kSyncTraitId,
+		/* list */Rr::Sync::SyncTraitId::IndividualShared, Rr::Sync::SyncTraitId::IndividualUnique,
+		Rr::Sync::SyncTraitId::GroupUnique>::value;
+	static constexpr auto kIsMock = (kNonSfinaeSyncTraitId == Rr::Sync::SyncTraitId::NoSync);
 
 	static_assert(kIsMutexBased || kIsMock, "Non mutex-based sync types are not supported yet");
 
-	using MutexTrait = typename Rr::Trait::AsMutTrait<Tsync>::Type;
+	using MutexTrait = typename Rr::Sync::AsMutTrait<Tsync>::Type;
 
 public:
 	using SyncPrimitiveType = typename MutexTrait::Mut;
 	using UniqueLockType = typename MutexTrait::UniqueLock;
 	using SharedLockType = typename Rr::Trait::Conditional</* if */kNonSfinaeSyncTraitId ==
-		Rr::Trait::SyncTraitId::IndividualShared, typename MutexTrait::SharedLock, /* else */ typename
+		Rr::Sync::SyncTraitId::IndividualShared, typename MutexTrait::SharedLock, /* else */ typename
 		MutexTrait::UniqueLock>::Type;
 };
 
@@ -55,7 +55,7 @@ public:
 	///
 	/// @brief Lock wrap for iterating over table items()
 	///
-	static typename Rr::Util::LockWrap<typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::SharedLockType,
+	static typename Rr::Sync::LockWrap<typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::SharedLockType,
 		decltype(table)>
 	asSharedLockWrap()
 	{
@@ -65,7 +65,7 @@ public:
 	///
 	/// @brief Lock wrap for amending the table
 	///
-	static typename Rr::Util::LockWrap< typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::UniqueLockType,
+	static typename Rr::Sync::LockWrap< typename CallableTableImpl::LockPolicy<Tsignature, Tsync>::UniqueLockType,
 		decltype(table)>
 	asUniqueLockWrap()
 	{

@@ -10,7 +10,7 @@
 #include <Rr/Module.hpp>
 
 template <class Tsignature, class Ttopic>
-using Module1 = Rr::Module<Tsignature, Ttopic, std::list, Rr::Trait::GroupMutSyncTypes<1>>;
+using Module1 = Rr::Module<Tsignature, Ttopic, std::list, Rr::Sync::GroupMutSyncTypes<1>>;
 
 namespace ModuleType {
 struct Socket;

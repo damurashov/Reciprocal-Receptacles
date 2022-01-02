@@ -9,7 +9,7 @@
 #define RR_TRAIT_UTIL_LOCKBORROW_HPP
 
 namespace Rr {
-namespace Util {
+namespace Sync {
 
 ///
 /// @brief RAII lock. Similar to std::lock_guard and similar types, but tightly
@@ -47,7 +47,7 @@ public:
 	}
 };
 
-}  // namespace Util
+}  // namespace Sync
 }  // namespace Rr
 
 #include "LockWrap.impl"

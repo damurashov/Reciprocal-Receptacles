@@ -8,8 +8,8 @@
 #if !defined(RR_UTIL_CALLABLEWRAPPER_HPP)
 #define RR_UTIL_CALLABLEWRAPPER_HPP
 
-#include <Rr/Util/LockWrap.hpp>
-#include <Rr/Trait/SyncType.hpp>
+#include <Rr/Sync/LockWrap.hpp>
+#include <Rr/Sync/SyncType.hpp>
 #include <Rr/Util/Callable.hpp>
 #include <Rr/Trait/IntegralIn.hpp>
 #include <Rr/Util/GenericMock.hpp>
@@ -35,20 +35,20 @@ namespace CallableWrapperImpl {
 template <class Tsignature, class Tsync>
 class LockPolicy {
 private:
-	static constexpr auto kSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::value;
-	static constexpr auto kNonSfinaeSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::kNonSfinaeValue;
+	static constexpr auto kSyncTraitId = Rr::Sync::ToSyncTraitId<Tsync>::value;
+	static constexpr auto kNonSfinaeSyncTraitId = Rr::Sync::ToSyncTraitId<Tsync>::kNonSfinaeValue;
 	static constexpr auto kIsConstFn = Rr::Trait::MemberDecay<Tsignature>::kIsConst;
-	static constexpr auto kIsGroup = (kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::GroupUnique);
-	static constexpr auto kIsShared = (kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::IndividualShared);
+	static constexpr auto kIsGroup = (kNonSfinaeSyncTraitId == Rr::Sync::SyncTraitId::GroupUnique);
+	static constexpr auto kIsShared = (kNonSfinaeSyncTraitId == Rr::Sync::SyncTraitId::IndividualShared);
 	static constexpr auto kIsMutexBased = Rr::Trait::IntegralIn<decltype(kNonSfinaeSyncTraitId),
-		kNonSfinaeSyncTraitId, Rr::Trait::SyncTraitId::IndividualShared, Rr::Trait::SyncTraitId::IndividualUnique,
-		Rr::Trait::SyncTraitId::GroupUnique>::value;
+		kNonSfinaeSyncTraitId, Rr::Sync::SyncTraitId::IndividualShared, Rr::Sync::SyncTraitId::IndividualUnique,
+		Rr::Sync::SyncTraitId::GroupUnique>::value;
 
 	static_assert(kIsMutexBased, "Non mutex-based sync strategies are not supported yet");
 
-	using MutTrait = typename Rr::Trait::AsMutTrait<Tsync>::Type;  // Unified trait format storing user types
+	using MutTrait = typename Rr::Sync::AsMutTrait<Tsync>::Type;  // Unified trait format storing user types
 
-	template <Rr::Trait::SyncTraitId ...>
+	template <Rr::Sync::SyncTraitId ...>
 	class Ilist;
 
 	template <class ...>
@@ -60,11 +60,11 @@ public:
 	/// is used, (3) MutTrait::Mut infferred from user-provided types in other
 	/// cases
 	///
-	using SyncPrimitiveHolderType = typename Rr::Trait::Switch<Rr::Trait::SyncTraitId, kNonSfinaeSyncTraitId,
-		Ilist</* case 1 */Rr::Trait::SyncTraitId::GroupUnique, /* case 2 */Rr::Trait::SyncTraitId::NoSync>,
-		Tlist</* then 1 */typename Rr::Util::StaticSyncPrimitiveHolder<Tsync>,
+	using PrimitiveHolderType = typename Rr::Trait::Switch<Rr::Sync::SyncTraitId, kNonSfinaeSyncTraitId,
+		Ilist</* case 1 */Rr::Sync::SyncTraitId::GroupUnique, /* case 2 */Rr::Sync::SyncTraitId::NoSync>,
+		Tlist</* then 1 */typename Rr::Sync::StaticPrimitiveHolder<Tsync>,
 		/* then 2 */typename Rr::Util::GenericMock,
-		/* then default */typename Rr::Util::HeapSyncPrimitiveHolder<typename MutTrait::Mut>>>::Type;
+		/* then default */typename Rr::Sync::HeapPrimitiveHolder<typename MutTrait::Mut>>>::Type;
 
 	///
 	/// @brief Lock for notifying callables.
@@ -125,7 +125,7 @@ public:
 ///
 template <class Tsignature, class Tsync>
 class SyncedCallableWrapper :
-	public CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveHolderType,
+	public CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::PrimitiveHolderType,
 	protected ToggleableCallableWrapper<Tsignature>
 {
 
@@ -134,7 +134,7 @@ protected:
 	using SetEnabledLockType = typename CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SetEnabledLockType;
 
 	SyncedCallableWrapper(bool aEnabled, Rr::Util::Callable<Tsignature> &aCallable):
-		CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SyncPrimitiveHolderType{},
+		CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::PrimitiveHolderType{},
 		ToggleableCallableWrapper<Tsignature>{*(new bool(aEnabled)), aCallable}  // Won't leak, because it is statically stored in a growing-only container, but WARNING: TODO: error-prone solution
 	{
 	}
@@ -145,7 +145,7 @@ public:
 	/// defined by its policy, and returns an instance of LockWrap. For lock
 	/// policy inference, \see "Trait/LockType.hpp"
 	///
-	typename Rr::Util::LockWrap<
+	typename Rr::Sync::LockWrap<
 		typename CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::NotifyLockType,
 		ToggleableCallableWrapper<Tsignature>>
 	asLockWrap()
