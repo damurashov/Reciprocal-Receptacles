@@ -6,6 +6,7 @@
 //
 
 #include <Rr/Sync/Introspection.hpp>
+#include <Rr/Sync/Policy/Type.hpp>
 #include <iostream>
 
 using namespace std;
@@ -18,10 +19,22 @@ struct DefinesLock {
 	using Lock = void;
 };
 
+struct DefinesCallPolicy {
+	static constexpr auto kCallPolicy = Rr::Sync::Policy::Type::None;
+};
+
+template <class ...Ta>
+void defines()
+{
+	using IterType = int[];
+#define _cout_(METHOD) cout << #METHOD << endl; (void)IterType{((void)(cout << Rr::Sync::METHOD<Ta>() << endl), 0)...}
+	_cout_(definesMutex);
+	_cout_(definesLock);
+	_cout_(definesCallPolicy);
+#undef _cout_
+}
+
 int main(void)
 {
-	cout << Rr::Sync::definesMutex<DefinesMutex>() << endl;
-	cout << Rr::Sync::definesMutex<DefinesLock>() << endl;
-	cout << Rr::Sync::definesLock<DefinesMutex>() << endl;
-	cout << Rr::Sync::definesLock<DefinesLock>() << endl;
+	defines<DefinesMutex, DefinesLock, DefinesCallPolicy>();
 }

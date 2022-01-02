@@ -40,6 +40,13 @@ struct Lock : SfinaeFallback {
 	static IsMember type(typename T::Lock *);
 };
 
+struct CallPolicy : SfinaeFallback {
+	using SfinaeFallback::type;
+
+	template <class T>
+	static IsMember type(decltype(T::kCallPolicy) *);
+};
+
 template <class Treference, class T>
 constexpr bool defines()
 {
@@ -58,6 +65,12 @@ template <class T>
 constexpr bool definesLock()
 {
 	return IntrospectionImpl::defines<IntrospectionImpl::Lock, T>();
+}
+
+template <class T>
+constexpr bool definesCallPolicy()
+{
+	return IntrospectionImpl::defines<IntrospectionImpl::CallPolicy, T>();
 }
 
 }  // namespace Sync
