@@ -23,6 +23,10 @@ struct DefinesCallPolicy {
 	static constexpr auto kCallPolicy = Rr::Sync::Policy::Type::None;
 };
 
+struct DefinesPolicy {
+	static constexpr auto kPolicy = Rr::Sync::Policy::Type::None;
+};
+
 template <class ...Ta>
 void defines()
 {
@@ -31,10 +35,11 @@ void defines()
 	_cout_(definesMutex);
 	_cout_(definesLock);
 	_cout_(definesCallPolicy);
+	_cout_(definesPolicy);
 #undef _cout_
 }
 
 int main(void)
 {
-	defines<DefinesMutex, DefinesLock, DefinesCallPolicy>();
+	defines<DefinesMutex, DefinesLock, DefinesCallPolicy, DefinesPolicy>();
 }

@@ -47,6 +47,13 @@ struct CallPolicy : SfinaeFallback {
 	static IsMember type(decltype(T::kCallPolicy) *);
 };
 
+struct Policy : SfinaeFallback {
+	using SfinaeFallback::type;
+
+	template <class T>
+	static IsMember type(decltype(T::kPolicy) *);
+};
+
 template <class Treference, class T>
 constexpr bool defines()
 {
@@ -71,6 +78,12 @@ template <class T>
 constexpr bool definesCallPolicy()
 {
 	return IntrospectionImpl::defines<IntrospectionImpl::CallPolicy, T>();
+}
+
+template <class T>
+constexpr bool definesPolicy()
+{
+	return IntrospectionImpl::defines<IntrospectionImpl::Policy, T>();
 }
 
 }  // namespace Sync
