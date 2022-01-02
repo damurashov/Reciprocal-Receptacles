@@ -7,6 +7,9 @@
 
 // Constexpr sync-related introspection helpers
 
+#if !defined(RR_SYNC_INTROSPECTION_HPP)
+#define RR_SYNC_INTROSPECTION_HPP
+
 namespace Rr {
 namespace Sync {
 namespace IntrospectionImpl {
@@ -88,3 +91,6 @@ constexpr bool definesPolicy()
 
 }  // namespace Sync
 }  // namespace Rr
+
+#endif // RR_SYNC_INTROSPECTION_HPP
+
