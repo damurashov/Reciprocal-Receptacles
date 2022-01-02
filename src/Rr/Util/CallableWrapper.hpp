@@ -35,20 +35,20 @@ namespace CallableWrapperImpl {
 template <class Tsignature, class Tsync>
 class LockPolicy {
 private:
-	static constexpr auto kSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::value;
-	static constexpr auto kNonSfinaeSyncTraitId = Rr::Trait::ToSyncTraitId<Tsync>::kNonSfinaeValue;
+	static constexpr auto kSyncTraitId = Rr::Sync::ToSyncTraitId<Tsync>::value;
+	static constexpr auto kNonSfinaeSyncTraitId = Rr::Sync::ToSyncTraitId<Tsync>::kNonSfinaeValue;
 	static constexpr auto kIsConstFn = Rr::Trait::MemberDecay<Tsignature>::kIsConst;
-	static constexpr auto kIsGroup = (kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::GroupUnique);
-	static constexpr auto kIsShared = (kNonSfinaeSyncTraitId == Rr::Trait::SyncTraitId::IndividualShared);
+	static constexpr auto kIsGroup = (kNonSfinaeSyncTraitId == Rr::Sync::SyncTraitId::GroupUnique);
+	static constexpr auto kIsShared = (kNonSfinaeSyncTraitId == Rr::Sync::SyncTraitId::IndividualShared);
 	static constexpr auto kIsMutexBased = Rr::Trait::IntegralIn<decltype(kNonSfinaeSyncTraitId),
-		kNonSfinaeSyncTraitId, Rr::Trait::SyncTraitId::IndividualShared, Rr::Trait::SyncTraitId::IndividualUnique,
-		Rr::Trait::SyncTraitId::GroupUnique>::value;
+		kNonSfinaeSyncTraitId, Rr::Sync::SyncTraitId::IndividualShared, Rr::Sync::SyncTraitId::IndividualUnique,
+		Rr::Sync::SyncTraitId::GroupUnique>::value;
 
 	static_assert(kIsMutexBased, "Non mutex-based sync strategies are not supported yet");
 
-	using MutTrait = typename Rr::Trait::AsMutTrait<Tsync>::Type;  // Unified trait format storing user types
+	using MutTrait = typename Rr::Sync::AsMutTrait<Tsync>::Type;  // Unified trait format storing user types
 
-	template <Rr::Trait::SyncTraitId ...>
+	template <Rr::Sync::SyncTraitId ...>
 	class Ilist;
 
 	template <class ...>
@@ -60,8 +60,8 @@ public:
 	/// is used, (3) MutTrait::Mut infferred from user-provided types in other
 	/// cases
 	///
-	using SyncPrimitiveHolderType = typename Rr::Trait::Switch<Rr::Trait::SyncTraitId, kNonSfinaeSyncTraitId,
-		Ilist</* case 1 */Rr::Trait::SyncTraitId::GroupUnique, /* case 2 */Rr::Trait::SyncTraitId::NoSync>,
+	using SyncPrimitiveHolderType = typename Rr::Trait::Switch<Rr::Sync::SyncTraitId, kNonSfinaeSyncTraitId,
+		Ilist</* case 1 */Rr::Sync::SyncTraitId::GroupUnique, /* case 2 */Rr::Sync::SyncTraitId::NoSync>,
 		Tlist</* then 1 */typename Rr::Sync::StaticSyncPrimitiveHolder<Tsync>,
 		/* then 2 */typename Rr::Util::GenericMock,
 		/* then default */typename Rr::Sync::HeapSyncPrimitiveHolder<typename MutTrait::Mut>>>::Type;

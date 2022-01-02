@@ -31,7 +31,7 @@
 
 namespace Rr {
 
-using Rr::Trait::SyncTraitId;
+using Rr::Sync::SyncTraitId;
 
 namespace SyncTraitImpl {
 
@@ -91,11 +91,11 @@ using DefaultGroupMutexTrait = MockGroupMutexTrait<Igroup>;
 #endif
 
 template <class TgroupMutTrait>
-struct GroupMutexLock: Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock {
-	using Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock::UniqueLock;
-	using Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock::operator=;
+struct GroupMutexLock: Rr::Sync::AsMutTrait<TgroupMutTrait>::Type::UniqueLock {
+	using Rr::Sync::AsMutTrait<TgroupMutTrait>::Type::UniqueLock::UniqueLock;
+	using Rr::Sync::AsMutTrait<TgroupMutTrait>::Type::UniqueLock::operator=;
 
-	GroupMutexLock(): Rr::Trait::AsMutTrait<TgroupMutTrait>::Type::UniqueLock{TgroupMutTrait::syncPrimitive}
+	GroupMutexLock(): Rr::Sync::AsMutTrait<TgroupMutTrait>::Type::UniqueLock{TgroupMutTrait::syncPrimitive}
 	{
 	}
 };
