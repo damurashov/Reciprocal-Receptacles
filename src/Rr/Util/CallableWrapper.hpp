@@ -10,7 +10,7 @@
 
 #include <Rr/Sync/LockWrap.hpp>
 #include <Rr/Sync/SyncType.hpp>
-#include <Rr/Util/Callable.hpp>
+#include <Rr/Cb/Callable.hpp>
 #include <Rr/Trait/IntegralIn.hpp>
 #include <Rr/Util/GenericMock.hpp>
 #include <Rr/Trait/Switch.hpp>

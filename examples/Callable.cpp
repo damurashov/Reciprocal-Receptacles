@@ -11,7 +11,7 @@
 #define RRO_STATIC_CAST_FN_CONVERSION 0
 
 #include <iostream>
-#include <Rr/Util/Callable.hpp>
+#include <Rr/Cb/Callable.hpp>
 
 using namespace std;
 
