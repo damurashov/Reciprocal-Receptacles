@@ -50,7 +50,7 @@ void callMe(int a)
 int main(void)
 {
 	{
-		using ConstCallable = Rr::Util::Callable<void(int)const>;
+		using ConstCallable = Rr::Cb::Callable<void(int)const>;
 
 		ConstCallable ca{callMe};
 
@@ -62,7 +62,7 @@ int main(void)
 	}
 
 	{
-		using Callable = Rr::Util::Callable<void(int)>;
+		using Callable = Rr::Cb::Callable<void(int)>;
 
 		Callable ca{callMe};
 		A a;

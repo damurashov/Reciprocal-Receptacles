@@ -14,7 +14,7 @@ namespace Rr {
 namespace Util {
 
 template <class Tsignature, template <class ...> class Tcontainer>
-using CallableTable = Tcontainer<Rr::Util::Callable<Tsignature>>;
+using CallableTable = Tcontainer<Rr::Cb::Callable<Tsignature>>;
 
 namespace CallableTableImpl {
 

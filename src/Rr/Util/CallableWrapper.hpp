@@ -92,7 +92,7 @@ public:
 template <class Tsignature>
 class ToggleableCallableWrapper {
 	bool &enabled;
-	typename Rr::Util::Callable<Tsignature> &callable;
+	typename Rr::Cb::Callable<Tsignature> &callable;
 
 protected:
 	void setEnabled(bool aEnabled)
@@ -133,7 +133,7 @@ protected:
 	using ToggleableCallableWrapper<Tsignature>::setEnabled;
 	using SetEnabledLockType = typename CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::SetEnabledLockType;
 
-	SyncedCallableWrapper(bool aEnabled, Rr::Util::Callable<Tsignature> &aCallable):
+	SyncedCallableWrapper(bool aEnabled, Rr::Cb::Callable<Tsignature> &aCallable):
 		CallableWrapperImpl::LockPolicy<Tsignature, Tsync>::PrimitiveHolderType{},
 		ToggleableCallableWrapper<Tsignature>{*(new bool(aEnabled)), aCallable}  // Won't leak, because it is statically stored in a growing-only container, but WARNING: TODO: error-prone solution
 	{
