@@ -11,7 +11,7 @@
 #define RRO_STATIC_CAST_FN_CONVERSION 0
 
 #include <iostream>
-#include <Rr/Util/Callable.hpp>
+#include <Rr/Cb/Callable.hpp>
 
 using namespace std;
 
@@ -54,7 +54,7 @@ void newCallable()
 int main(void)
 {
 	{
-		using ConstCallable = Rr::Util::Callable<void(int)const>;
+		using ConstCallable = Rr::Cb::Callable<void(int)const>;
 
 		ConstCallable ca{callMe};
 
@@ -66,7 +66,7 @@ int main(void)
 	}
 
 	{
-		using Callable = Rr::Util::Callable<void(int)>;
+		using Callable = Rr::Cb::Callable<void(int)>;
 
 		Callable ca{callMe};
 		A a;

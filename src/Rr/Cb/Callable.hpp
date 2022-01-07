@@ -14,7 +14,7 @@
 #include <Rr/Trait/RemoveReference.hpp>
 
 namespace Rr {
-namespace Util {
+namespace Cb {
 
 namespace CallableImpl {
 
@@ -98,7 +98,7 @@ struct CallVariant<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArg
 template <class Tsignature>
 using Callable = typename CallableImpl::CallVariant<Tsignature, typename Trait::MemberDecay<Tsignature>::ArgsList>;
 
-}  // namespace Util
+}  // namespace Cb
 }  // namespace Rr
 
 #endif // RR_UTIL_CALLABLE_HPP

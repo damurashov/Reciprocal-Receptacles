@@ -22,7 +22,7 @@ namespace Rr {
 ///
 template <class Tsignature, class Ttopic, template <class...> class Tstorage, class Tsync>
 class Key :
-	protected Rr::Util::Callable<Tsignature>,
+	protected Rr::Cb::Callable<Tsignature>,
 	protected Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>
 {
 private:
@@ -77,7 +77,7 @@ public:
 
 	template <class ...Ta>
 	Key(bool aEnabled, Ta &&...aArgs):
-		Rr::Util::Callable<Tsignature>(static_cast<Ta &&>(aArgs)...),
+		Rr::Cb::Callable<Tsignature>(static_cast<Ta &&>(aArgs)...),
 		Rr::Util::SyncedCallableWrapper<Tsignature, Tsync>(aEnabled, *this)
 	{
 		registerTable(*this);
