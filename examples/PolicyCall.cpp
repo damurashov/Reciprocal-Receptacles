@@ -9,17 +9,22 @@
 #include <Rr/Trait/IsSame.hpp>
 
 struct DefinesPolicy {
-    static constexpr auto kPolicy = Rr::Sync::Policy::Type::None;
+	static constexpr auto kPolicy = Rr::Sync::Policy::Type::None;
 };
 
+
 struct DefinesCallPolicy {
-    static constexpr auto kCallPolicy = Rr::Sync::Policy::Type::Mutex;
-    using Mutex = void;
-    using Lock = void;
+	static constexpr auto kCallPolicy = Rr::Sync::Policy::Type::Mutex;
+	struct Mutex {
+		void lock() {}
+		void unlock() {}
+		void try_lock() {}
+	};
+	using Lock = int;
 };
 
 int main(void)
 {
-    Rr::Sync::Policy::Call<DefinesPolicy> c;
-    Rr::Sync::Policy::Call<DefinesCallPolicy> c2;
+	Rr::Sync::Policy::Call<DefinesPolicy> c;
+	Rr::Sync::Policy::Call<DefinesCallPolicy> c2;
 }
