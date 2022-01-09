@@ -7,11 +7,17 @@
 
 // Constexpr sync-related introspection helpers
 
-#if !defined(RR_SYNC_INTROSPECTION_HPP)
-#define RR_SYNC_INTROSPECTION_HPP
+#if !defined(RR_SYNC_POLICY_INTROSPECTION_HPP)
+#define RR_SYNC_POLICY_INTROSPECTION_HPP
+
+#include <Rr/Trait/IsSame.hpp>
+#include <Rr/Trait/StoreType.hpp>
+#include <Rr/Util/GenericMock.hpp>
+#include <Rr/Sync/Policy/LockSfinae.hpp>
 
 namespace Rr {
 namespace Sync {
+namespace Policy {
 namespace IntrospectionImpl {
 
 struct IsMember {
@@ -57,6 +63,13 @@ struct Policy : SfinaeFallback {
 	static IsMember type(decltype(T::kPolicy) *);
 };
 
+struct SharedAccessPolicy : SfinaeFallback {
+	using SfinaeFallback::type;
+
+	template <class T>
+	static IsMember type(decltype(T::kSharedAccessPolicy) *);
+};
+
 template <class Treference, class T>
 constexpr bool defines()
 {
@@ -89,8 +102,29 @@ constexpr bool definesPolicy()
 	return IntrospectionImpl::defines<IntrospectionImpl::Policy, T>();
 }
 
+template <class T>
+constexpr bool definesSharedAccessPolicy()
+{
+	return IntrospectionImpl::defines<IntrospectionImpl::SharedAccessPolicy, T>();
+}
+
+template <class T>
+constexpr bool definesLockMethod()
+{
+	constexpr const char *a = "";
+	return !Trait::IsSame<LockSfinae::Fallback, decltype(LockSfinae::lock(*const_cast<T *>(reinterpret_cast<const T *const>(a))))>::value;
+}
+
+template <class T>
+constexpr bool definesTryLockMethod()
+{
+	constexpr const char *a = "";
+	return !Trait::IsSame<LockSfinae::Fallback, decltype(LockSfinae::tryLock(*const_cast<T *>(reinterpret_cast<const T *const>(a))))>::value;
+}
+
+}  // namespace Policy
 }  // namespace Sync
 }  // namespace Rr
 
-#endif // RR_SYNC_INTROSPECTION_HPP
+#endif // RR_SYNC_POLICY_INTROSPECTION_HPP
 
