@@ -13,17 +13,23 @@
 namespace Rr {
 namespace Refl {
 
-struct CallSfinae {
-	static constexpr NoMember tryLock(...)
-	{
-		return {};
-	}
-
+struct LockSfinae {
 	static constexpr NoMember lock(...)
 	{
 		return {};
 	}
+	template <class T>
+	static auto lock(T& a) -> decltype(a.lock())
+	{
+		return a.lock();
+	}
+};
 
+struct TryLockSfinae {
+	static constexpr NoMember tryLock(...)
+	{
+		return {};
+	}
 	template <class T>
 	static auto tryLock(T& a) -> decltype(a.try_lock())
 	{
@@ -35,11 +41,12 @@ struct CallSfinae {
 	{
 		return a.tryLock();
 	}
+};
 
-	template <class T>
-	static auto lock(T& a) -> decltype(a.lock())
+struct UnlockSfinae {
+	static constexpr NoMember unlock(...)
 	{
-		return a.lock();
+		return {};
 	}
 
 	template <class T>
@@ -47,6 +54,9 @@ struct CallSfinae {
 	{
 		return a.unlock();
 	}
+};
+
+struct CallSfinae : LockSfinae, UnlockSfinae, TryLockSfinae {
 };
 
 }  // namespace Refl
