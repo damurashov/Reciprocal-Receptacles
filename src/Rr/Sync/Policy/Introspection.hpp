@@ -66,12 +66,27 @@ struct FormSfinae : SfinaeFallback, Tsfinae {
 
 }  // namespace IntrospectionImpl
 
+///
+/// @brief Extensible wrapper over SFINAE mechanism
+///
+/// Usage:
+///
+/// @code
+/// struct IdoHaveSuchMemberOrType {bool someMember;};
+/// struct SomeMemberSfinae {template <class T> static void type(decltype(T::someMember) *); };
+/// auto fDefinesTypeOrMember = Rr::Sync::Policy::Defines<SomeMemberSfinae, IdoHaveSuchMemberOrType>();
+/// @endcode
+///
+/// @tparam Treference SfinaeFallback
+/// @tparam T          Class or struct to be checked
+///
 template <class Treference, class T>
 constexpr bool defines()
 {
 	using Fs = typename IntrospectionImpl::FormSfinae<Treference>;
 	using RetType = decltype(Fs::template type<T>(nullptr));
 	using StrippedRetType = Trait::StripTp<RetType>;
+
 	return !Trait::IsSame<StrippedRetType, NoMember>::value;
 }
 
