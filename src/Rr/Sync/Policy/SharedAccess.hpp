@@ -11,38 +11,35 @@
 #include <Rr/Sync/Policy/Introspection.hpp>
 #include <Rr/Sync/Policy/Type.hpp>
 #include <Rr/Sync/Policy/GetPrimitiveType.hpp>
+#include <Rr/Sync/Policy/GetPolicyType.hpp>
 #include <Rr/Sync/Policy/LockSfinae.hpp>
 #include <Rr/Trait/IntegralConstant.hpp>
 #include <Rr/Trait/IsSame.hpp>
+#include <Rr/Trait/IntegralConstant.hpp>
 
 namespace Rr {
 namespace Sync {
 namespace Policy {
-namespace SharedAccessImpl {
 
-struct SharedAccessGetPrimitiveType;
+struct SharedAccessSpecialization;  // Compile-time specialization "token". For extension.
 
-template <class TsyncTrait>
-struct GetPolicy {
-	template <bool F>
-	struct Impl : Trait::IntegralConstant<Policy::Type, TsyncTrait::kSharedAccessPolicy> {
-	};
-
-	template <>
-	struct Impl<false> : Trait::IntegralConstant<Policy::Type, TsyncTrait::kPolicy> {
-	};
-
-	static constexpr auto value = Impl<definesSharedAccessPolicy<TsyncTrait>()>::value;
+///
+/// @brief Specialization. See <GetPolicyType.hpp>
+///
+template<bool F, class TsyncTrait>
+struct GetPolicyType<F, TsyncTrait, SharedAccessSpecialization> : Trait::IntegralConstant<Policy::Type, TsyncTrait::kSharedAccessPolicy> {
 };
 
-}  // namespace SharedAccessImpl
-
-template <class TsyncTrait>
+///
+/// @brief
+///
+/// @tparam T Synchronization trait
+///
+template <class T>
 class SharedAccess {
 public:
-	using Primitive = GetPrimitiveTypeTp<SharedAccessImpl::GetPolicy<TsyncTrait>::value,
-		TsyncTrait,
-		SharedACcessImpl::SharedAccessGetPrimitiveType>;
+	static constexpr auto kPolicy = GetPolicyType<definesSharedAccessPolicy<T>(), T, SharedAccessSpecialization>;
+	using Primitive = GetPrimitiveTypeTp<kPolicy, T, SharedAccessSpecialization>;
 
 	static void lock(Primitive &a)
 	{
