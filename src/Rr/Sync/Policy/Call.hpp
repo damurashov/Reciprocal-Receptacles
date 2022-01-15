@@ -5,6 +5,7 @@
 //     Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
+#include <Rr/Sync/Policy/GetPolicyType.hpp>
 #include <Rr/Sync/Policy/Introspection.hpp>
 #include <Rr/Sync/SyncMock.hpp>
 #include <Rr/Sync/Policy/Type.hpp>
@@ -21,26 +22,12 @@
 namespace Rr {
 namespace Sync {
 namespace Policy {
-namespace CallImpl {
 
-struct CallGetPrimitiveType;
+struct CallSpecialization;  //  A `token` that is used for specialization of some compile-time helpers. Refer to `GetPrimitiveType` or `GetPolicyType`
 
-// Get policy
-
-template <bool Fcp, class T>
-struct GetPolicyImpl : Trait::IntegralConstant<Policy::Type, T::kCallPolicy> {
+template <class TsyncTrait>
+struct GetPolicyType<true, TsyncTrait, CallSpecialization> : Trait::IntegralConstant<Policy::Type, TsyncTrait::kCallPolicy> {
 };
-
-template <class T>
-struct GetPolicyImpl<false, T> : Trait::IntegralConstant<Policy::Type, T::kPolicy> {
-};
-
-template <class T>
-using GetPolicy = GetPolicyImpl<definesCallPolicy<T>(), T>;
-
-// Lock - specializations of Rr::Sync::Policy::Lock
-
-}  // namespace CallImpl
 
 ///
 /// @brief Defines RAII lock type for a callable object
@@ -50,12 +37,11 @@ using GetPolicy = GetPolicyImpl<definesCallPolicy<T>(), T>;
 template <class T>
 class Call {
 private:
-	static_assert(definesCallPolicy<T>() || definesPolicy<T>(), "At least, generic sync policy has to be defined");
-	static constexpr auto kPolicy = CallImpl::GetPolicy<T>::value;
+	static constexpr auto kPolicy = GetPolicyType<definesCallPolicy<T>(), T, CallSpecialization>::value;
 	static_assert(!(kPolicy == Type::Mutex) || definesMutex<T>(), "For mutex-based lock. policy, `Mutex` type should be defined");
 
 public:
-	using Primitive = GetPrimitiveTypeTp<kPolicy, T, CallImpl::CallGetPrimitiveType>;
+	using Primitive = GetPrimitiveTypeTp<kPolicy, T, CallSpecialization>;
 	using Lock = Util::GenericMock;
 
 	static void lock(Primitive &a)
