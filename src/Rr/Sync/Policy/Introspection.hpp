@@ -12,6 +12,7 @@
 
 #include <Rr/Trait/IsSame.hpp>
 #include <Rr/Trait/StoreType.hpp>
+#include <Rr/Trait/RemoveReference.hpp>
 #include <Rr/Util/GenericMock.hpp>
 #include <Rr/Sync/Policy/NoMember.hpp>
 #include <Rr/Sync/Policy/LockSfinae.hpp>
@@ -27,77 +28,87 @@ struct SfinaeFallback {
 	static NoMember type(...);
 };
 
-struct Mutex : SfinaeFallback {
+struct Mutex {
 	template <class T>
 	static void type(typename T::Mutex *);
-
-	using SfinaeFallback::type;
 };
 
-struct Lock : SfinaeFallback {
-	using SfinaeFallback::type;
-
+struct Lock {
 	template <class T>
 	static void type(typename T::Lock *);
 };
 
-struct CallPolicy : SfinaeFallback {
-	using SfinaeFallback::type;
-
+struct CallPolicy {
 	template <class T>
 	static void type(decltype(T::kCallPolicy) *);
 };
 
-struct Policy : SfinaeFallback {
-	using SfinaeFallback::type;
-
+struct Policy {
 	template <class T>
 	static void type(decltype(T::kPolicy) *);
 };
 
-struct SharedAccessPolicy : SfinaeFallback {
-	using SfinaeFallback::type;
-
+struct SharedAccessPolicy {
 	template <class T>
 	static void type(decltype(T::kSharedAccessPolicy) *);
 };
 
+struct StoragePolicy {
+	template <class T>
+	static void type(decltype(T::kStoragePolicy) *);
+};
+
+template <class Tsfinae>
+struct FormSfinae : SfinaeFallback, Tsfinae {
+	using Tsfinae::type;
+	using SfinaeFallback::type;
+};
+
+}  // namespace IntrospectionImpl
+
 template <class Treference, class T>
 constexpr bool defines()
 {
-	return !Trait::IsSame<decltype(Treference::template type<T>(nullptr)), NoMember>::value;
+	using Fs = typename IntrospectionImpl::FormSfinae<Treference>;
+	using RetType = decltype(Fs::template type<T>(nullptr));
+	using StrippedRetType = Trait::StripTp<RetType>;
+	return !Trait::IsSame<StrippedRetType, NoMember>::value;
 }
-
-}  // namespace IntrospectionImpl
 
 template <class T>
 constexpr bool definesMutex()
 {
-	return IntrospectionImpl::defines<IntrospectionImpl::Mutex, T>();
+	return defines<IntrospectionImpl::Mutex, T>();
 }
 
 template <class T>
 constexpr bool definesLock()
 {
-	return IntrospectionImpl::defines<IntrospectionImpl::Lock, T>();
+	return defines<IntrospectionImpl::Lock, T>();
 }
 
 template <class T>
 constexpr bool definesCallPolicy()
 {
-	return IntrospectionImpl::defines<IntrospectionImpl::CallPolicy, T>();
+	return defines<IntrospectionImpl::CallPolicy, T>();
 }
 
 template <class T>
 constexpr bool definesPolicy()
 {
-	return IntrospectionImpl::defines<IntrospectionImpl::Policy, T>();
+	return defines<IntrospectionImpl::Policy, T>();
 }
 
 template <class T>
 constexpr bool definesSharedAccessPolicy()
 {
-	return IntrospectionImpl::defines<IntrospectionImpl::SharedAccessPolicy, T>();
+	return defines<IntrospectionImpl::SharedAccessPolicy, T>();
+}
+
+template <class T>
+constexpr bool definesStoragePolicy()
+{
+	return defines<IntrospectionImpl::StoragePolicy, T>();
 }
 
 template <class T>
