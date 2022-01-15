@@ -15,7 +15,7 @@
 #include <Rr/Trait/RemoveReference.hpp>
 #include <Rr/Util/GenericMock.hpp>
 #include <Rr/Refl/NoMember.hpp>
-#include <Rr/Refl/LockSfinae.hpp>
+#include <Rr/Refl/CallSfinae.hpp>
 
 namespace Rr {
 namespace Refl {
@@ -129,14 +129,14 @@ template <class T>
 constexpr bool definesLockMethod()
 {
 	constexpr const char *arg = "";
-	return !Trait::IsSame<NoMember, decltype(Rr::Refl::LockSfinae::lock(*const_cast<T *>(reinterpret_cast<const T *const>(arg))))>::value;
+	return !Trait::IsSame<NoMember, decltype(Rr::Refl::CallSfinae::lock(*const_cast<T *>(reinterpret_cast<const T *const>(arg))))>::value;
 }
 
 template <class T>
 constexpr bool definesTryLockMethod()
 {
 	constexpr const char *arg = "";
-	return !Trait::IsSame<NoMember, decltype(LockSfinae::tryLock(*const_cast<T *>(reinterpret_cast<const T *const>(arg))))>::value;
+	return !Trait::IsSame<NoMember, decltype(CallSfinae::tryLock(*const_cast<T *>(reinterpret_cast<const T *const>(arg))))>::value;
 }
 
 }  // namespace Refl

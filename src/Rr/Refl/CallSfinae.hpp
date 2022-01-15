@@ -1,5 +1,5 @@
 //
-// LockSfinae.hpp
+// CallSfinae.hpp
 //
 // Created on: 2022-01-08
 //     Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
@@ -13,7 +13,7 @@
 namespace Rr {
 namespace Refl {
 
-struct LockSfinae {
+struct CallSfinae {
 	static constexpr NoMember tryLock(...)
 	{
 		return {};

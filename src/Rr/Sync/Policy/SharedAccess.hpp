@@ -12,7 +12,7 @@
 #include <Rr/Sync/Policy/Type.hpp>
 #include <Rr/Sync/Policy/GetPrimitiveType.hpp>
 #include <Rr/Sync/Policy/GetPolicyType.hpp>
-#include <Rr/Refl/LockSfinae.hpp>
+#include <Rr/Refl/CallSfinae.hpp>
 #include <Rr/Trait/IntegralConstant.hpp>
 #include <Rr/Trait/IsSame.hpp>
 #include <Rr/Trait/IntegralConstant.hpp>
@@ -43,12 +43,12 @@ public:
 
 	static void lock(Primitive &a)
 	{
-		LockSfinae::lock(a);
+		CallSfinae::lock(a);
 	}
 
 	static void unlock(Primitive &a)
 	{
-		LockSfinae::lock(a);
+		CallSfinae::lock(a);
 	}
 };
 

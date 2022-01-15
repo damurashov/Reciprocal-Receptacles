@@ -9,7 +9,7 @@
 #include <Rr/Refl/Introspection.hpp>
 #include <Rr/Sync/SyncMock.hpp>
 #include <Rr/Sync/Policy/Type.hpp>
-#include <Rr/Refl/LockSfinae.hpp>
+#include <Rr/Refl/CallSfinae.hpp>
 #include <Rr/Sync/Policy/GetPrimitiveType.hpp>
 #include <Rr/Trait/Conditional.hpp>
 #include <Rr/Trait/IntegralConstant.hpp>
@@ -46,12 +46,12 @@ public:
 
 	static void lock(Primitive &a)
 	{
-		Refl::LockSfinae::lock(a);
+		Refl::CallSfinae::lock(a);
 	}
 
 	static void unlock(Primitive &a)
 	{
-		Refl::LockSfinae::unlock(a);
+		Refl::CallSfinae::unlock(a);
 	}
 };
 
