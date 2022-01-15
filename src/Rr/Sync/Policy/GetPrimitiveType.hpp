@@ -25,7 +25,7 @@ struct GetPrimitiveTypeDefault;
 ///
 /// @tparam Ipolicy         Policy being used (special or generic. See `GetPolicyType`)
 /// @tparam TsyncTrait      Synchronization trait storing sync configuration info (same principle as w/ `GetPolicyType`)
-/// @tparam Tspecializatoin Specialization type.
+/// @tparam Tspecialization Specialization type.
 ///
 template <Policy::Type Ipolicy, class TsyncTrait, class Tspecialization=GetPrimitiveTypeDefault>
 struct GetPrimitiveType;
