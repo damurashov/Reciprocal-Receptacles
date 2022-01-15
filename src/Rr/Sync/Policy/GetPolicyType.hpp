@@ -10,7 +10,7 @@
 
 #include <Rr/Trait/IntegralConstant.hpp>
 #include <Rr/Sync/Policy/Type.hpp>
-#include <Rr/Sync/Policy/Introspection.hpp>
+#include <Rr/Refl/Introspection.hpp>
 
 namespace Rr {
 namespace Sync {
@@ -39,7 +39,7 @@ struct GetPolicyType;
 
 template <class T, class TsyncTrait>
 struct GetPolicyType<false, TsyncTrait, T>  {
-	static_assert(definesPolicy<TsyncTrait>(), "In an absence of some special synchronization policies, a synchronization trait should provide ::kPolicy member");
+	static_assert(Refl::definesPolicy<TsyncTrait>(), "In an absence of some special synchronization policies, a synchronization trait should provide ::kPolicy member");
 	static constexpr auto value = TsyncTrait::kPolicy;
 };
 

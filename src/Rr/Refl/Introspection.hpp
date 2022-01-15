@@ -7,19 +7,18 @@
 
 // Constexpr sync-related introspection helpers
 
-#if !defined(RR_SYNC_POLICY_INTROSPECTION_HPP)
-#define RR_SYNC_POLICY_INTROSPECTION_HPP
+#if !defined(RR_REFL_INTROSPECTION_HPP)
+#define RR_REFL_INTROSPECTION_HPP
 
 #include <Rr/Trait/IsSame.hpp>
 #include <Rr/Trait/StoreType.hpp>
 #include <Rr/Trait/RemoveReference.hpp>
 #include <Rr/Util/GenericMock.hpp>
-#include <Rr/Sync/Policy/NoMember.hpp>
-#include <Rr/Sync/Policy/LockSfinae.hpp>
+#include <Rr/Refl/NoMember.hpp>
+#include <Rr/Refl/LockSfinae.hpp>
 
 namespace Rr {
-namespace Sync {
-namespace Policy {
+namespace Refl {
 
 namespace IntrospectionImpl {
 
@@ -130,7 +129,7 @@ template <class T>
 constexpr bool definesLockMethod()
 {
 	constexpr const char *arg = "";
-	return !Trait::IsSame<NoMember, decltype(LockSfinae::lock(*const_cast<T *>(reinterpret_cast<const T *const>(arg))))>::value;
+	return !Trait::IsSame<NoMember, decltype(Rr::Refl::LockSfinae::lock(*const_cast<T *>(reinterpret_cast<const T *const>(arg))))>::value;
 }
 
 template <class T>
@@ -140,9 +139,8 @@ constexpr bool definesTryLockMethod()
 	return !Trait::IsSame<NoMember, decltype(LockSfinae::tryLock(*const_cast<T *>(reinterpret_cast<const T *const>(arg))))>::value;
 }
 
-}  // namespace Policy
-}  // namespace Sync
+}  // namespace Refl
 }  // namespace Rr
 
-#endif // RR_SYNC_POLICY_INTROSPECTION_HPP
+#endif // RR_REFL_INTROSPECTION_HPP
 

@@ -5,14 +5,13 @@
 //     Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
-#if !defined(RR_SYNC_POLICY_LOCKSFINAE_HPP)
-#define RR_SYNC_POLICY_LOCKSFINAE_HPP
+#if !defined(RR_REFL_LOCKSFINAE_HPP)
+#define RR_REFL_LOCKSFINAE_HPP
 
-#include <Rr/Sync/Policy/NoMember.hpp>
+#include <Rr/Refl/NoMember.hpp>
 
 namespace Rr {
-namespace Sync {
-namespace Policy {
+namespace Refl {
 
 struct LockSfinae {
 	static constexpr NoMember tryLock(...)
@@ -50,8 +49,7 @@ struct LockSfinae {
 	}
 };
 
-}  // namespace Policy
-}  // namespace Sync
+}  // namespace Refl
 }  // namespace Rr
 
-#endif // RR_SYNC_POLICY_LOCKSFINAE_HPP
+#endif // RR_REFL_LOCKSFINAE_HPP

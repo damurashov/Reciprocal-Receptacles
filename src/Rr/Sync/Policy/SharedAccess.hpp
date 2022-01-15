@@ -8,11 +8,11 @@
 #if !defined(RR_SYNC_POLICY_SHAREDACCESS_HP)
 #define RR_SYNC_POLICY_SHAREDACCESS_HP
 
-#include <Rr/Sync/Policy/Introspection.hpp>
+#include <Rr/Refl/Introspection.hpp>
 #include <Rr/Sync/Policy/Type.hpp>
 #include <Rr/Sync/Policy/GetPrimitiveType.hpp>
 #include <Rr/Sync/Policy/GetPolicyType.hpp>
-#include <Rr/Sync/Policy/LockSfinae.hpp>
+#include <Rr/Refl/LockSfinae.hpp>
 #include <Rr/Trait/IntegralConstant.hpp>
 #include <Rr/Trait/IsSame.hpp>
 #include <Rr/Trait/IntegralConstant.hpp>
@@ -38,7 +38,7 @@ struct GetPolicyType<F, TsyncTrait, SharedAccessSpecialization> : Trait::Integra
 template <class T>
 class SharedAccess {
 public:
-	static constexpr auto kPolicy = GetPolicyType<definesSharedAccessPolicy<T>(), T, SharedAccessSpecialization>;
+	static constexpr auto kPolicy = GetPolicyType<Refl::definesSharedAccessPolicy<T>(), T, SharedAccessSpecialization>;
 	using Primitive = GetPrimitiveTypeTp<kPolicy, T, SharedAccessSpecialization>;
 
 	static void lock(Primitive &a)

@@ -6,10 +6,10 @@
 //
 
 #include <Rr/Sync/Policy/GetPolicyType.hpp>
-#include <Rr/Sync/Policy/Introspection.hpp>
+#include <Rr/Refl/Introspection.hpp>
 #include <Rr/Sync/SyncMock.hpp>
 #include <Rr/Sync/Policy/Type.hpp>
-#include <Rr/Sync/Policy/LockSfinae.hpp>
+#include <Rr/Refl/LockSfinae.hpp>
 #include <Rr/Sync/Policy/GetPrimitiveType.hpp>
 #include <Rr/Trait/Conditional.hpp>
 #include <Rr/Trait/IntegralConstant.hpp>
@@ -37,8 +37,8 @@ struct GetPolicyType<true, TsyncTrait, CallSpecialization> : Trait::IntegralCons
 template <class T>
 class Call {
 private:
-	static constexpr auto kPolicy = GetPolicyType<definesCallPolicy<T>(), T, CallSpecialization>::value;
-	static_assert(!(kPolicy == Type::Mutex) || definesMutex<T>(), "For mutex-based lock. policy, `Mutex` type should be defined");
+	static constexpr auto kPolicy = GetPolicyType<Refl::definesCallPolicy<T>(), T, CallSpecialization>::value;
+	static_assert(!(kPolicy == Type::Mutex) || Refl::definesMutex<T>(), "For mutex-based lock. policy, `Mutex` type should be defined");
 
 public:
 	using Primitive = GetPrimitiveTypeTp<kPolicy, T, CallSpecialization>;
@@ -46,12 +46,12 @@ public:
 
 	static void lock(Primitive &a)
 	{
-		Policy::LockSfinae::lock(a);
+		Refl::LockSfinae::lock(a);
 	}
 
 	static void unlock(Primitive &a)
 	{
-		LockSfinae::unlock(a);
+		Refl::LockSfinae::unlock(a);
 	}
 };
 

@@ -5,12 +5,11 @@
 //     Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
-#if !defined(RR_SYNC_POLICY_NOMEMBER_HPP)
-#define RR_SYNC_POLICY_NOMEMBER_HPP
+#if !defined(RR_REFL_NOMEMBER_HPP)
+#define RR_REFL_NOMEMBER_HPP
 
 namespace Rr {
-namespace Sync {
-namespace Policy {
+namespace Refl {
 
 ///
 /// @brief Used as a fallback type for various SFINAE inferences
@@ -18,8 +17,7 @@ namespace Policy {
 struct NoMember{
 };
 
-}  // namespace Policy
-}  // namespace Sync
+}  // namespace Refl
 }  // namespace Rr
 
-#endif // RR_SYNC_POLICY_NOMEMBER_HPP
+#endif // RR_REFL_NOMEMBER_HPP
