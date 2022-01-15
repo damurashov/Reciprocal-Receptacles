@@ -13,22 +13,14 @@
 #include <Rr/Trait/IsSame.hpp>
 #include <Rr/Trait/StoreType.hpp>
 #include <Rr/Util/GenericMock.hpp>
+#include <Rr/Sync/Policy/NoMember.hpp>
 #include <Rr/Sync/Policy/LockSfinae.hpp>
 
 namespace Rr {
 namespace Sync {
 namespace Policy {
+
 namespace IntrospectionImpl {
-
-struct IsMember {
-	char a[1];
-};
-
-struct NoMember {
-	char a[2];
-};
-
-static_assert(sizeof(IsMember) != sizeof(NoMember));
 
 struct SfinaeFallback {
 	template <class T>
@@ -37,7 +29,7 @@ struct SfinaeFallback {
 
 struct Mutex : SfinaeFallback {
 	template <class T>
-	static IsMember type(typename T::Mutex *);
+	static void type(typename T::Mutex *);
 
 	using SfinaeFallback::type;
 };
@@ -46,34 +38,34 @@ struct Lock : SfinaeFallback {
 	using SfinaeFallback::type;
 
 	template <class T>
-	static IsMember type(typename T::Lock *);
+	static void type(typename T::Lock *);
 };
 
 struct CallPolicy : SfinaeFallback {
 	using SfinaeFallback::type;
 
 	template <class T>
-	static IsMember type(decltype(T::kCallPolicy) *);
+	static void type(decltype(T::kCallPolicy) *);
 };
 
 struct Policy : SfinaeFallback {
 	using SfinaeFallback::type;
 
 	template <class T>
-	static IsMember type(decltype(T::kPolicy) *);
+	static void type(decltype(T::kPolicy) *);
 };
 
 struct SharedAccessPolicy : SfinaeFallback {
 	using SfinaeFallback::type;
 
 	template <class T>
-	static IsMember type(decltype(T::kSharedAccessPolicy) *);
+	static void type(decltype(T::kSharedAccessPolicy) *);
 };
 
 template <class Treference, class T>
 constexpr bool defines()
 {
-	return sizeof(decltype(Treference::template type<T>(nullptr))) == sizeof(IsMember);
+	return !Trait::IsSame<decltype(Treference::template type<T>(nullptr)), NoMember>::value;
 }
 
 }  // namespace IntrospectionImpl
@@ -111,15 +103,15 @@ constexpr bool definesSharedAccessPolicy()
 template <class T>
 constexpr bool definesLockMethod()
 {
-	constexpr const char *a = "";
-	return !Trait::IsSame<LockSfinae::Fallback, decltype(LockSfinae::lock(*const_cast<T *>(reinterpret_cast<const T *const>(a))))>::value;
+	constexpr const char *arg = "";
+	return !Trait::IsSame<NoMember, decltype(LockSfinae::lock(*const_cast<T *>(reinterpret_cast<const T *const>(arg))))>::value;
 }
 
 template <class T>
 constexpr bool definesTryLockMethod()
 {
-	constexpr const char *a = "";
-	return !Trait::IsSame<LockSfinae::Fallback, decltype(LockSfinae::tryLock(*const_cast<T *>(reinterpret_cast<const T *const>(a))))>::value;
+	constexpr const char *arg = "";
+	return !Trait::IsSame<NoMember, decltype(LockSfinae::tryLock(*const_cast<T *>(reinterpret_cast<const T *const>(arg))))>::value;
 }
 
 }  // namespace Policy
