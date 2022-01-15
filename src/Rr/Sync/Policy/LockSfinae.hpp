@@ -8,19 +8,19 @@
 #if !defined(RR_SYNC_POLICY_LOCKSFINAE_HPP)
 #define RR_SYNC_POLICY_LOCKSFINAE_HPP
 
+#include <Rr/Sync/Policy/NoMember.hpp>
+
 namespace Rr {
 namespace Sync {
 namespace Policy {
 
 struct LockSfinae {
-	struct Fallback {};
-
-	static constexpr Fallback tryLock(...)
+	static constexpr NoMember tryLock(...)
 	{
 		return {};
 	}
 
-	static constexpr Fallback lock(...)
+	static constexpr NoMember lock(...)
 	{
 		return {};
 	}
