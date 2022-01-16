@@ -14,7 +14,7 @@ namespace Refl {
 ///
 /// @brief Used as a fallback type for various SFINAE inferences
 ///
-struct NoMember{
+struct NoMember {
 };
 
 }  // namespace Refl
