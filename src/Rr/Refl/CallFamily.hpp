@@ -79,9 +79,11 @@ struct CallFamily<Marker> : DefaultOverload {
 /// @brief Tries to call a certain method with a certain set of arguments. For usage example, please refer to
 /// <Test/Refl/CallFamily.cpp>.
 ///
-/// Motivation: certain containers may provide similar functionality under diffirent names (`push` for `std::stack` or
-/// `push_back` for `std::list`). This struct is instrumental to providing compile-time stemming, making it possible to
-/// call a method that fits the purpose without knowing its exact signature in advance.
+/// Motivation: certain containers may provide similar functionality (methods) under diffirent names (`push` for
+/// `std::stack` or `push_back` for `std::list`). This set of methods is referred to as "family" here.
+///
+/// This struct is instrumental to providing compile-time stemming, making it possible to call a method that fits the
+/// purpose without knowing its exact signature in advance.
 ///
 /// @tparam TsOverloads Overloads. Those are being tried to apply until the first match, or until the set is exausted.
 /// In the latter case, the call() method will evaluate to the SFINAE fallback (see `CallFamilyImpl::CallFamily<Marker>`
