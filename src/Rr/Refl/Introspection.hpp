@@ -13,6 +13,7 @@
 #include <Rr/Trait/IsSame.hpp>
 #include <Rr/Trait/StoreType.hpp>
 #include <Rr/Trait/RemoveReference.hpp>
+#include <Rr/Trait/Declval.hpp>
 #include <Rr/Util/GenericMock.hpp>
 #include <Rr/Refl/NoMember.hpp>
 #include <Rr/Refl/CallSfinae.hpp>
@@ -128,15 +129,13 @@ constexpr bool definesStoragePolicy()
 template <class T>
 constexpr bool definesLockMethod()
 {
-	constexpr const char *arg = "";
-	return !Trait::IsSame<NoMember, decltype(Rr::Refl::CallSfinae::lock(*const_cast<T *>(reinterpret_cast<const T *const>(arg))))>::value;
+	return !Trait::IsSame<NoMember, decltype(CallSfinae::lock(Trait::declval<T>()))>::value;
 }
 
 template <class T>
 constexpr bool definesTryLockMethod()
 {
-	constexpr const char *arg = "";
-	return !Trait::IsSame<NoMember, decltype(CallSfinae::tryLock(*const_cast<T *>(reinterpret_cast<const T *const>(arg))))>::value;
+	return !Trait::IsSame<NoMember, decltype(CallSfinae::tryLock(Trait::declval<T>()))>::value;
 }
 
 }  // namespace Refl

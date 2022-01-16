@@ -14,13 +14,13 @@ namespace Rr {
 namespace Trait {
 
 template <class T>
-constexpr T&& forward(Rr::Trait::RemoveReference<T> &a)
+constexpr T&& forward(typename Rr::Trait::RemoveReference<T>::Type &a)
 {
 	return static_cast<T &&>(a);
 }
 
 template <class T>
-constexpr T&& forward(Rr::Trait::RemoveReference<T> &&a)
+constexpr T&& forward(typename Rr::Trait::RemoveReference<T>::Type &&a)
 {
 	return static_cast<T &&>(a);
 }
