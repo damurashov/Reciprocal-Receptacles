@@ -8,6 +8,7 @@
 #include <cassert>
 #include <doctest/doctest.h>
 #include <Rr/Refl/CallFamily.hpp>
+#include <list>
 
 struct S {
 	int pushBack(int a)
@@ -16,7 +17,7 @@ struct S {
 	}
 };
 
-struct Overload1 {
+struct PushBack1 {
 	template <class T, class ...Ta>
 	static auto call(T &t, int a) -> decltype(t.push_back(a))
 	{
@@ -24,7 +25,7 @@ struct Overload1 {
 	}
 };
 
-struct Overload2 {
+struct PushBack2 {
 	template <class T, class ...Ta>
 	static auto call(T &t, char b) -> decltype(t.pushBack(b))
 	{
@@ -32,7 +33,7 @@ struct Overload2 {
 	}
 };
 
-struct Overload3 {
+struct PushBack3 {
 	template <class T, class ...Ta>
 	static auto call(T &t, int a) -> decltype(t.pushBack(a))
 	{
@@ -40,18 +41,33 @@ struct Overload3 {
 	}
 };
 
+struct Back1 {
+	template <class T>
+	static int &call(T &t)
+	{
+		return t.back();
+	}
+};
+
 TEST_CASE("CallFamily") {
 	S s;
 	int a = 422;
-	Rr::Refl::CallFamily<Overload1, Overload3, Overload2>::call(s, a);
+	Rr::Refl::CallFamily<PushBack1, PushBack3, PushBack2>::call(s, a);
 
 	SUBCASE("Overload ordering") {
-		CHECK(422 == Rr::Refl::CallFamily<Overload1, Overload3, Overload2>::call(s, a));
-		CHECK(422 != Rr::Refl::CallFamily<Overload1, Overload2, Overload3>::call(s, a));
+		CHECK(422 == Rr::Refl::CallFamily<PushBack1, PushBack3, PushBack2>::call(s, a));
+		CHECK(422 != Rr::Refl::CallFamily<PushBack1, PushBack2, PushBack3>::call(s, a));
 	}
 
 	SUBCASE("Check can call") {
-		CHECK(false == Rr::Refl::CanCallFamily<Overload1>::check(s, a));
-		CHECK(true == Rr::Refl::CanCallFamily<Overload1, Overload2>::check(s, a));
+		CHECK(false == Rr::Refl::CanCallFamily<PushBack1>::check(s, a));
+		CHECK(true == Rr::Refl::CanCallFamily<PushBack1, PushBack2>::check(s, a));
+	}
+
+	SUBCASE("STL list") {
+		std::list<int> list = {1,2,3};
+		CHECK(true == Rr::Refl::CanCallFamily<PushBack1, PushBack2, PushBack3>::check(list, 42));
+		CHECK(true == Rr::Refl::CanCallFamily<Back1, PushBack1, PushBack2, PushBack3>::check(list));
+		CHECK(3 == Rr::Refl::CallFamily<Back1, PushBack1, PushBack2, PushBack3>::call(list));
 	}
 }
