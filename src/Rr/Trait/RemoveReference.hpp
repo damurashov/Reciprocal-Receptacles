@@ -71,6 +71,9 @@ using Strip = Apply<T, RemoveConst, RemoveCv, RemovePointer>;
 template <class T>
 using Stript = typename Strip<T>::Type;
 
+template <class T>
+using StripTp = typename Strip<T>::Type;
+
 template <class T, bool Fc, bool Fv, bool Fp, bool Fref>
 struct RemoveCvpref :
 	Apply<T,
