@@ -17,6 +17,13 @@ struct S {
 	}
 };
 
+struct S2 {
+	static int pushBack(int a)
+	{
+		return a;
+	}
+};
+
 struct PushBack1 {
 	template <class T, class ...Ta>
 	static auto call(T &t, int a) -> decltype(t.push_back(a))
@@ -38,6 +45,22 @@ struct PushBack3 {
 	static auto call(T &t, int a) -> decltype(t.pushBack(a))
 	{
 		return t.pushBack(a);
+	}
+};
+
+struct StaticPushBack1 {
+	template <class T>
+	static auto call(int a) -> decltype(T::pushBack(a))
+	{
+		return T::pushBack(a);
+	}
+};
+
+struct StaticPushBack2 {
+	template <class T>
+	static auto call(int a) -> decltype(T::push_back(a))
+	{
+		return T::push_back(a);
 	}
 };
 
@@ -69,5 +92,11 @@ TEST_CASE("CallFamily") {
 		CHECK(true == Rr::Refl::CanCallFamily<PushBack1, PushBack2, PushBack3>::check(list, 42));
 		CHECK(true == Rr::Refl::CanCallFamily<Back1, PushBack1, PushBack2, PushBack3>::check(list));
 		CHECK(3 == Rr::Refl::CallFamily<Back1, PushBack1, PushBack2, PushBack3>::call(list));
+	}
+
+	SUBCASE("Call family, static") {
+		CHECK(true == Rr::Refl::CanCallFamily<StaticPushBack1, StaticPushBack2>::check<S2>(42));
+		CHECK(false == Rr::Refl::CanCallFamily<StaticPushBack1, StaticPushBack2>::check<S>(42));
+		CHECK(42 == Rr::Refl::CallFamily<StaticPushBack2, StaticPushBack1>::call<S2>(42));
 	}
 }

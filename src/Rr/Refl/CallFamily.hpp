@@ -20,6 +20,12 @@ struct DefaultOverload {
 	{
 		return {};
 	}
+
+	template <class T>
+	static constexpr NoMember call(...)
+	{
+		return {};
+	}
 };
 
 template <class Toverload>
@@ -33,26 +39,21 @@ struct Marker;
 template <class Tso, class ...TsOs>
 struct CallFamily
 {
-	template <class T, class ...Ta>
-	static auto call(T &&aInstance, Ta &&...aArgs) -> decltype(
+	template <class ...Ta>
+	static auto call(Ta &&...aArgs) -> decltype(
 		Trait::ConditionalTp<
-			// if overload is defined for this candidate
 			!IsNoMember<
-			decltype(Tso::call(Trait::forward<T>(aInstance), Trait::forward<Ta>(aArgs)...))>  // return type of the candidate
+			decltype(Tso::call(Trait::forward<Ta>(aArgs)...))>
 			::value,
-			// then use the candidate
 			Tso,
-			// else try other candidate
 			CallFamily<TsOs...>>
-			// endif
-			// call upon inferred type
-			::call(Trait::forward<T>(aInstance), Trait::forward<Ta>(aArgs)...)
+			::call(Trait::forward<Ta>(aArgs)...)
 	)
 	{
 		return Trait::ConditionalTp<
 			// if overload is defined for this candidate
 			!IsNoMember<
-			decltype(Tso::call(Trait::forward<T>(aInstance), Trait::forward<Ta>(aArgs)...))>  // return type of the candidate
+			decltype(Tso::call(Trait::forward<Ta>(aArgs)...))>  // return type of the candidate
 			::value,
 			// then use the candidate
 			Tso,
@@ -60,7 +61,32 @@ struct CallFamily
 			CallFamily<TsOs...>>
 			// endif
 			// call upon inferred type
-			::call(Trait::forward<T>(aInstance), Trait::forward<Ta>(aArgs)...);
+			::call(Trait::forward<Ta>(aArgs)...);
+	}
+
+	template <class T, class ...Ta>
+	static auto call(Ta &&...aArgs) -> decltype(
+		Trait::ConditionalTp<
+			!IsNoMember<
+			decltype(Tso::template call<T>(Trait::forward<Ta>(aArgs)...))>
+			::value,
+			Tso,
+			CallFamily<TsOs...>>
+			::template call<T>(Trait::forward<Ta>(aArgs)...)
+	)
+	{
+		return Trait::ConditionalTp<
+			// if overload is defined for this candidate
+			!IsNoMember<
+			decltype(Tso::template call<T>(Trait::forward<Ta>(aArgs)...))>  // return type of the candidate
+			::value,
+			// then use the candidate
+			Tso,
+			// else try other candidate
+			CallFamily<TsOs...>>
+			// endif
+			// call upon inferred type
+			::template call<T>(Trait::forward<Ta>(aArgs)...);
 	}
 };
 
@@ -92,19 +118,32 @@ struct CallFamily {
 	///
 	/// @brief Tries to call an instance's method with the given set of parameters.
 	///
-	template <class T, class ...Ta>
-	static auto call(T &&aInstance, Ta &&...aArgs) -> decltype(CallFamilyImpl::CallFamily<typename CallFamilyImpl::MakeFullOverload<TsOverloads>..., CallFamilyImpl::Marker>::call(Trait::forward<T>(aInstance), Trait::forward<Ta>(aArgs)...))
+	template <class ...Ta>
+	static auto call(Ta &&...aArgs) -> decltype(CallFamilyImpl::CallFamily<typename CallFamilyImpl::MakeFullOverload<TsOverloads>..., CallFamilyImpl::Marker>::call(Trait::forward<Ta>(aArgs)...))
 	{
-		return CallFamilyImpl::CallFamily<typename CallFamilyImpl::MakeFullOverload<TsOverloads>..., CallFamilyImpl::Marker>::call(Trait::forward<T>(aInstance), Trait::forward<Ta>(aArgs)...);
+		return CallFamilyImpl::CallFamily<typename CallFamilyImpl::MakeFullOverload<TsOverloads>..., CallFamilyImpl::Marker>::call(Trait::forward<Ta>(aArgs)...);
+	}
+
+	template <class T, class ...Ta>
+	static auto call(Ta &&...aArgs) -> decltype(CallFamilyImpl::CallFamily<typename CallFamilyImpl::MakeFullOverload<TsOverloads>..., CallFamilyImpl::Marker>::template call<T>(Trait::forward<Ta>(aArgs)...))
+	{
+		return CallFamilyImpl::CallFamily<typename CallFamilyImpl::MakeFullOverload<TsOverloads>..., CallFamilyImpl::Marker>::template call<T>(Trait::forward<Ta>(aArgs)...);
 	}
 };
 
 template <class ...TsOverloads>
 struct CanCallFamily {
-	template <class T, class ...Ta>
-	static constexpr bool check(T &&aInstance, Ta &&...aArgs)
+	template <class ...Ta>
+	static constexpr bool check(Ta &&...aArgs)
 	{
-		using RetType = decltype(CallFamily<TsOverloads...>::call(Trait::forward<T>(aInstance), Trait::forward<Ta>(aArgs)...));
+		using RetType = decltype(CallFamily<TsOverloads...>::call(Trait::forward<Ta>(aArgs)...));
+		return !IsNoMember<RetType>::value;
+	}
+
+	template <class T, class ...Ta>
+	static constexpr bool check(Ta &&...aArgs)
+	{
+		using RetType = decltype(CallFamily<TsOverloads...>::template call<T>(Trait::forward<Ta>(aArgs)...));
 		return !IsNoMember<RetType>::value;
 	}
 };
