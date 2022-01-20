@@ -37,8 +37,7 @@ struct CallFamily
 	static auto call(T &&aInstance, Ta &&...aArgs) -> decltype(
 		Trait::ConditionalTp<
 			// if overload is defined for this candidate
-			!Trait::IsSame<
-			NoMember,
+			!IsNoMember<
 			decltype(Tso::call(Trait::forward<T>(aInstance), Trait::forward<Ta>(aArgs)...))>  // return type of the candidate
 			::value,
 			// then use the candidate
@@ -52,8 +51,7 @@ struct CallFamily
 	{
 		return Trait::ConditionalTp<
 			// if overload is defined for this candidate
-			!Trait::IsSame<
-			NoMember,
+			!IsNoMember<
 			decltype(Tso::call(Trait::forward<T>(aInstance), Trait::forward<Ta>(aArgs)...))>  // return type of the candidate
 			::value,
 			// then use the candidate
@@ -107,7 +105,7 @@ struct CanCallFamily {
 	static constexpr bool check(T &&aInstance, Ta &&...aArgs)
 	{
 		using RetType = decltype(CallFamily<TsOverloads...>::call(Trait::forward<T>(aInstance), Trait::forward<Ta>(aArgs)...));
-		return !Trait::IsSame<Rr::Refl::NoMember, RetType>::value;
+		return !IsNoMember<RetType>::value;
 	}
 };
 
