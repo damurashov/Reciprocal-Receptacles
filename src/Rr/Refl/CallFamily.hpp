@@ -39,6 +39,9 @@ struct Fallback {
 
 template <>
 struct Fallback<Hint::Static> {
+	///
+	/// @brief When choosing b/w `fn(T ...)` and `fn(...)`, the compiler assigns the latter a lower priority
+	///
 	template <class T>
 	static constexpr NoMember call(...)
 	{
@@ -48,6 +51,9 @@ struct Fallback<Hint::Static> {
 
 template <>
 struct Fallback<Hint::StaticNoArg> {
+	///
+	/// @brief When chossing b/w `fn(void)` and `void(T...)`, the compiler assigns the latter a lower priority.
+	///
 	template <class T, class ...Ts>
 	static constexpr NoMember call(Ts &&...)
 	{
@@ -124,7 +130,6 @@ struct MakeFullOverload : T, Fallback<I> {
 	using T::call;
 	using Fallback<I>::call;
 };
-
 
 }  // namespace CallFamilyImpl
 
