@@ -8,6 +8,7 @@
 #include <cassert>
 #include <doctest/doctest.h>
 #include <Rr/Refl/CallFamily.hpp>
+#include <Rr/Trait/IsSame.hpp>
 #include <list>
 
 struct S {
@@ -98,6 +99,42 @@ struct Back1 {
 	}
 };
 
+struct Styped {
+	int typed()
+	{
+		return 42;
+	}
+};
+
+struct RetTyped {
+	int a;
+	char b;
+};
+
+struct Typed1 {
+	template <class T>
+	static auto call(T &a) -> decltype((int)a.typed())
+	{
+		return a.typed();
+	}
+};
+
+struct Typed2 {
+	template <class T>
+	static auto call(T &a) -> decltype((RetTyped)a.typed())
+	{
+		return a.typed();
+	}
+};
+
+struct Typed3 {
+	template <class T>
+	static char *call(T &a)
+	{
+		return a.typed();
+	}
+};
+
 TEST_CASE("CallFamily") {
 	S s;
 	int a = 422;
@@ -139,4 +176,19 @@ TEST_CASE("CallFamily") {
 		CHECK(42 == Rr::Refl::CallFamily<StaticPushBack1, StaticPushBack2, StaticPushBack3>::call<S2>());
 		CHECK(43 == Rr::Refl::CallFamily<StaticPushBack1, StaticPushBack2, StaticPushBack3>::call<S2>(43));
 	}
+
+	SUBCASE("Call family, exact type")
+	{
+		Styped s;
+		using Ret = decltype(s.typed());
+		using Ret1 = decltype(Rr::Refl::CallFamily<Typed3, Typed2, Typed1>::call(s));
+		using Ret2 = decltype(Rr::Refl::CallFamily<Typed2, Typed1>::call(s));
+
+		constexpr bool f1 = Rr::Trait::IsSame<Ret, Ret1>::value;
+		constexpr bool f2 = Rr::Trait::IsSame<Ret, Ret2>::value;
+
+		CHECK(!f1);
+		CHECK(f2);
+	}
 }
+
