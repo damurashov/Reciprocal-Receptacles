@@ -135,6 +135,15 @@ struct Typed3 {
 	}
 };
 
+struct Snodef {
+	using Type = void;
+};
+
+struct Nodef {
+	template <class T>
+	static typename T::Type call();
+};
+
 TEST_CASE("CallFamily") {
 	S s;
 	int a = 422;
@@ -189,6 +198,14 @@ TEST_CASE("CallFamily") {
 
 		CHECK(!f1);
 		CHECK(f2);
+	}
+
+	SUBCASE("Call family, decltype")
+	{
+		using Ret = decltype(Rr::Refl::CallFamily<Nodef>::call<Snodef>());
+		constexpr bool f = Rr::Trait::IsSame<Ret, void>::value;
+
+		CHECK(f);
 	}
 }
 
