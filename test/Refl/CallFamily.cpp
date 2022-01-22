@@ -15,12 +15,22 @@ struct S {
 	{
 		return a;
 	}
+
+	int pushBack()
+	{
+		return 42;
+	}
 };
 
 struct S2 {
 	static int pushBack(int a)
 	{
 		return a;
+	}
+
+	static int pushBack()
+	{
+		return 42;
 	}
 };
 
@@ -48,6 +58,14 @@ struct PushBack3 {
 	}
 };
 
+struct PushBack4 {
+	template <class T>
+	static auto call(T &t) -> decltype(t.pushBack())
+	{
+		return t.pushBack();
+	}
+};
+
 struct StaticPushBack1 {
 	template <class T>
 	static auto call(int a) -> decltype(T::pushBack(a))
@@ -61,6 +79,14 @@ struct StaticPushBack2 {
 	static auto call(int a) -> decltype(T::push_back(a))
 	{
 		return T::push_back(a);
+	}
+};
+
+struct StaticPushBack3 {
+	template <class T>
+	static auto call() -> decltype(T::pushBack())
+	{
+		return T::pushBack();
 	}
 };
 
@@ -82,6 +108,11 @@ TEST_CASE("CallFamily") {
 		CHECK(422 != Rr::Refl::CallFamily<PushBack1, PushBack2, PushBack3>::call(s, a));
 	}
 
+	SUBCASE("Overload ordering 2") {
+		CHECK(Rr::Refl::CanCallFamily<PushBack1, PushBack3, PushBack2, PushBack4>::check(s));
+		CHECK(42 == Rr::Refl::CallFamily<PushBack1, PushBack2, PushBack3, PushBack4>::call(s));
+	}
+
 	SUBCASE("Check can call") {
 		CHECK(false == Rr::Refl::CanCallFamily<PushBack1>::check(s, a));
 		CHECK(true == Rr::Refl::CanCallFamily<PushBack1, PushBack2>::check(s, a));
@@ -95,8 +126,17 @@ TEST_CASE("CallFamily") {
 	}
 
 	SUBCASE("Call family, static") {
+		// With a parameter
 		CHECK(true == Rr::Refl::CanCallFamily<StaticPushBack1, StaticPushBack2>::check<S2>(42));
 		CHECK(false == Rr::Refl::CanCallFamily<StaticPushBack1, StaticPushBack2>::check<S>(42));
 		CHECK(42 == Rr::Refl::CallFamily<StaticPushBack2, StaticPushBack1>::call<S2>(42));
+
+		// W/o a parameter
+		CHECK(Rr::Refl::CanCallFamily<StaticPushBack1, StaticPushBack2, StaticPushBack3>::check<S2>());
+		CHECK(Rr::Refl::CanCallFamily<StaticPushBack3, StaticPushBack2, StaticPushBack1>::check<S2>());
+		CHECK(!Rr::Refl::CanCallFamily<StaticPushBack2>::check<S2>());
+
+		CHECK(42 == Rr::Refl::CallFamily<StaticPushBack1, StaticPushBack2, StaticPushBack3>::call<S2>());
+		CHECK(43 == Rr::Refl::CallFamily<StaticPushBack1, StaticPushBack2, StaticPushBack3>::call<S2>(43));
 	}
 }
