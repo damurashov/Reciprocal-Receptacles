@@ -12,14 +12,15 @@ namespace Rr {
 namespace Trait {
 namespace DeclvalImpl {
 
-constexpr const char *kDummy = "";
+static constexpr int p1 = 0;
+static constexpr const void *p2 = &p1;
 
 }  // namespace DeclvalImpl
 
 template <class T>
 constexpr T &declval()
 {
-    return *const_cast<T *>(reinterpret_cast<T const *const>(DeclvalImpl::kDummy));
+	return *const_cast<T *>((const T *) DeclvalImpl::p2);
 }
 
 }  // namespace Trait
