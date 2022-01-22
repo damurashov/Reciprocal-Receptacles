@@ -5,6 +5,9 @@
 //     Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
 //
 
+#if !defined(RR_REFL_CALLFAMILY_HPP)
+#define RR_REFL_CALLFAMILY_HPP
+
 #include <Rr/Refl/NoMember.hpp>
 #include <Rr/Trait/Forward.hpp>
 #include <Rr/Trait/IsSame.hpp>
@@ -193,3 +196,5 @@ struct CanCallFamily {
 
 }  // namespace Refl
 }  // namespace Rr
+
+#endif // RR_REFL_CALLFAMILY_HPP
