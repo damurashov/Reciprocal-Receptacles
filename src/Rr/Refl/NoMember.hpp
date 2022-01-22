@@ -8,6 +8,10 @@
 #if !defined(RR_REFL_NOMEMBER_HPP)
 #define RR_REFL_NOMEMBER_HPP
 
+#include <Rr/Trait/IntegralConstant.hpp>
+#include <Rr/Trait/IsSame.hpp>
+#include <Rr/Trait/RemoveReference.hpp>
+
 namespace Rr {
 namespace Refl {
 
@@ -15,6 +19,12 @@ namespace Refl {
 /// @brief Used as a fallback type for various SFINAE inferences
 ///
 struct NoMember {
+};
+
+template <class T>
+struct IsNoMember :
+    Trait::IntegralConstant<bool, Rr::Trait::IsSame<Rr::Trait::StripTp<T>, NoMember>::value>
+{
 };
 
 }  // namespace Refl
