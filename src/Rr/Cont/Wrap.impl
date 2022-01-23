@@ -115,6 +115,8 @@ struct GetContainerType {
 	static constexpr auto value = fExpandable && fHasMethodBegin && fHasMethodEnd ? ContainerType::Push :
 		fIndexable && fKnownCapacity ? ContainerType::Index :
 		ContainerType::Incompatible;
+
+	static_assert(value != ContainerType::Incompatible, "Incompatible container type");
 };
 
 template <class Tv, template <class ...> class Tc>
