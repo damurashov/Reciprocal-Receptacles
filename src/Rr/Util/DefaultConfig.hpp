@@ -98,8 +98,8 @@ struct Object {
 ///
 /// @brief Placement operator is defined in STL's <new> header, which may be absent
 ///
-/// @param aPlacement placemeng hint
-/// @param Rr::Object hint
+/// @param aPlacement placement hint
+/// @param RrObject   To distinguish from other overloads
 ///
 inline void *operator new(unsigned long, void *aPlacement, Rr::Object)
 {
