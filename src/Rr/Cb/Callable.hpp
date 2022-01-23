@@ -70,7 +70,7 @@ struct CallVariant<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArg
 		CallMember<Tsignature, TtArglist<Targs...>> callMember;
 		CallStatic<Tsignature, TtArglist<Targs...>> callStatic;
 	};
-	unsigned char variant[sizeof(Variant)];
+	alignas(Variant) unsigned char variant[sizeof(Variant)];
 
 	typename Trait::MemberDecay<Tsignature>::ReturnType
 	operator()(Targs ...aArgs) override
@@ -80,14 +80,14 @@ struct CallVariant<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArg
 
 	CallVariant(typename Trait::MemberDecay<Tsignature>::CallbackType aCallback)
 	{
-		auto callStatic = new (variant) CallStatic<Tsignature, TtArglist<Targs...>>();
+		auto callStatic = new (variant, Rr::Object{}) CallStatic<Tsignature, TtArglist<Targs...>>();
 		callStatic->staticFunctionCallback = aCallback;
 	}
 
 	template<class Tinstance>
 	CallVariant(typename Trait::MemberDecay<Tsignature, Trait::Stript<Tinstance>>::CallbackType aCallback, Tinstance aInstance)
 	{
-		auto callMember = new (variant) CallMember<Tsignature, TtArglist<Targs...>>();
+		auto callMember = new (variant, Rr::Object{}) CallMember<Tsignature, TtArglist<Targs...>>();
 		callMember->memberFunctionCallback = rr_fn_cast<typename Trait::MemberDecay<Tsignature, Rr::Object>::CallbackType>(aCallback);
 		callMember->instance = rr_fn_cast<typename Trait::MemberDecay<Tsignature, Rr::Object>::InstanceType *>(aInstance);
 	}

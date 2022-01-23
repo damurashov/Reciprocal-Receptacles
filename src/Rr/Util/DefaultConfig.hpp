@@ -82,7 +82,11 @@ inline void debug(Ta...)
 #endif
 
 namespace Rr {
-struct Object {};
+struct Object {
+	inline constexpr Object()
+	{
+	}
+};
 }  // Rr
 
 #if RRO_STATIC_CAST_FN_CONVERSION
@@ -91,5 +95,15 @@ struct Object {};
 # define rr_fn_cast reinterpret_cast
 #endif
 
+///
+/// @brief Placement operator is defined in STL's <new> header, which may be absent
+///
+/// @param aPlacement placement hint
+/// @param RrObject   To distinguish from other overloads
+///
+inline void *operator new(unsigned long, void *aPlacement, Rr::Object)
+{
+	return aPlacement;
+}
 
 #endif // RR_UTIL_DEFAULTCONFIG_HPP
