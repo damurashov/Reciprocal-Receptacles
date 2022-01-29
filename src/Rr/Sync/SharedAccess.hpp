@@ -9,6 +9,7 @@
 #define RR_SYNC_SHAREDACCESS_HPP
 
 #include <Rr/Sync/Policy/SharedAccess.hpp>
+#include <Rr/Trait/Declval.hpp>
 
 namespace Rr {
 namespace Sync {
@@ -17,10 +18,10 @@ template <class T, class TsyncTrait>
 struct SharedAccess {
 	using Type = T;
 	using SyncTrait = TsyncTrait;
-	using Primitive = typename Rr::Sync::Policy::SharedAccess<TsyncTrait>::Primitive;
+	using PrimitiveType = typename Rr::Sync::Policy::SharedAccess<TsyncTrait>::PrimitiveType;
 
 	Type *stored = nullptr;
-	Primitive primitive;
+	PrimitiveType primitive;
 };
 
 ///
@@ -33,8 +34,8 @@ struct SharedAccess {
 ///
 template <class Titerator>
 class SharedAccessIt {
-	using S = typename Rr::Trait::RemoveCvpreft<decltype(*Titerator())>;
-	using Policy = typename Rr::Sync::Policy::SharedAccess<S::SyncTrait>;
+	using S = typename Rr::Trait::StripTp<decltype(*Rr::Trait::declval<Titerator>())>;
+	using Policy = typename Rr::Sync::Policy::SharedAccess<typename S::SyncTrait>;
 
 	Titerator it;
 	Titerator itEnd;
@@ -54,8 +55,8 @@ public:
 	bool operator==(const SharedAccessIt &);
 	bool operator!=(const SharedAccessIt &);
 
-	S::Type &operator*();
-	S::Type *operator->();
+	typename S::Type &operator*();
+	typename S::Type *operator->();
 	SharedAccessIt &operator++();
 };
 

@@ -16,6 +16,7 @@
 #include <Rr/Trait/IntegralConstant.hpp>
 #include <Rr/Trait/IsSame.hpp>
 #include <Rr/Trait/IntegralConstant.hpp>
+#include <Rr/Sync/Policy/Primitive.hpp>
 
 namespace Rr {
 namespace Sync {
@@ -34,9 +35,9 @@ struct CallSharedAccessPolicy {
 
 template <class TsyncTrait>
 struct SharedAccess {
-	static constexpr auto kPolicy = getPolicyType<SharedAccessImpl::CallSharedAccessPolicy, CallPolicy>();
+	static constexpr auto kPolicy = getPolicyType<TsyncTrait, SharedAccessImpl::CallSharedAccessPolicy, CallPolicy>();
 	using PrimitiveType = GetPrimitiveTypeTp<kPolicy, TsyncTrait>;
-	using PrimitiveOps = Primitive<kPolicy, PrimitiveType>;
+	using PrimitiveOps = Primitive<kPolicy, PrimitiveType, false>;
 };
 
 }  // namespace Policy
