@@ -9,6 +9,7 @@
 #include <doctest/doctest.h>
 #include <Rr/Refl/CallFamily.hpp>
 #include <Rr/Trait/IsSame.hpp>
+#include <Rr/Trait/Declval.hpp>
 #include <list>
 
 struct S {
@@ -144,10 +145,53 @@ struct Nodef {
 	static typename T::Type call();
 };
 
+struct CallEmplace {
+	template <class Ti, class ...Ts>
+	static auto call(Ti &&aT, Ts &&...aArgs) -> decltype(aT.emplace(Rr::Trait::forward<Ts>(aArgs)...))
+	{
+		return aT.emplace(Rr::Trait::forward<Ts>(aArgs)...);
+	}
+};
+
+struct CallEmplaceBackUnderscore {
+	template <class Ti, class ...Ts>
+	static auto call(Ti &&aT, Ts &&...aArgs) -> decltype(aT.emplace_back(Rr::Trait::forward<Ts>(aArgs)...))
+	{
+		return aT.emplace_back(Rr::Trait::forward<Ts>(aArgs)...);
+	}
+};
+
+struct CallEmplaceBackCamelcase {
+	template <class Ti, class ...Ts>
+	static auto call(Ti &&aT, Ts &&...aArgs) -> decltype(aT.emplaceBack(Rr::Trait::forward<Ts>(aArgs)...))
+	{
+		return aT.emplaceBack(Rr::Trait::forward<Ts>(aArgs)...);
+	}
+};
+
+struct CallEmplaceMarker {
+	template <class Ti>
+	static auto call() -> decltype(Rr::Trait::declval<Ti>().emplace({}));
+};
+
+struct CallEmplaceBackUsMarker {
+	template <class Ti>
+	static void call(decltype(&Ti::emplace_back) = nullptr);
+};
+
+struct CallEmplaceBackCcMarker {
+	template <class Ti>
+	static void call(decltype(&Ti::emplaceBack) = nullptr);
+};
+
 TEST_CASE("CallFamily") {
 	S s;
 	int a = 422;
 	Rr::Refl::CallFamily<PushBack1, PushBack3, PushBack2>::call(s, a);
+
+	SUBCASE("Has method, marker") {
+		CHECK(Rr::Refl::CanCallFamily<CallEmplaceMarker>::check<std::list<int>>());  // Note that std::list<...>::emplace is a template method which draws the compiler being enable to determine the correct "overload"
+	}
 
 	SUBCASE("Overload ordering") {
 		CHECK(422 == Rr::Refl::CallFamily<PushBack1, PushBack3, PushBack2>::call(s, a));
@@ -169,6 +213,21 @@ TEST_CASE("CallFamily") {
 		CHECK(true == Rr::Refl::CanCallFamily<PushBack1, PushBack2, PushBack3>::check(list, 42));
 		CHECK(true == Rr::Refl::CanCallFamily<Back1, PushBack1, PushBack2, PushBack3>::check(list));
 		CHECK(3 == Rr::Refl::CallFamily<Back1, PushBack1, PushBack2, PushBack3>::call(list));
+	}
+
+	SUBCASE("STL list emplace") {
+		struct Pod {
+			int a;
+			char b;
+		};
+
+		std::list<Pod> list;
+		list.emplace_back(Pod{42, 'c'});
+		CHECK(true == Rr::Refl::CanCallFamily<CallEmplaceBackCamelcase, CallEmplaceBackUnderscore, CallEmplace>::check(list, Pod{42, 'c'}));
+		Rr::Refl::CallFamily<CallEmplaceBackCamelcase, CallEmplaceBackUnderscore, CallEmplace>::call(list, Pod{42, 'c'});
+
+		std::list<int> ilist;
+		CHECK(true == Rr::Refl::CanCallFamily<CallEmplaceBackCamelcase, CallEmplaceBackUnderscore, CallEmplace>::check(ilist, 42));
 	}
 
 	SUBCASE("Call family, static") {
