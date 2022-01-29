@@ -24,10 +24,10 @@ struct SharedAccess {
 };
 
 ///
-/// @brief Iterates over elements, enables one to skip positions which contain nullptr-ed `SharedAccess` instances. Works as
-/// a wrapper over an iterator type pertaining to whatever container stores `SharedAccess<...>` instances. The container is
-/// expected to maintain its iterators' validity throughout the SharedAccessIt's lifespan, because no locks pertaining to the
-/// container itself are used here.
+/// @brief Iterates over elements, enables one to skip positions which contain nullptr-ed `SharedAccess` instances.
+/// Works as a wrapper over an iterator type pertaining to whatever container stores `SharedAccess<...>` instances. The
+/// container is expected to maintain its iterators' validity throughout the SharedAccessIt's lifespan, because no locks
+/// related to the container itself are used here.
 ///
 /// @tparam Titerator
 ///
