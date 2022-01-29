@@ -45,9 +45,9 @@ struct GetPolicyType<false, TsyncTrait, T>  {
 	static constexpr auto value = TsyncTrait::kPolicy;
 };
 
-struct GetPolicy {
+struct CallPolicy {
 	template <class T>
-	static auto call() -> decltype(T::kPolicy)
+	static constexpr auto call() -> decltype(T::kPolicy)
 	{
 		return T::kPolicy;
 	}
@@ -55,16 +55,16 @@ struct GetPolicy {
 
 ///
 /// @brief Returns constexpr-specified policy type.
-///
 /// @tparam T     Synchronization trait
-/// @tparam Tcall Inference helpers, similar to `GetPolicy`. If none of those matches, an attempt to resort to the
-/// default policy is made (i.e. `T::kPolicy`)
+///
+/// @tparam Tcall Inference helpers, similar to `CallGetPolicy`. The `CallGetPolicy` itself may be used as a "last
+/// resort", i.e. when specific sync. policies were not defined
 ///
 template <class T, class ...Tcall>
 constexpr Rr::Sync::Policy::Type getPolicyType()
 {
-	static_assert(Rr::Refl::CanCallFamily<Tcall..., GetPolicy>::template check<T>(), "Policy type cannot be inferred");
-	constexpr auto ret = Rr::Refl::CallFamily<Tcall..., GetPolicy>::template call<T>();
+	static_assert(Rr::Refl::CanCallFamily<Tcall...>::template check<T>(), "Policy type cannot be inferred");
+	constexpr auto ret = Rr::Refl::CallFamily<Tcall...>::template call<T>();
 	static_assert(Rr::Trait::IsSame<decltype(ret), Policy::Type>::value, "The inferred policy is not of type `Rr::Sync::Policy::Type`");
 	return ret;
 }
