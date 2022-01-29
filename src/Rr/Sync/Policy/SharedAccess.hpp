@@ -36,6 +36,7 @@ template <class TsyncTrait>
 struct SharedAccess {
 	static constexpr auto kPolicy = getPolicyType<SharedAccessImpl::CallSharedAccessPolicy, CallPolicy>();
 	using PrimitiveType = GetPrimitiveTypeTp<kPolicy, TsyncTrait>;
+	using PrimitiveOps = Primitive<kPolicy, PrimitiveType>;
 };
 
 }  // namespace Policy
