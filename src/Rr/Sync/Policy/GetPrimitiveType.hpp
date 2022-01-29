@@ -20,25 +20,23 @@ namespace Policy {
 struct GetPrimitiveTypeDefault;
 
 ///
-/// @brief Used to determine the synchronization type. Like `GetPolicyType`, it uses `Tfictitious` template parameter
-/// for specialization, if, of course, such specialization is required.
+/// @brief Used to determine the synchronization type.
 ///
 /// @tparam Ipolicy         Policy being used (special or generic. See `GetPolicyType`)
-/// @tparam TsyncTrait      Synchronization trait storing sync configuration info (same principle as w/ `GetPolicyType`)
-/// @tparam Tspecialization Specialization type.
+/// @tparam TsyncTrait      Synchronization trait storing sync configuration info
 ///
-template <Policy::Type Ipolicy, class TsyncTrait, class Tspecialization=GetPrimitiveTypeDefault>
+template <Policy::Type Ipolicy, class TsyncTrait>
 struct GetPrimitiveType;
 
 template <class Tst, class Tfi>
-struct GetPrimitiveType<Policy::Type::None, Tst, Tfi> : Trait::StoreType<Util::GenericMock> {
+struct GetPrimitiveType<Policy::Type::None, Tst> : Trait::StoreType<Util::GenericMock> {
 };
 
 template <class Tst, class Tfi>
-struct GetPrimitiveType<Policy::Type::Mutex, Tst, Tfi> : Trait::StoreType<typename Tst::Mutex> {
+struct GetPrimitiveType<Policy::Type::Mutex, Tst> : Trait::StoreType<typename Tst::Mutex> {
 };
 
-template <Policy::Type Ipolicy, class Tst, class Tfi=GetPrimitiveTypeDefault>
+template <Policy::Type Ipolicy, class Tst>
 using GetPrimitiveTypeTp = typename GetPrimitiveType<Ipolicy, Tst>::Type;
 
 }  // namespace Policy
