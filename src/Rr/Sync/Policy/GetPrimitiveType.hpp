@@ -28,11 +28,11 @@ struct GetPrimitiveTypeDefault;
 template <Policy::Type Ipolicy, class TsyncTrait>
 struct GetPrimitiveType;
 
-template <class Tst, class Tfi>
+template <class Tst>
 struct GetPrimitiveType<Policy::Type::None, Tst> : Trait::StoreType<Util::GenericMock> {
 };
 
-template <class Tst, class Tfi>
+template <class Tst>
 struct GetPrimitiveType<Policy::Type::Mutex, Tst> : Trait::StoreType<typename Tst::Mutex> {
 };
 
