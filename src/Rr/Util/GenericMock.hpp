@@ -14,15 +14,15 @@ namespace Util {
 struct GenericMock {
 
 	template <class ...Ts>
-	constexpr GenericMock(Ts&&...)
+	constexpr inline GenericMock(Ts&&...)
 	{
 	}
 
-	constexpr GenericMock()
+	constexpr inline GenericMock()
 	{
 	}
 
-	constexpr GenericMock getSyncPrimitive()
+	constexpr inline GenericMock getSyncPrimitive()
 	{
 		return {};
 	}
