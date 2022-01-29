@@ -71,7 +71,7 @@ struct Primitive<Policy::Type::None, T, Ftry> {
 	{
 	}
 
-	static inline constexpr void tryLock()
+	static inline constexpr bool tryLock()
 	{
 		return true;
 	}
@@ -79,7 +79,7 @@ struct Primitive<Policy::Type::None, T, Ftry> {
 
 template <class T, bool Ftry>
 class Primitive<Policy::Type::Mutex, T, Ftry> {
-	constexpr T& kObjStub = Rr::Trait::declval<T>();
+	static constexpr T& kObjStub = Rr::Trait::declval<T>();
 
 	static_assert(Rr::Refl::CanCallFamily<PrimitiveImpl::CallLock>::check(kObjStub),
 		"Mutex type must define method ::lock(0)");
@@ -113,7 +113,7 @@ public:
 		return Rr::Refl::CallFamily<PrimitiveImpl::CallUnlock>::call(aT);
 	}
 
-	static inline void tryLock(T &aT)
+	static inline bool tryLock(T &aT)
 	{
 		return tryLockImpl<kDefinesTryLock>();
 	}
