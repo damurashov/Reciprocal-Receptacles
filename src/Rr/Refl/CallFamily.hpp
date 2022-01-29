@@ -67,7 +67,7 @@ struct Fallback<Hint::StaticNoArg> {
 template <Hint I, class Tso, class ...TsOs>
 struct Impl {
 	template <class T, class ...Ta>
-	static auto call(Ta &&...aArgs) -> decltype(
+	static inline auto call(Ta &&...aArgs) -> decltype(
 		Trait::ConditionalTp<
 			!IsNoMember<
 			decltype(Tso::template call<T>(Trait::forward<Ta>(aArgs)...))>
@@ -95,7 +95,7 @@ struct Impl {
 template <class Tso, class ...TsOs>
 struct Impl<Hint::Member, Tso, TsOs...> {
 	template <class ...Ta>
-	static auto call(Ta &&...aArgs) -> decltype(
+	static inline auto call(Ta &&...aArgs) -> decltype(
 		Trait::ConditionalTp<
 			!IsNoMember<
 			decltype(Tso::call(Trait::forward<Ta>(aArgs)...))>
@@ -134,8 +134,6 @@ struct MakeFullOverload : T, Fallback<I> {
 	using Fallback<I>::call;
 };
 
-}  // namespace CallFamilyImpl
-
 ///
 /// @brief Tries to call a certain method with a certain set of arguments. For usage example, please refer to
 /// <Test/Refl/CallFamily.cpp>.
@@ -156,24 +154,24 @@ struct CallFamily {
 	/// @brief Tries to call an instance's method with the given set of parameters.
 	///
 	template <class T, class ...Ta>
-	static auto call(T &&arg, Ta &&...aArgs) ->
-		decltype(CallFamilyImpl::Impl<CallFamilyImpl::Hint::Member,
-		typename CallFamilyImpl::MakeFullOverload<CallFamilyImpl::Hint::Member, TsOverloads>...,
-		CallFamilyImpl::Marker>::call(Trait::forward<T>(arg), Trait::forward<Ta>(aArgs)...))
+	static inline auto call(T &&arg, Ta &&...aArgs) ->
+		decltype(Impl<Hint::Member,
+		MakeFullOverload<Hint::Member, TsOverloads>...,
+		Marker>::call(Trait::forward<T>(arg), Trait::forward<Ta>(aArgs)...))
 	{
-		return CallFamilyImpl::Impl<CallFamilyImpl::Hint::Member,
-			typename CallFamilyImpl::MakeFullOverload<CallFamilyImpl::Hint::Member, TsOverloads>...,
-			CallFamilyImpl::Marker>::call(Trait::forward<T>(arg), Trait::forward<Ta>(aArgs)...);
+		return Impl<Hint::Member,
+			MakeFullOverload<Hint::Member, TsOverloads>...,
+			Marker>::call(Trait::forward<T>(arg), Trait::forward<Ta>(aArgs)...);
 	}
 
 	template <class T, class ...Ta>
-	static auto call(Ta &&...aArgs) -> decltype(CallFamilyImpl::Impl<CallFamilyImpl::getStaticHint<Ta...>(),
-	typename CallFamilyImpl::MakeFullOverload<CallFamilyImpl::getStaticHint<Ta...>(), TsOverloads>...,
-	CallFamilyImpl::Marker>::template call<T>(Trait::forward<Ta>(aArgs)...))
+	static inline auto call(Ta &&...aArgs) -> decltype(Impl<getStaticHint<Ta...>(),
+	MakeFullOverload<getStaticHint<Ta...>(), TsOverloads>...,
+	Marker>::template call<T>(Trait::forward<Ta>(aArgs)...))
 	{
-		return CallFamilyImpl::Impl<CallFamilyImpl::getStaticHint<Ta...>(),
-			typename CallFamilyImpl::MakeFullOverload<CallFamilyImpl::getStaticHint<Ta...>(), TsOverloads>...,
-			CallFamilyImpl::Marker>::template call<T>(Trait::forward<Ta>(aArgs)...);
+		return Impl<getStaticHint<Ta...>(),
+			MakeFullOverload<getStaticHint<Ta...>(), TsOverloads>...,
+			Marker>::template call<T>(Trait::forward<Ta>(aArgs)...);
 	}
 };
 
@@ -193,6 +191,14 @@ struct CanCallFamily {
 		return !IsNoMember<RetType>::value;
 	}
 };
+
+}  // namespace CallFamilyImpl
+
+template <class ...Ts>
+using CallFamily = typename CallFamilyImpl::CallFamily<Ts...>;
+
+template <class ...Ts>
+using CanCallFamily = typename CallFamilyImpl::CanCallFamily<Ts...>;
 
 }  // namespace Refl
 }  // namespace Rr
