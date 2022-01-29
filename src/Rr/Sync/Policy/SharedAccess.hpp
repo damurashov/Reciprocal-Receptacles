@@ -20,36 +20,22 @@
 namespace Rr {
 namespace Sync {
 namespace Policy {
+namespace SharedAccessImpl {
 
-struct SharedAccessSpecialization;  // Compile-time specialization "token". For extension.
-
-///
-/// @brief Specialization. See <GetPolicyType.hpp>
-///
-template<bool F, class TsyncTrait>
-struct GetPolicyType<F, TsyncTrait, SharedAccessSpecialization> : Trait::IntegralConstant<Policy::Type, TsyncTrait::kSharedAccessPolicy> {
+struct CallSharedAccessPolicy {
+	template <class T>
+	static auto call() -> decltype(T::kSharedAccessPolicy)
+	{
+		return T::kSharedAccessPolicy;
+	}
 };
 
-///
-/// @brief
-///
-/// @tparam T Synchronization trait
-///
-template <class T>
-class SharedAccess {
-public:
-	static constexpr auto kPolicy = GetPolicyType<Refl::definesSharedAccessPolicy<T>(), T, SharedAccessSpecialization>;
-	using Primitive = GetPrimitiveTypeTp<kPolicy, T, SharedAccessSpecialization>;
+}  // namespace SharedAccessImpl
 
-	static void lock(Primitive &a)
-	{
-		CallSfinae::lock(a);
-	}
-
-	static void unlock(Primitive &a)
-	{
-		CallSfinae::lock(a);
-	}
+template <class TsyncTrait>
+struct SharedAccess {
+	static constexpr auto kPolicy = getPolicyType<SharedAccessImpl::CallSharedAccessPolicy, CallPolicy>();
+	using PrimitiveType = GetPrimitiveTypeTp<kPolicy, TsyncTrait>;
 };
 
 }  // namespace Policy
