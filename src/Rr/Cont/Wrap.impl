@@ -12,115 +12,11 @@ namespace Rr {
 namespace Cont {
 namespace WrapImpl {
 
-// Sfinaes
-
-struct CallIndex {
-	template <class T2>
-	static auto call(T2 &a) -> decltype(a.at(0))
-	{
-		a.at(0);
-	}
-};
-
-struct CallMaxSizeUnderscore {
-	template <class T2>
-	static auto call(T2 &a) -> decltype(a.max_size())
-	{
-		return a.max_size();
-	}
-};
-
-struct CallMaxSizeCamelcase {
-	template <class T2>
-	static auto call(T2 &a) -> decltype(a.maxSize())
-	{
-		return a.maxSize();
-	}
-};
-
-struct CallCapacity {
-	template <class T2>
-	static auto call (T2 &a) -> decltype(a.capacity())
-	{
-		return a.capacity();
-	}
-};
-
-struct CallPush {
-	template <class Ti, class Tv>
-	static auto call(Ti &aI, Tv &aV) -> decltype(aI.push(aV))
-	{
-		return aI.push(aV);
-	}
-};
-
-struct CallPushBackUnderscore {
-	template <class Ti, class Tv>
-	static auto call(Ti &aI, Tv &aV) -> decltype(aI.push_back(aV))
-	{
-		return aI.push_back(aV);
-	}
-};
-
-struct CallPushBackCamelcase {
-	template <class Ti, class Tv>
-	static auto call(Ti &aI, Tv &aV) -> decltype(aI.pushBack(aV))
-	{
-		aI.pushBack(aV);
-	}
-};
-
-struct CallEmplaceBackUnderscore {
-	template <class Ti, class Tv>
-	static auto call(Ti &aI, Tv &aV) -> decltype(aI.emplace_back(aV))
-	{
-		aI.emplace_back(aV);
-	}
-};
-
-struct CallEmplaceBackCamelcase {
-	template <class Ti, class Tv>
-	static auto call(Ti &aI, Tv &aV) -> decltype(aI.emplaceBack(aV))
-	{
-		aI.emplaceBack(aV);
-	}
-};
-
-struct CallBegin {
-	template <class Ti>
-	static auto call(Ti &aI) -> decltype(aI.begin())
-	{
-		aI.begin();
-	}
-};
-
-struct CallEnd {
-	template <class Ti>
-	static auto call(Ti &&aI) -> decltype(aI.end())
-	{
-		aI.end();
-	}
-};
-
-template <class Tv, template <class...> class Tc>
-struct GetContainerType {
-	static constexpr bool fIndexable = Rr::Refl::CanCallFamily<CallIndex>::check(Rr::Trait::declval<Tc<Tv>>());
-	static constexpr bool fKnownCapacity = Rr::Refl::CanCallFamily<CallCapacity,
-		CallMaxSizeCamelcase, CallMaxSizeUnderscore>::check(Rr::Trait::declval<Tc<Tv>>());
-	static constexpr bool fExpandable = Rr::Refl::CanCallFamily<CallPush, CallPushBackCamelcase, CallPushBackUnderscore,
-		CallEmplaceBackCamelcase, CallEmplaceBackUnderscore>::check(Rr::Trait::declval<Tc<Tv>>(), Rr::Trait::declval<Tv>());
-	static constexpr bool fHasMethodBegin = Rr::Refl::CanCallFamily<CallBegin>::check(Rr::Trait::declval<Tc<Tv>>());
-	static constexpr bool fHasMethodEnd = Rr::Refl::CanCallFamily<CallEnd>::check(Rr::Trait::declval<Tc<Tv>>());
-
-	static constexpr auto value = fExpandable && fHasMethodBegin && fHasMethodEnd ? ContainerType::Push :
-		fIndexable && fKnownCapacity ? ContainerType::Index :
-		ContainerType::Incompatible;
-
-	static_assert(value != ContainerType::Incompatible, "Incompatible container type");
-};
+// Override for Wrap<ContainerType::Index, ...>
 
 template <class Tv, template <class ...> class Tc>
 inline Wrap<ContainerType::Index, Tv, Tc>::Wrap():
+	Tc<Tv>{},
 	pos{0},
 	maxSize(Rr::Refl::CallFamily<CallCapacity, CallMaxSizeUnderscore, CallMaxSizeCamelcase>::call(*((Tc<Tv> *)this)))
 {
@@ -157,6 +53,33 @@ template <class ...Ts>
 inline void Wrap<ContainerType::Index, Tv, Tc>::emplace(Ts &&...aArgs)
 {
 	new (&this->at(pos++), Rr::Object{}) Tv{Rr::Trait::forward<Ts>(aArgs)...};
+}
+
+// Override for Wrap<ContainerType::Push, ...>
+
+template <class Tv, template <class ...> class Tc>
+inline Wrap<ContainerType::Push, Tv, Tc>::Wrap():
+	Tc<Tv>{},
+	sz{0}
+{
+}
+
+template <class Tv, template <class ...> class Tc>
+inline unsigned Wrap<ContainerType::Push, Tv, Tc>::size() const
+{
+	return sz;
+}
+
+template <class Tv, template <class ...> class Tc>
+inline typename Wrap<ContainerType::Push, Tv, Tc>::Iterator Wrap<ContainerType::Push, Tv, Tc>::begin()
+{
+	return this->begin();
+}
+
+template <class Tv, template <class ...> class Tc>
+inline typename Wrap<ContainerType::Push, Tv, Tc>::Iterator Wrap<ContainerType::Push, Tv, Tc>::end()
+{
+	return this->end();
 }
 
 }  // namespace WrapImpl

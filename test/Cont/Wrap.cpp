@@ -10,6 +10,7 @@
 #include <Rr/Cont/Wrap.hpp>
 #include <Rr/Cont/Array.hpp>
 #include <array>
+#include <list>
 
 template <class T>
 using Vec3d = std::array<T, 3>;
@@ -88,5 +89,21 @@ TEST_CASE("Cont::Wrap")
 		for (auto &nonpod : wrap) {
 			(void)nonpod;
 		}
+	}
+
+	SUBCASE("wrap std::list") {
+		struct Pod {
+			int a;
+			char b;
+		};
+
+		Rr::Cont::Wrap<Pod, std::list> wrap;
+
+		wrap.push({1, 'a'});
+		wrap.size();
+		CHECK(1 == wrap.size());
+
+		wrap.emplace(Pod{2, 'b'});
+		CHECK(2 == wrap.size());
 	}
 }
