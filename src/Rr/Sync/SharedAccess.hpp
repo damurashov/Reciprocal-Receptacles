@@ -26,6 +26,10 @@ struct SharedAccess {
 	SharedAccess(Type *a): stored{a}, primitive{}
 	{
 	}
+
+	SharedAccess(): stored{nullptr}, primitive{}
+	{
+	}
 };
 
 ///
