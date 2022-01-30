@@ -13,6 +13,7 @@
 #include <Rr/Refl/Introspection.hpp>
 #include <Rr/Refl/CallFamily.hpp>
 #include <Rr/Trait/IsSame.hpp>
+#include <Rr/Trait/RemoveReference.hpp>
 
 namespace Rr {
 namespace Sync {
@@ -61,12 +62,11 @@ struct CallPolicy {
 /// resort", i.e. when specific sync. policies were not defined
 ///
 template <class T, class ...Tcall>
-constexpr Rr::Sync::Policy::Type getPolicyType()
+inline constexpr Rr::Sync::Policy::Type getPolicyType()
 {
 	static_assert(Rr::Refl::CanCallFamily<Tcall...>::template check<T>(), "Policy type cannot be inferred");
-	constexpr auto ret = Rr::Refl::CallFamily<Tcall...>::template call<T>();
-	static_assert(Rr::Trait::IsSame<decltype(ret), Policy::Type>::value, "The inferred policy is not of type `Rr::Sync::Policy::Type`");
-	return ret;
+	static_assert(Trait::IsSame<Trait::StripTp<decltype(Rr::Refl::ConstexprCallFamily<Tcall...>::template call<T>())>, Policy::Type>::value, "The inferred policy is not of type `Rr::Sync::Policy::Type`");
+	return Rr::Refl::ConstexprCallFamily<Tcall...>::template call<T>();
 }
 
 }  // namespace Policy
