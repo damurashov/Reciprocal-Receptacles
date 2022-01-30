@@ -66,7 +66,7 @@ struct RemoveCv : StoreType<typename RemoveConst<typename RemoveVolatile<T>::Typ
 };
 
 template <class T>
-using Strip = Apply<T, RemoveConst, RemoveCv, RemovePointer>;
+using Strip = Apply<T, RemoveCv, RemoveReference, RemovePointer>;
 
 template <class T>
 using Stript = typename Strip<T>::Type;
@@ -86,6 +86,9 @@ struct RemoveCvpref :
 
 template <class T, bool ...Fs>
 using RemoveCvpreft = typename RemoveCvpref<T, Fs...>::Type;
+
+template <class T, bool ...Fs>
+using RemoveCvprefTp = typename RemoveCvpref<T, Fs...>::Type;
 
 }  // namespace Trait
 }  // namespace Rr
