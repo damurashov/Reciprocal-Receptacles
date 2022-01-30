@@ -184,10 +184,36 @@ struct CallEmplaceBackCcMarker {
 	static void call(decltype(&Ti::emplaceBack) = nullptr);
 };
 
+struct CallCamelUnderscore {
+	struct None {
+	};
+
+	struct Camel {
+		static void callMe();
+	};
+
+	struct Underscore {
+		static void call_me();
+	};
+
+	template <class Ti>
+	static auto call() -> decltype(Ti::call_me());
+
+	template <class Ti>
+	static auto call() -> decltype(Ti::callMe());
+};
+
 TEST_CASE("CallFamily") {
 	S s;
 	int a = 422;
 	Rr::Refl::CallFamily<PushBack1, PushBack3, PushBack2>::call(s, a);
+
+	SUBCASE("Camelcase / underscore in one call hint") {
+		using namespace Rr::Refl;
+		CHECK(!CanCallFamily<CallCamelUnderscore>::check<CallCamelUnderscore::None>());
+		CHECK(CanCallFamily<CallCamelUnderscore>::check<CallCamelUnderscore::Camel>());
+		CHECK(CanCallFamily<CallCamelUnderscore>::check<CallCamelUnderscore::Underscore>());
+	}
 
 	SUBCASE("Has method, marker") {
 		CHECK(Rr::Refl::CanCallFamily<CallEmplaceMarker>::check<std::list<int>>());  // Note that std::list<...>::emplace is a template method which draws the compiler being enable to determine the correct "overload"

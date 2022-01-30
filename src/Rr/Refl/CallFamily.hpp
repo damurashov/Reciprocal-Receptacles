@@ -67,7 +67,7 @@ struct Fallback<Hint::StaticNoArg> {
 template <Hint I, class Tso, class ...TsOs>
 struct Impl {
 	template <class T, class ...Ta>
-	static auto call(Ta &&...aArgs) -> decltype(
+	static inline auto call(Ta &&...aArgs) -> decltype(
 		Trait::ConditionalTp<
 			!IsNoMember<
 			decltype(Tso::template call<T>(Trait::forward<Ta>(aArgs)...))>
@@ -95,7 +95,7 @@ struct Impl {
 template <class Tso, class ...TsOs>
 struct Impl<Hint::Member, Tso, TsOs...> {
 	template <class ...Ta>
-	static auto call(Ta &&...aArgs) -> decltype(
+	static inline auto call(Ta &&...aArgs) -> decltype(
 		Trait::ConditionalTp<
 			!IsNoMember<
 			decltype(Tso::call(Trait::forward<Ta>(aArgs)...))>
@@ -128,13 +128,75 @@ template <>
 struct Impl<Hint::Member, Marker> : Fallback<Hint::Member> {
 };
 
+template <Hint I, class Tso, class ...TsOs>
+struct ConstexprImpl {
+	template <class T, class ...Ta>
+	static constexpr inline auto call(Ta &&...aArgs) -> decltype(
+		Trait::ConditionalTp<
+			!IsNoMember<
+			decltype(Tso::template call<T>(Trait::forward<Ta>(aArgs)...))>
+			::value,
+			Tso,
+			ConstexprImpl<I, TsOs...>>
+			::template call<T>(Trait::forward<Ta>(aArgs)...)
+	)
+	{
+		return Trait::ConditionalTp<
+			// if overload is defined for this candidate
+			!IsNoMember<
+			decltype(Tso::template call<T>(Trait::forward<Ta>(aArgs)...))>  // return type of the candidate
+			::value,
+			// then use the candidate
+			Tso,
+			// else try other candidate
+			ConstexprImpl<I, TsOs...>>
+			// endif
+			// call upon inferred type
+			::template call<T>(Trait::forward<Ta>(aArgs)...);
+	}
+};
+
+template <class Tso, class ...TsOs>
+struct ConstexprImpl<Hint::Member, Tso, TsOs...> {
+	template <class ...Ta>
+	static constexpr inline auto call(Ta &&...aArgs) -> decltype(
+		Trait::ConditionalTp<
+			!IsNoMember<
+			decltype(Tso::call(Trait::forward<Ta>(aArgs)...))>
+			::value,
+			Tso,
+			ConstexprImpl<Hint::Member, TsOs...>>
+			::call(Trait::forward<Ta>(aArgs)...)
+	)
+	{
+		return Trait::ConditionalTp<
+			// if overload is defined for this candidate
+			!IsNoMember<
+			decltype(Tso::call(Trait::forward<Ta>(aArgs)...))>  // return type of the candidate
+			::value,
+			// then use the candidate
+			Tso,
+			// else try other candidate
+			ConstexprImpl<Hint::Member, TsOs...>>
+			// endif
+			// call upon inferred type
+			::call(Trait::forward<Ta>(aArgs)...);
+	}
+};
+
+template <Hint I>
+struct ConstexprImpl<I, Marker> : Fallback<I> {
+};
+
+template <>
+struct ConstexprImpl<Hint::Member, Marker> : Fallback<Hint::Member> {
+};
+
 template <Hint I, class T>
 struct MakeFullOverload : T, Fallback<I> {
 	using T::call;
 	using Fallback<I>::call;
 };
-
-}  // namespace CallFamilyImpl
 
 ///
 /// @brief Tries to call a certain method with a certain set of arguments. For usage example, please refer to
@@ -156,24 +218,51 @@ struct CallFamily {
 	/// @brief Tries to call an instance's method with the given set of parameters.
 	///
 	template <class T, class ...Ta>
-	static auto call(T &&arg, Ta &&...aArgs) ->
-		decltype(CallFamilyImpl::Impl<CallFamilyImpl::Hint::Member,
-		typename CallFamilyImpl::MakeFullOverload<CallFamilyImpl::Hint::Member, TsOverloads>...,
-		CallFamilyImpl::Marker>::call(Trait::forward<T>(arg), Trait::forward<Ta>(aArgs)...))
+	static inline auto call(T &&arg, Ta &&...aArgs) ->
+		decltype(Impl<Hint::Member,
+		MakeFullOverload<Hint::Member, TsOverloads>...,
+		Marker>::call(Trait::forward<T>(arg), Trait::forward<Ta>(aArgs)...))
 	{
-		return CallFamilyImpl::Impl<CallFamilyImpl::Hint::Member,
-			typename CallFamilyImpl::MakeFullOverload<CallFamilyImpl::Hint::Member, TsOverloads>...,
-			CallFamilyImpl::Marker>::call(Trait::forward<T>(arg), Trait::forward<Ta>(aArgs)...);
+		return Impl<Hint::Member,
+			MakeFullOverload<Hint::Member, TsOverloads>...,
+			Marker>::call(Trait::forward<T>(arg), Trait::forward<Ta>(aArgs)...);
 	}
 
 	template <class T, class ...Ta>
-	static auto call(Ta &&...aArgs) -> decltype(CallFamilyImpl::Impl<CallFamilyImpl::getStaticHint<Ta...>(),
-	typename CallFamilyImpl::MakeFullOverload<CallFamilyImpl::getStaticHint<Ta...>(), TsOverloads>...,
-	CallFamilyImpl::Marker>::template call<T>(Trait::forward<Ta>(aArgs)...))
+	static inline auto call(Ta &&...aArgs) -> decltype(Impl<getStaticHint<Ta...>(),
+	MakeFullOverload<getStaticHint<Ta...>(), TsOverloads>...,
+	Marker>::template call<T>(Trait::forward<Ta>(aArgs)...))
 	{
-		return CallFamilyImpl::Impl<CallFamilyImpl::getStaticHint<Ta...>(),
-			typename CallFamilyImpl::MakeFullOverload<CallFamilyImpl::getStaticHint<Ta...>(), TsOverloads>...,
-			CallFamilyImpl::Marker>::template call<T>(Trait::forward<Ta>(aArgs)...);
+		return Impl<getStaticHint<Ta...>(),
+			MakeFullOverload<getStaticHint<Ta...>(), TsOverloads>...,
+			Marker>::template call<T>(Trait::forward<Ta>(aArgs)...);
+	}
+};
+
+template <class ...TsOverloads>
+struct ConstexprCallFamily {
+	///
+	/// @brief Tries to call an instance's method with the given set of parameters.
+	///
+	template <class T, class ...Ta>
+	static constexpr inline auto call(T &&arg, Ta &&...aArgs) ->
+		decltype(ConstexprImpl<Hint::Member,
+		MakeFullOverload<Hint::Member, TsOverloads>...,
+		Marker>::call(Trait::forward<T>(arg), Trait::forward<Ta>(aArgs)...))
+	{
+		return ConstexprImpl<Hint::Member,
+			MakeFullOverload<Hint::Member, TsOverloads>...,
+			Marker>::call(Trait::forward<T>(arg), Trait::forward<Ta>(aArgs)...);
+	}
+
+	template <class T, class ...Ta>
+	static constexpr inline auto call(Ta &&...aArgs) -> decltype(ConstexprImpl<getStaticHint<Ta...>(),
+	MakeFullOverload<getStaticHint<Ta...>(), TsOverloads>...,
+	Marker>::template call<T>(Trait::forward<Ta>(aArgs)...))
+	{
+		return ConstexprImpl<getStaticHint<Ta...>(),
+			MakeFullOverload<getStaticHint<Ta...>(), TsOverloads>...,
+			Marker>::template call<T>(Trait::forward<Ta>(aArgs)...);
 	}
 };
 
@@ -193,6 +282,17 @@ struct CanCallFamily {
 		return !IsNoMember<RetType>::value;
 	}
 };
+
+}  // namespace CallFamilyImpl
+
+template <class ...Ts>
+using CallFamily = typename CallFamilyImpl::CallFamily<Ts...>;
+
+template <class ...Ts>
+using ConstexprCallFamily = typename CallFamilyImpl::ConstexprCallFamily<Ts...>;
+
+template <class ...Ts>
+using CanCallFamily = typename CallFamilyImpl::CanCallFamily<Ts...>;
 
 }  // namespace Refl
 }  // namespace Rr
