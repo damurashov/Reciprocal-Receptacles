@@ -32,6 +32,7 @@ struct CallUnlock {
 	template <class T>
 	static inline auto call(T &a) -> decltype(a.unlock())
 	{
+		return a.unlock();
 	}
 };
 
