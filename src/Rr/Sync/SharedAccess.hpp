@@ -22,6 +22,10 @@ struct SharedAccess {
 
 	Type *stored = nullptr;
 	PrimitiveType primitive;
+
+	SharedAccess(Type *a): stored{a}, primitive{}
+	{
+	}
 };
 
 ///
@@ -35,7 +39,7 @@ struct SharedAccess {
 template <class Titerator>
 class SharedAccessIt {
 	using S = typename Rr::Trait::StripTp<decltype(*Rr::Trait::declval<Titerator>())>;
-	using Policy = typename Rr::Sync::Policy::SharedAccess<typename S::SyncTrait>;
+	using Policy = Rr::Sync::Policy::SharedAccess<typename S::SyncTrait>;
 
 	Titerator it;
 	Titerator itEnd;
@@ -46,10 +50,10 @@ class SharedAccessIt {
 	void skip();  // Advance to a next non-nullptr element, until itEnd is met
 public:
 	SharedAccessIt(Titerator aItBegin, Titerator aItEnd);
-	SharedAccessIt(const SharedAccessIt &) = default;
-	SharedAccessIt(SharedAccessIt &&) = default;
-	SharedAccessIt &operator=(const SharedAccessIt &) = default;
-	SharedAccessIt &operator=(SharedAccessIt &&) = default;
+	SharedAccessIt(const SharedAccessIt &);
+	SharedAccessIt(SharedAccessIt &&);
+	SharedAccessIt &operator=(const SharedAccessIt &);
+	SharedAccessIt &operator=(SharedAccessIt &&);
 	~SharedAccessIt();
 
 	bool operator==(const SharedAccessIt &);
@@ -62,5 +66,7 @@ public:
 
 }  // namespace Sync
 }  // namespace Rr
+
+#include "SharedAccess.impl"
 
 #endif // RR_SYNC_SHAREDACCESS_HPP
