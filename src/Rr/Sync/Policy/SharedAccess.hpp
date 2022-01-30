@@ -25,7 +25,7 @@ namespace SharedAccessImpl {
 
 struct CallSharedAccessPolicy {
 	template <class T>
-	static auto call() -> decltype(T::kSharedAccessPolicy)
+	static constexpr auto call() -> decltype(T::kSharedAccessPolicy)
 	{
 		return T::kSharedAccessPolicy;
 	}
