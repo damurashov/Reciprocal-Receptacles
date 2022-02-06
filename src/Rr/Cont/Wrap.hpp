@@ -161,6 +161,7 @@ template <class Tv, template <class ...> class Tc>
 class Wrap<ContainerType::Index, Tv, Tc> : public Tc<Tv> {
 	unsigned pos;
 	const unsigned maxSize;
+	using Base = Tc<Tv>;
 
 public:
 	using Iterator = decltype(&Rr::Trait::declval<Tc<Tv>>().at(0));
@@ -184,6 +185,7 @@ public:
 template <class Tv, template <class ...> class Tc>
 class Wrap<ContainerType::Push, Tv, Tc> : Tc<Tv> {
 	unsigned sz = 0;
+	using Base = Tc<Tv>;
 
 public:
 	using Iterator = decltype(Rr::Trait::declval<Tc<Tv>>().begin());
