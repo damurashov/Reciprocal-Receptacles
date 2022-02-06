@@ -44,25 +44,19 @@ template <class T>
 inline Rr::Sync::SharedAccessIt<T>::SharedAccessIt(T aItBegin, T aItEnd):
 	it(aItBegin), itEnd(aItEnd), locked(false)
 {
-	skip();
+	if (aItBegin != aItEnd) {
+		skip();
+	}
 }
 
 template <class T>
-inline Rr::Sync::SharedAccessIt<T>::SharedAccessIt(const SharedAccessIt &a)
+inline Rr::Sync::SharedAccessIt<T>::SharedAccessIt(const SharedAccessIt &a): it{a.it}, itEnd{a.itEnd}, locked{false}
 {
-	unlock();
-	it = a.it;
-	itEnd = a.itEnd;
-	locked = false;
 }
 
 template <class T>
-inline Rr::Sync::SharedAccessIt<T>::SharedAccessIt(SharedAccessIt &&a)
+inline Rr::Sync::SharedAccessIt<T>::SharedAccessIt(SharedAccessIt &&a): it{a.it}, itEnd{a.itEnd}, locked{a.locked}
 {
-	unlock();
-	it = a.it;
-	itEnd = a.itEnd;
-	locked = a.locked;
 	a.locked = false;
 }
 

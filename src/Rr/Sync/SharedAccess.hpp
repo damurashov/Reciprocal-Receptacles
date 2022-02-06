@@ -53,6 +53,8 @@ class SharedAccessIt {
 	void unlock();
 	void skip();  // Advance to a next non-nullptr element, until itEnd is met
 public:
+	using WrappedIt = Titerator;
+
 	SharedAccessIt(Titerator aItBegin, Titerator aItEnd);
 	SharedAccessIt(const SharedAccessIt &);
 	SharedAccessIt(SharedAccessIt &&);
@@ -64,7 +66,6 @@ public:
 	bool operator!=(const SharedAccessIt &);
 	bool operator==(const Titerator &);
 	bool operator!=(const Titerator &);
-
 	typename S::Type &operator*();
 	typename S::Type *operator->();
 	SharedAccessIt &operator++();
