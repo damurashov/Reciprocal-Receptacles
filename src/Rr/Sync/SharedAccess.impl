@@ -108,6 +108,18 @@ inline bool Rr::Sync::SharedAccessIt<T>::operator!=(const SharedAccessIt &a)
 }
 
 template <class T>
+inline bool Rr::Sync::SharedAccessIt<T>::operator==(const T &a)
+{
+	return it == a;
+}
+
+template <class T>
+inline bool Rr::Sync::SharedAccessIt<T>::operator!=(const T &a)
+{
+	return it != a;
+}
+
+template <class T>
 inline typename Rr::Sync::SharedAccessIt<T>::S::Type &Rr::Sync::SharedAccessIt<T>::operator*()
 {
 	lock();

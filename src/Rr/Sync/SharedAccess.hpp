@@ -62,6 +62,8 @@ public:
 
 	bool operator==(const SharedAccessIt &);
 	bool operator!=(const SharedAccessIt &);
+	bool operator==(const Titerator &);
+	bool operator!=(const Titerator &);
 
 	typename S::Type &operator*();
 	typename S::Type *operator->();
