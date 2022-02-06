@@ -73,13 +73,13 @@ inline unsigned Wrap<ContainerType::Push, Tv, Tc>::size() const
 template <class Tv, template <class ...> class Tc>
 inline typename Wrap<ContainerType::Push, Tv, Tc>::Iterator Wrap<ContainerType::Push, Tv, Tc>::begin()
 {
-	return this->begin();
+	return Tc<Tv>::begin();
 }
 
 template <class Tv, template <class ...> class Tc>
 inline typename Wrap<ContainerType::Push, Tv, Tc>::Iterator Wrap<ContainerType::Push, Tv, Tc>::end()
 {
-	return this->end();
+	return Tc<Tv>::end();
 }
 
 }  // namespace WrapImpl
