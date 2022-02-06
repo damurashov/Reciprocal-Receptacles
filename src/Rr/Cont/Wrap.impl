@@ -32,27 +32,27 @@ template <class Tv, template <class ...> class Tc>
 inline typename Wrap<ContainerType::Index, Tv, Tc>::Iterator
 Wrap<ContainerType::Index, Tv, Tc>::begin()
 {
-	return &this->at(0);
+	return &Base::at(0);
 }
 
 template <class Tv, template <class ...> class Tc>
 inline typename Wrap<ContainerType::Index, Tv, Tc>::Iterator
 Wrap<ContainerType::Index, Tv, Tc>::end()
 {
-	return (&this->at(0)) + pos;
+	return (&Base::at(0)) + pos;
 }
 
 template <class Tv, template <class ...> class Tc>
 inline void Wrap<ContainerType::Index, Tv, Tc>::push(const Tv &a)
 {
-	new (&this->at(pos++), Rr::Object{}) Tv{a};
+	new (&Base::at(pos++), Rr::Object{}) Tv{a};
 }
 
 template <class Tv, template <class ...> class Tc>
 template <class ...Ts>
 inline void Wrap<ContainerType::Index, Tv, Tc>::emplace(Ts &&...aArgs)
 {
-	new (&this->at(pos++), Rr::Object{}) Tv{Rr::Trait::forward<Ts>(aArgs)...};
+	new (&Base::at(pos++), Rr::Object{}) Tv{Rr::Trait::forward<Ts>(aArgs)...};
 }
 
 // Override for Wrap<ContainerType::Push, ...>
@@ -73,13 +73,13 @@ inline unsigned Wrap<ContainerType::Push, Tv, Tc>::size() const
 template <class Tv, template <class ...> class Tc>
 inline typename Wrap<ContainerType::Push, Tv, Tc>::Iterator Wrap<ContainerType::Push, Tv, Tc>::begin()
 {
-	return Tc<Tv>::begin();
+	return Base::begin();
 }
 
 template <class Tv, template <class ...> class Tc>
 inline typename Wrap<ContainerType::Push, Tv, Tc>::Iterator Wrap<ContainerType::Push, Tv, Tc>::end()
 {
-	return Tc<Tv>::end();
+	return Base::end();
 }
 
 }  // namespace WrapImpl
