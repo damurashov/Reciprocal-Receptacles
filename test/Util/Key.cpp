@@ -74,6 +74,7 @@ TEST_CASE("Key") {
 		for (auto &callable : TestKey::Key::getIterators()) {
 			CHECK(TestKey::Ret::Correct == callable(0));
 		}
+		TestKey::Key::notify(0);
 
 		CHECK(0 == TestKey::Call::ncalled);
 
@@ -81,7 +82,10 @@ TEST_CASE("Key") {
 		for (auto &callable : TestKey::Key::getIterators()) {
 			CHECK(TestKey::Ret::Correct == callable(0));
 		}
+		TestKey::Key::notify(0);
 
-		CHECK(1 == TestKey::Call::ncalled);
+		CHECK(2 == TestKey::Call::ncalled);
+
+
 	}
 }
