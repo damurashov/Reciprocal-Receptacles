@@ -85,7 +85,5 @@ TEST_CASE("Key") {
 		TestKey::Key::notify(0);
 
 		CHECK(2 == TestKey::Call::ncalled);
-
-
 	}
 }
