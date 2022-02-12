@@ -62,7 +62,7 @@ public:
 		Rr::Sync::Policy::SharedAccess<TsyncTrait>::PrimitiveOps::unlock(sharedAccess.primitive);
 	}
 
-	void notify(Targs ...aArgs)
+	static void notify(Targs ...aArgs)
 	{
 		for (auto &callable : storage.getIterators()) {
 			callable(Rr::Trait::forward<Targs>(aArgs)...);
