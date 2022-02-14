@@ -110,11 +110,17 @@ private:
 	KeyType *key;
 public:
 
-	template <class T, class ...Ta>
-	LegacyKey(T &&aT, Ta &&...aArgs)
+	LegacyKey(typename Rr::Trait::MemberDecay<Tsignature>::StaticCallbackType aCallback, bool aEnabled = true)
 	{
-		using namespace Rr::Trait;
-		key = new KeyType{forward<T>(aT), forward<Ta>(aArgs)...};
+		key = new KeyType{aCallback, aEnabled};
+	}
+
+	template <class Tinstance>
+	LegacyKey(typename Rr::Trait::MemberDecay<Tsignature, Rr::Trait::StripTp<Tinstance>>::CallbackType aCallback,
+		Tinstance aInstance, bool aEnabled = true, typename Rr::Trait::EnableIf<!Rr::Trait::IsSame<Tinstance,
+		Rr::Trait::StripTp<Tinstance>>::value>::Type * = nullptr)
+	{
+		key = new KeyType{aCallback, aInstance, aEnabled};
 	}
 
 	LegacyKey() : key{nullptr}
