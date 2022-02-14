@@ -28,7 +28,7 @@ using Cv = AddCvpreft<Stript<T>, Fconst, Fvolatile, false, false, false>;  ///< 
 
 template <class Tret, class Tcb, class Ti, bool Fconst, bool Fvolatile, class ...Targs>
 struct MemberDecayStore {
-	using StaticCallbackType = Tcb(*)(Targs...);
+	using StaticCallbackType = Tret(*)(Targs...);
 	using CallbackType = Tcb;
 	using InstanceType = Cv<Ti, Fconst, Fvolatile>;
 	using VoidType = Cv<Ti, Fconst, Fvolatile>;  ///< Useful, because it preserves CV-qualifiers
