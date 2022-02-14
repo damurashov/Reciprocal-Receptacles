@@ -98,6 +98,49 @@ public:
 	using Base::getIterators;
 	using Base::setEnabled;
 	using Base::notify;
+	using Base::Arg;
+	using Base::Ret;
+};
+
+template <class Tsignature, class TsyncTrait, template <class ...> class TcallableContainer, class Ttopic=void>
+struct LegacyKey {
+private:
+	using KeyType = typename KeyImpl::Key<Tsignature, TsyncTrait, TcallableContainer,
+		typename Rr::Trait::MemberDecay<Tsignature>::ArgsList>;
+	KeyType *key;
+public:
+
+	template <class T, class ...Ta>
+	LegacyKey(T &&aT, Ta &&...aArgs)
+	{
+		using namespace Rr::Trait;
+		key = new KeyType{forward<T>(aT), forward<Ta>(aArgs)...};
+	}
+
+	LegacyKey() : key{nullptr}
+	{
+	}
+
+	~LegacyKey()
+	{
+		if (key) {
+			delete key;
+		}
+	}
+
+	inline void enableSubscription(bool aEnabled)
+	{
+		rr_assert(key != nullptr);
+		key->setEnabled(aEnabled);
+	}
+
+	template <class ...Ta>
+	static void notify(Ta &&...aArgs)
+	{
+		KeyType::notify(Rr::Trait::forward<Ta>(aArgs)...);
+	}
+
+	using Type = typename KeyType::template Arg<0>;
 };
 
 }  // namespace Util
