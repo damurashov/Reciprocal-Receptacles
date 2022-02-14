@@ -1,0 +1,135 @@
+//
+// SharedAccess.impl
+//
+// Created on: 2022-01-09
+//     Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
+//
+
+#include <Rr/Util/DefaultConfig.hpp>
+
+template <class T>
+inline void Rr::Sync::SharedAccessIt<T>::lock()
+{
+	if (!locked && it != itEnd) {
+		Policy::PrimitiveOps::lock(it->primitive);
+		locked = true;
+	}
+}
+
+template <class T>
+inline void Rr::Sync::SharedAccessIt<T>::unlock()
+{
+	if (locked) {
+		rr_assert(it != itEnd);
+		Policy::PrimitiveOps::unlock(it->primitive);
+		locked = false;
+	}
+}
+
+template <class T>
+inline void Rr::Sync::SharedAccessIt<T>::skip()
+{
+	for (bool enabled = false; it != itEnd && !enabled;) {
+		if (locked) {
+			unlock();
+			++it;
+		} else {
+			lock();
+			enabled = (it->stored != nullptr);
+		}
+	}
+}
+
+template <class T>
+inline Rr::Sync::SharedAccessIt<T>::SharedAccessIt(T aItBegin, T aItEnd):
+	it(aItBegin), itEnd(aItEnd), locked(false)
+{
+	if (aItBegin != aItEnd) {
+		skip();
+	}
+}
+
+template <class T>
+inline Rr::Sync::SharedAccessIt<T>::SharedAccessIt(const SharedAccessIt &a): it{a.it}, itEnd{a.itEnd}, locked{false}
+{
+}
+
+template <class T>
+inline Rr::Sync::SharedAccessIt<T>::SharedAccessIt(SharedAccessIt &&a): it{a.it}, itEnd{a.itEnd}, locked{a.locked}
+{
+	a.locked = false;
+}
+
+template <class T>
+inline typename Rr::Sync::SharedAccessIt<T> &Rr::Sync::SharedAccessIt<T>::operator=(const SharedAccessIt &a)
+{
+	unlock();
+	it = a.it;
+	itEnd = a.itEnd;
+	locked = false;
+
+	return *this;
+}
+
+template <class T>
+inline typename Rr::Sync::SharedAccessIt<T> &Rr::Sync::SharedAccessIt<T>::operator=(SharedAccessIt &&a)
+{
+	unlock();
+	it = a.it;
+	itEnd = a.itEnd;
+	locked = a.locked;
+	a.locked = false;
+
+	return *this;
+}
+
+template <class T>
+inline Rr::Sync::SharedAccessIt<T>::~SharedAccessIt()
+{
+	unlock();
+}
+
+template <class T>
+inline bool Rr::Sync::SharedAccessIt<T>::operator==(const SharedAccessIt &a)
+{
+	return it == a.it;
+}
+
+template <class T>
+inline bool Rr::Sync::SharedAccessIt<T>::operator!=(const SharedAccessIt &a)
+{
+	return it != a.it;
+}
+
+template <class T>
+inline bool Rr::Sync::SharedAccessIt<T>::operator==(const T &a)
+{
+	return it == a;
+}
+
+template <class T>
+inline bool Rr::Sync::SharedAccessIt<T>::operator!=(const T &a)
+{
+	return it != a;
+}
+
+template <class T>
+inline typename Rr::Sync::SharedAccessIt<T>::S::Type &Rr::Sync::SharedAccessIt<T>::operator*()
+{
+	lock();
+	return *(it->stored);
+}
+
+template <class T>
+inline typename Rr::Sync::SharedAccessIt<T>::S::Type *Rr::Sync::SharedAccessIt<T>::operator->()
+{
+	lock();
+	return it->stored;
+}
+
+template <class T>
+inline typename Rr::Sync::SharedAccessIt<T> &Rr::Sync::SharedAccessIt<T>::operator++()
+{
+	skip();
+	return *this;
+}

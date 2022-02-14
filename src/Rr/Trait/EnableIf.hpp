@@ -20,6 +20,9 @@ struct EnableIf<true, T> {
 	using Type = T;
 };
 
+template< bool N, class T = void>
+using EnableIfTp = typename EnableIf<N, T>::Type;
+
 }  // namespace Trait
 }  // namespace Rr
 

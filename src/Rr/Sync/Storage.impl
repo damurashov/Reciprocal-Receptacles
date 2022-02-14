@@ -1,0 +1,58 @@
+//
+// Storage.impl
+//
+// Created on: 2022-01-30
+//     Author: Dmitry Murashov (dmtr <DOT> murashov <AT> <GMAIL>)
+//
+
+#include "Storage.hpp"
+
+namespace Rr {
+namespace Sync {
+namespace StorageImpl {
+
+///
+/// @brief Safely acquire wrappers through lock-unlock cycle, so the container's integrity won't be jeopardized by
+/// multi-thread code
+///
+template <class T, class TsyncTrait, template<class...> class Tcontainer>
+inline typename Storage<T, TsyncTrait, Tcontainer>::Iterators
+Storage<T, TsyncTrait, Tcontainer>::getIterators()
+{
+	Policy::PrimitiveOps::lock(primitive);
+	Iterators iterators{begin(), end()};
+	Policy::PrimitiveOps::unlock(primitive);
+
+	return iterators;
+}
+
+///
+/// @brief Register value in the storage. There is no way out apart from getting it disabled by setting
+/// `SharedAccess<...>::stored = nullptr`
+///
+template <class T, class TsyncTrait, template<class...> class Tcontainer>
+inline SharedAccess<T, TsyncTrait> &
+Storage<T, TsyncTrait, Tcontainer>::reg(T &aValue, bool aEnabled)
+{
+	Policy::PrimitiveOps::lock(primitive);
+	Container::emplace(&aValue);
+
+	auto it = Container::begin();
+	for (; it != Container::end(); ++it) {
+		if (it->stored == &aValue) {
+			break;
+		}
+	}
+
+	if (!aEnabled) {
+		it->stored = nullptr;
+	}
+
+	Policy::PrimitiveOps::unlock(primitive);
+
+	return *it;
+}
+
+}  // namespace StorageImpl
+}  // namespace Sync
+}  // namespace Rr

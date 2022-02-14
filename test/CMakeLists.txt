@@ -1,0 +1,9 @@
+add_library(main main.cpp)
+target_link_libraries(main PUBLIC Rr doctest)
+target_include_directories(main PUBLIC ${DOCTEST_INCLUDE_DIR})
+
+file(GLOB_RECURSE TEST_SRC "*.cpp")
+list(FILTER TEST_SRC EXCLUDE REGEX ".*main\.cpp")
+add_executable(test ${TEST_SRC})
+target_link_libraries(test PRIVATE main)
+target_compile_options(test PRIVATE -g)

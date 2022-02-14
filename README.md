@@ -1,3 +1,3 @@
 # `Rr::`
 
-Generic synchronous decentralized inter- / intra-module connection facilities
+Generic no-deps synchronous decentralized inter- / intra-module connection facilities

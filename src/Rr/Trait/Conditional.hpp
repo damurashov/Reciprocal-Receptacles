@@ -8,20 +8,21 @@
 #if !defined(RR_TRAIT_CONDITIONAL_HPP)
 #define RR_TRAIT_CONDITIONAL_HPP
 
+#include <Rr/Trait/StoreType.hpp>
+
 namespace Rr {
 namespace Trait {
 
 template <bool, class A, class B>
-struct Conditional {
-	using type = A;
-	using Type = A;
+struct Conditional : StoreType<A> {
 };
 
 template <class A, class B>
-struct Conditional<false, A, B> {
-	using type = B;
-	using Type = B;
+struct Conditional<false, A, B> : StoreType<B> {
 };
+
+template <bool F, class Ta, class Tb>
+using ConditionalTp = typename Conditional<F, Ta, Tb>::Type;
 
 }  // namespace Trait
 }  // namespace Rr

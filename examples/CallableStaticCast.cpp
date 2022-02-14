@@ -7,16 +7,16 @@
 
 
 // Use static_cast for method pointers conversion
-// Requires inheritance from Rr::RrObject
+// Requires inheritance from Rr::Object
 #define RRO_STATIC_CAST_FN_CONVERSION 1
 
 #include <iostream>
-#include <Rr/Util/Callable.hpp>
+#include <Rr/Cb/Callable.hpp>
 
 using namespace std;
 
 
-struct Base : Rr::RrObject {
+struct Base : Rr::Object {
 	virtual void call(int a)
 	{
 		std::cout << "Base::call: " << a << endl;
@@ -31,7 +31,7 @@ struct Derived : Base {
 	}
 };
 
-struct A : Rr::RrObject {
+struct A : Rr::Object {
 	void callMe(int a)
 	{
 		std::cout << "A::callMe: " << a << endl;
@@ -50,7 +50,7 @@ void callMe(int a)
 int main(void)
 {
 	{
-		using ConstCallable = Rr::Util::Callable<void(int)const>;
+		using ConstCallable = Rr::Cb::Callable<void(int)const>;
 
 		ConstCallable ca{callMe};
 
@@ -62,7 +62,7 @@ int main(void)
 	}
 
 	{
-		using Callable = Rr::Util::Callable<void(int)>;
+		using Callable = Rr::Cb::Callable<void(int)>;
 
 		Callable ca{callMe};
 		A a;
