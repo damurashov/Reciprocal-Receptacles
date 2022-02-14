@@ -128,7 +128,7 @@ public:
 		}
 	}
 
-	inline void enableSubscription(bool aEnabled)
+	inline void enableSubscribe(bool aEnabled)
 	{
 		rr_assert(key != nullptr);
 		key->setEnabled(aEnabled);
