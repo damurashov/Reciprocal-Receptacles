@@ -101,7 +101,7 @@ struct Object {
 /// @param aPlacement placement hint
 /// @param RrObject   To distinguish from other overloads
 ///
-inline void *operator new(unsigned long, void *aPlacement, Rr::Object)
+inline void *operator new(decltype(sizeof(int)), void *aPlacement, Rr::Object)
 {
 	return aPlacement;
 }
