@@ -37,7 +37,7 @@ public:
 	using Value = SharedAccess<T, TsyncTrait>;
 	using Iterator = SharedAccessIt<ContainerIterator>;
 
-	Value &reg(T &);
+	Value &reg(T &, bool aEnabled = true);
 
 	template <class ...Ts>
 	Storage(Ts &&...aArgs) : Container{Trait::forward<Ts>(aArgs)...}, primitive{}

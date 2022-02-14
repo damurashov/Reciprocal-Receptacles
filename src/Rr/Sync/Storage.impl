@@ -32,7 +32,7 @@ Storage<T, TsyncTrait, Tcontainer>::getIterators()
 ///
 template <class T, class TsyncTrait, template<class...> class Tcontainer>
 inline SharedAccess<T, TsyncTrait> &
-Storage<T, TsyncTrait, Tcontainer>::reg(T &aValue)
+Storage<T, TsyncTrait, Tcontainer>::reg(T &aValue, bool aEnabled)
 {
 	Policy::PrimitiveOps::lock(primitive);
 	Container::emplace(&aValue);
@@ -42,6 +42,10 @@ Storage<T, TsyncTrait, Tcontainer>::reg(T &aValue)
 		if (it->stored == &aValue) {
 			break;
 		}
+	}
+
+	if (!aEnabled) {
+		it->stored = nullptr;
 	}
 
 	Policy::PrimitiveOps::unlock(primitive);
