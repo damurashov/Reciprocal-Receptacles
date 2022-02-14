@@ -12,7 +12,7 @@
 #include <Rr/Cb/Callable.hpp>
 #include <Rr/Trait/MemberDecay.hpp>
 #include <Rr/Trait/Forward.hpp>
-
+#include <Rr/Trait/IntegralToType.hpp>
 
 namespace Rr {
 namespace Util {
@@ -29,19 +29,27 @@ private:
 	typename Rr::Sync::Storage<Rr::Cb::Callable<Tsignature>, TsyncTrait, TcallableContainer>::Value &sharedAccess;
 
 public:
-	Key(typename Rr::Trait::MemberDecay<Tsignature>::StaticCallbackType aCallback) :
+	template <int Iarg>
+	using Arg = typename Rr::Trait::IntToType<Iarg, Targs...>::Type;
+
+	Key(typename Rr::Trait::MemberDecay<Tsignature>::StaticCallbackType aCallback, bool aEnabled = true) :
 		Rr::Cb::Callable<Tsignature>{Rr::Trait::forward<
 		typename Rr::Trait::MemberDecay<Tsignature>::StaticCallbackType>(aCallback)},
-		sharedAccess{storage.reg(*this)}
+		sharedAccess{storage.reg(*this, aEnabled)}
 	{
 	}
 
 	template <class Tinstance>
 	Key(typename Rr::Trait::MemberDecay<Tsignature, Rr::Trait::StripTp<Tinstance>>::CallbackType aCallback,
-		Tinstance aInstance) : Rr::Cb::Callable<Tsignature> {
-		Rr::Trait::forward<typename Rr::Trait::MemberDecay<Tsignature, Rr::Trait::StripTp<Tinstance>>::CallbackType>(
-		aCallback), Rr::Trait::forward<Tinstance>(aInstance)},
-		sharedAccess{storage.reg(*this)}
+		Tinstance aInstance,
+		bool aEnabled = true,
+		typename Rr::Trait::EnableIf<!Rr::Trait::IsSame<Tinstance, Rr::Trait::StripTp<Tinstance>>::value>::Type * = nullptr) :
+		Rr::Cb::Callable<Tsignature> {
+			Rr::Trait::forward<typename Rr::Trait::MemberDecay<Tsignature, Rr::Trait::StripTp<Tinstance>>::CallbackType>(
+				aCallback),
+			Rr::Trait::forward<Tinstance>(aInstance)
+		},
+		sharedAccess{storage.reg(*this, aEnabled)}
 	{
 	}
 

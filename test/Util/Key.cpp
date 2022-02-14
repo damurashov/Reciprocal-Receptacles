@@ -55,6 +55,12 @@ struct Call {
 
 int Call::ncalled = 0;
 
+Ret staticCallable(int)
+{
+	++Call::ncalled;
+	return Ret::Correct;
+}
+
 }  // TestKey
 
 TEST_CASE("Key") {
@@ -83,6 +89,18 @@ TEST_CASE("Key") {
 			CHECK(TestKey::Ret::Correct == callable(0));
 		}
 		TestKey::Key::notify(0);
+
+		CHECK(2 == TestKey::Call::ncalled);
+	}
+
+	TestKey::Key keySc{TestKey::staticCallable};
+
+	SUBCASE("static / member") {
+		CHECK(0 == TestKey::Call::ncalled);
+
+		for (auto &callable : TestKey::Key::getIterators()) {
+			CHECK(TestKey::Ret::Correct == callable(0));
+		}
 
 		CHECK(2 == TestKey::Call::ncalled);
 	}
