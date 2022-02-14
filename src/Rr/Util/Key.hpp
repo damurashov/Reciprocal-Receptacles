@@ -32,6 +32,8 @@ public:
 	template <int Iarg>
 	using Arg = typename Rr::Trait::IntToType<Iarg, Targs...>::Type;
 
+	using Ret = typename Rr::Trait::MemberDecay<Tsignature>::ReturnType;
+
 	Key(typename Rr::Trait::MemberDecay<Tsignature>::StaticCallbackType aCallback, bool aEnabled = true) :
 		Rr::Cb::Callable<Tsignature>{Rr::Trait::forward<
 		typename Rr::Trait::MemberDecay<Tsignature>::StaticCallbackType>(aCallback)},
