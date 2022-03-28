@@ -6,6 +6,7 @@
 //
 
 #include <Rr/Util/DefaultConfig.hpp>
+#include <Rr/Trait/Move.hpp>
 
 template <class T>
 inline void Rr::Sync::SharedAccessIt<T>::lock()
@@ -55,9 +56,11 @@ inline Rr::Sync::SharedAccessIt<T>::SharedAccessIt(const SharedAccessIt &a): it{
 }
 
 template <class T>
-inline Rr::Sync::SharedAccessIt<T>::SharedAccessIt(SharedAccessIt &&a): it{a.it}, itEnd{a.itEnd}, locked{a.locked}
+inline Rr::Sync::SharedAccessIt<T>::SharedAccessIt(SharedAccessIt &&a): it{Rr::Trait::move(a.it)},
+	itEnd{Rr::Trait::move(a.itEnd)}, locked{a.locked}
 {
 	a.locked = false;
+	a.it = a.itEnd;
 }
 
 template <class T>
@@ -75,10 +78,11 @@ template <class T>
 inline typename Rr::Sync::SharedAccessIt<T> &Rr::Sync::SharedAccessIt<T>::operator=(SharedAccessIt &&a)
 {
 	unlock();
-	it = a.it;
-	itEnd = a.itEnd;
+	it = Rr::Trait::move(a.it);
+	itEnd = Rr::Trait::move(a.itEnd);
 	locked = a.locked;
 	a.locked = false;
+	a.it = a.itEnd;
 
 	return *this;
 }
