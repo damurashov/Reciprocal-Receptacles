@@ -10,29 +10,40 @@
 
 #include <Rr/Trait/RemoveReference.hpp>
 #include <Rr/Trait/Apply.hpp>
+#include <Rr/Trait/StoreType.hpp>
 
 namespace Rr {
 namespace Trait {
+namespace AddCvprefImpl {
+
+template <class T>
+auto sfinaeAddRvalueReference(int) -> Rr::Trait::StoreType<T &&>;
+
+template <class T>
+auto sfinaeAddRvalueReference(...) -> Rr::Trait::StoreType<T>;
+
+template <class T>
+auto sfinaeAddLvalueReference(int) -> Rr::Trait::StoreType<T&>;
+
+template <class T>
+auto sfinaeAddLvalueReference(...) -> Rr::Trait::StoreType<T>;
+
+template <class T>
+struct AddLvalueReference : decltype(sfinaeAddLvalueReference<T>(0)) {
+};
+
+template <class T>
+struct AddRvalueReference : decltype(sfinaeAddRvalueReference<T>(0)) {
+};
+
+}  // AddCvprefImpl
 
 template <class T>
 struct AddPointer : StoreType<typename RemovePointer<T>::Type *> {
 };
 
-template <class T>
-struct AddLvalueReference : StoreType<typename RemoveReference<T>::Type &> {
-};
-
-template <>
-struct AddLvalueReference<void> : StoreType<void> {
-};
-
-template <class T>
-struct AddRvalueReference : StoreType<typename RemoveReference<T>::Type &&> {
-};
-
-template <>
-struct AddRvalueReference<void> : StoreType<void> {
-};
+using AddCvprefImpl::AddLvalueReference;
+using AddCvprefImpl::AddRvalueReference;
 
 template <class T>
 struct AddVolatile : StoreType <volatile T> {
