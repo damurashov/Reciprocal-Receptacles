@@ -18,7 +18,7 @@ static constexpr const void *p2 = &p1;
 }  // namespace DeclvalImpl
 
 template <class T>
-constexpr T &declval()
+constexpr T &eDeclval()
 {
 	return *const_cast<T *>((const T *) DeclvalImpl::p2);
 }
