@@ -129,13 +129,13 @@ constexpr bool definesStoragePolicy()
 template <class T>
 constexpr bool definesLockMethod()
 {
-	return !Trait::IsSame<NoMember, decltype(CallSfinae::lock(Trait::declval<T>()))>::value;
+	return !Trait::IsSame<NoMember, decltype(CallSfinae::lock(Trait::eDeclval<T>()))>::value;
 }
 
 template <class T>
 constexpr bool definesTryLockMethod()
 {
-	return !Trait::IsSame<NoMember, decltype(CallSfinae::tryLock(Trait::declval<T>()))>::value;
+	return !Trait::IsSame<NoMember, decltype(CallSfinae::tryLock(Trait::eDeclval<T>()))>::value;
 }
 
 }  // namespace Refl
