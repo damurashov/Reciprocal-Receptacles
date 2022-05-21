@@ -93,7 +93,7 @@ private:
 	}
 
 private:
-	unsigned char cell[Rr::Trait::MaxSizeof<Ta...>::value];
+	alignas(decltype(sizeof(int*))) unsigned char cell[Rr::Trait::MaxSizeof<Ta...>::value];
 	int index;
 };
 
