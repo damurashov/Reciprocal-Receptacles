@@ -103,7 +103,7 @@ struct CallMember<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArgl
 
 	virtual ~CallMember() = default;
 
-	alignas(decltype(sizeof(int))) unsigned char cell[sizeof(Cb<decltype(&Stub::call), Stub>)];  ///< Polymorphic cell storing call information
+	alignas(decltype(sizeof(int *))) unsigned char cell[sizeof(Cb<decltype(&Stub::call), Stub>)];  ///< Polymorphic cell storing call information
 	CallerType caller;  ///< Type erasure-based caller
 };
 
@@ -113,7 +113,7 @@ struct CallVariant<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArg
 		CallMember<Tsignature, TtArglist<Targs...>> callMember;
 		CallStatic<Tsignature, TtArglist<Targs...>> callStatic;
 	};
-	alignas(Variant) unsigned char variant[sizeof(Variant)];
+	alignas(decltype(sizeof(int *))) unsigned char variant[sizeof(Variant)];
 
 	typename Trait::MemberDecay<Tsignature>::ReturnType
 	operator()(Targs ...aArgs) override
