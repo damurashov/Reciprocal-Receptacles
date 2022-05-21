@@ -52,8 +52,6 @@
 # define RRO_ENABLE_DEBUG 0
 #endif
 
-
-
 #if RRO_ENABLE_DEBUG
 # if !RRO_STL_USED
 #  error "STL is required for debug output"
@@ -88,12 +86,6 @@ struct Object {
 	}
 };
 }  // Rr
-
-#if RRO_STATIC_CAST_FN_CONVERSION
-# define rr_fn_cast static_cast
-#else
-# define rr_fn_cast reinterpret_cast
-#endif
 
 ///
 /// @brief Placement operator is defined in STL's <new> header, which may be absent
