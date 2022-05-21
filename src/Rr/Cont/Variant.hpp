@@ -60,19 +60,19 @@ public:
 
 private:
 	template <int I, class T>
-	auto applyVisitorImpl(T &&aVisitor) -> decltype(aVisitor(*reinterpret_cast<typename GetType<I>::Type*>(this->cell)))
+	auto applyVisitor(T &&aVisitor) -> decltype(aVisitor(*reinterpret_cast<typename GetType<I>::Type*>(this->cell)))
 	{
 		if (index > 0) {
 			if (I == index) {
 				return aVisitor(*reinterpret_cast<typename GetType<I>::Type*>(cell));
 			} else {
-				return applyVisitorImpl<I + 1>(Rr::Trait::forward(aVisitor));
+				return applyVisitor<I + 1>(Rr::Trait::forward(aVisitor));
 			}
 		}
 	}
 
 	template <class T>
-	auto applyVisitor(T &&visitor) -> decltype(applyVisitorImpl<0>(Rr::Trait::forward(visitor)))
+	auto applyVisitor(T &&visitor) -> decltype(applyVisitor<0>(Rr::Trait::forward(visitor)))
 	{
 		applyVisitor<0>(Rr::Trait::forward(visitor));
 	}
@@ -106,7 +106,6 @@ bool holdsAlternative(const Variant<Tvargs...> &aArgs)
 }  // VariantImpl
 
 using VariantImpl::Variant;
-
 
 }  // Cont
 }  // Rr
