@@ -12,6 +12,9 @@
 #include <Rr/Trait/Max.hpp>
 #include <Rr/Trait/MemberDecay.hpp>
 #include <Rr/Trait/RemoveReference.hpp>
+#include <Rr/Trait/Forward.hpp>
+#include <Rr/Trait/IsSame.hpp>
+#include <Rr/Trait/EnableIf.hpp>
 
 namespace Rr {
 namespace Cb {
@@ -55,6 +58,56 @@ struct CallMember<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArgl
 	typename Trait::MemberDecay<Tsignature, Rr::Object>::CallbackType memberFunctionCallback;
 	typename Trait::MemberDecay<Tsignature, Rr::Object>::InstanceType *instance;
 
+	/// \brief Helper stub that enables assessing how much of a storage a pointer to a virtual member takes
+	///
+	struct Stub {
+		virtual unsigned call(int,int,int,int)
+		{
+			return 0;
+		}
+	};
+
+	/// \brief Stores a method and instance pointers
+	///
+	template <class Tptr, class Tinst>
+	struct Cb {
+		Tptr ptr;  ///< Pointer to a method
+		Tinst inst;  ///< Pointer to an instance
+	};
+
+	using CallerType = typename Trait::MemberDecay<Tsignature>::ReturnType(*)(void */* Cb */, Targs... aArgs);  ///< Type erasure-based caller
+
+	template <class Tptr, class Tinst, bool F = Trait::IsSame<void,
+		typename Trait::MemberDecay<Tsignature>::ReturnType>::value>
+	static typename Trait::EnableIf<!F, typename Trait::MemberDecay<Tsignature>::ReturnType>::Type
+	tcaller(void *aCb, Targs ...aArgs)
+	{
+		auto &cb = *reinterpret_cast<Cb<Tptr, Tinst> *>(aCb);
+		return Trait::forward<typename Trait::MemberDecay<Tsignature>::ReturnType>((cb.inst->*cb.ptr)(aArgs...));
+	}
+
+	template <class Tptr, class Tinst, bool F = Trait::IsSame<void,
+		typename Trait::MemberDecay<Tsignature>::ReturnType>::value>
+	static typename Trait::EnableIf<F>::Type tcaller(void *aCb, Targs ...aArgs)
+	{
+		auto &cb = *reinterpret_cast<Cb<Tptr, Tinst> *>(aCb);
+		(cb.inst->*cb.ptr)(aArgs...);
+	}
+
+	alignas(Cb<decltype(&Stub::call), Stub>) unsigned char cell[sizeof(Cb<decltype(&Stub::call), Stub>)];  ///< Polymorphic cell storing call information
+	CallerType caller;  ///< Type erasure-based caller
+
+	/// \brief Initialize `cell` and `caller`
+	///
+	template <class Tptr, class Tinst>
+	void init(Tptr &&aPtr, Tinst &&aInst)
+	{
+		caller = tcaller<Tptr, Tinst>;
+		new (cell, Rr::Object()) Cb<Tptr, Tinst>{aPtr, aInst};
+	}
+
+	/// \brief Invoke the caller
+	///
 	typename Trait::MemberDecay<Tsignature>::ReturnType
 	operator()(Targs ...aArgs) override
 	{
