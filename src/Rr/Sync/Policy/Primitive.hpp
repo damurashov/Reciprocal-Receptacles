@@ -80,7 +80,7 @@ struct Primitive<Policy::Type::None, T, Ftry> {
 
 template <class T, bool Ftry>
 class Primitive<Policy::Type::Mutex, T, Ftry> {
-	static constexpr T& kObjStub = Rr::Trait::declval<T>();
+	static constexpr T& kObjStub = Rr::Trait::eDeclval<T>();
 
 	static_assert(Rr::Refl::CanCallFamily<PrimitiveImpl::CallLock>::check(kObjStub),
 		"Mutex type must define method ::lock(0)");

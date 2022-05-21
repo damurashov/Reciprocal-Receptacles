@@ -171,7 +171,7 @@ struct CallEmplaceBackCamelcase {
 
 struct CallEmplaceMarker {
 	template <class Ti>
-	static auto call() -> decltype(Rr::Trait::declval<Ti>().emplace({}));
+	static auto call() -> decltype(Rr::Trait::eDeclval<Ti>().emplace({}));
 };
 
 struct CallEmplaceBackUsMarker {
