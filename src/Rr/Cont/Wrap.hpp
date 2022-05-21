@@ -124,19 +124,19 @@ struct CallEnd {
 
 template <class Tv, template <class...> class Tc>
 struct GetContainerType {
-	static constexpr bool fIndexable = Rr::Refl::CanCallFamily<CallIndex>::check(Rr::Trait::declval<Tc<Tv>>());
+	static constexpr bool fIndexable = Rr::Refl::CanCallFamily<CallIndex>::check(Rr::Trait::eDeclval<Tc<Tv>>());
 	static constexpr bool fKnownCapacity = Rr::Refl::CanCallFamily<CallCapacity,
-		CallMaxSizeCamelcase, CallMaxSizeUnderscore>::check(Rr::Trait::declval<Tc<Tv>>());
+		CallMaxSizeCamelcase, CallMaxSizeUnderscore>::check(Rr::Trait::eDeclval<Tc<Tv>>());
 
 	static constexpr bool fHasMethodPush = Rr::Refl::CanCallFamily<CallPush, CallPushBackCamelcase,
-		CallPushBackUnderscore>::check(Rr::Trait::declval<Tc<Tv>>(), Rr::Trait::declval<Tv>());
+		CallPushBackUnderscore>::check(Rr::Trait::eDeclval<Tc<Tv>>(), Rr::Trait::eDeclval<Tv>());
 
 	static constexpr bool fHasMethodEmplace = Rr::Refl::CanCallFamily<CallEmplaceBackCamelcase,
-		CallEmplaceBackUnderscore, CallEmplace>::check(Rr::Trait::declval<Tc<int>>(), 42);
+		CallEmplaceBackUnderscore, CallEmplace>::check(Rr::Trait::eDeclval<Tc<int>>(), 42);
 
 	static constexpr bool fExpandable = fHasMethodPush || fHasMethodEmplace;
-	static constexpr bool fHasMethodBegin = Rr::Refl::CanCallFamily<CallBegin>::check(Rr::Trait::declval<Tc<Tv>>());
-	static constexpr bool fHasMethodEnd = Rr::Refl::CanCallFamily<CallEnd>::check(Rr::Trait::declval<Tc<Tv>>());
+	static constexpr bool fHasMethodBegin = Rr::Refl::CanCallFamily<CallBegin>::check(Rr::Trait::eDeclval<Tc<Tv>>());
+	static constexpr bool fHasMethodEnd = Rr::Refl::CanCallFamily<CallEnd>::check(Rr::Trait::eDeclval<Tc<Tv>>());
 
 	static constexpr auto value = fExpandable && fHasMethodBegin && fHasMethodEnd ? ContainerType::Push :
 		fIndexable && fKnownCapacity ? ContainerType::Index :
@@ -164,7 +164,7 @@ class Wrap<ContainerType::Index, Tv, Tc> : public Tc<Tv> {
 	using Base = Tc<Tv>;
 
 public:
-	using Iterator = decltype(&Rr::Trait::declval<Tc<Tv>>().at(0));
+	using Iterator = decltype(&Rr::Trait::eDeclval<Tc<Tv>>().at(0));
 
 	using Tc<Tv>::Tc;
 	using Tc<Tv>::at;
@@ -188,7 +188,7 @@ class Wrap<ContainerType::Push, Tv, Tc> : Tc<Tv> {
 	using Base = Tc<Tv>;
 
 public:
-	using Iterator = decltype(Rr::Trait::declval<Tc<Tv>>().begin());
+	using Iterator = decltype(Rr::Trait::eDeclval<Tc<Tv>>().begin());
 
 	using Tc<Tv>::Tc;
 
