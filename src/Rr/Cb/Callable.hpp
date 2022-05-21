@@ -12,6 +12,9 @@
 #include <Rr/Trait/Max.hpp>
 #include <Rr/Trait/MemberDecay.hpp>
 #include <Rr/Trait/RemoveReference.hpp>
+#include <Rr/Trait/Forward.hpp>
+#include <Rr/Trait/IsSame.hpp>
+#include <Rr/Trait/EnableIf.hpp>
 
 namespace Rr {
 namespace Cb {
@@ -52,16 +55,56 @@ struct CallStatic<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArgl
 
 template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
 struct CallMember<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArglist<Targs...>> {
-	typename Trait::MemberDecay<Tsignature, Rr::Object>::CallbackType memberFunctionCallback;
-	typename Trait::MemberDecay<Tsignature, Rr::Object>::InstanceType *instance;
 
+	/// \brief Helper stub that enables assessing how much of a storage a pointer to a virtual member takes
+	///
+	struct Stub {
+		virtual unsigned call(int,int,int,int)
+		{
+			return 0;
+		}
+	};
+
+	/// \brief Stores a method and instance pointers
+	///
+	template <class Tptr, class Tinst>
+	struct Cb {
+		Tptr ptr;  ///< Pointer to a method
+		Tinst inst;  ///< Pointer to an instance
+	};
+
+	using CallerType = typename Trait::MemberDecay<Tsignature>::ReturnType(*)(void */* Cb */, Targs... aArgs);  ///< Type erasure-based caller
+
+	/// \brief Template stub for creating callers at compile time
+	///
+	template <class Tptr, class Tinst>
+	static typename Trait::MemberDecay<Tsignature>::ReturnType tcaller(void *aCb, Targs ...aArgs)
+	{
+		auto &cb = *reinterpret_cast<Cb<Tptr, Tinst> *>(aCb);
+		return (cb.inst->*cb.ptr)(aArgs...);
+	}
+
+	/// \brief Initialize `cell` and `caller`
+	///
+	template <class Tptr, class Tinst>
+	void init(Tptr aPtr, Tinst aInst)
+	{
+		caller = tcaller<Tptr, Tinst>;
+		new (cell, Rr::Object()) Cb<Tptr, Tinst>{aPtr, aInst};
+	}
+
+	/// \brief Invoke the caller
+	///
 	typename Trait::MemberDecay<Tsignature>::ReturnType
 	operator()(Targs ...aArgs) override
 	{
-		return (instance->*memberFunctionCallback)(aArgs...);
+		return caller(cell, aArgs...);
 	}
 
 	virtual ~CallMember() = default;
+
+	alignas(decltype(sizeof(int *))) unsigned char cell[sizeof(Cb<decltype(&Stub::call), Stub>)];  ///< Polymorphic cell storing call information
+	CallerType caller;  ///< Type erasure-based caller
 };
 
 template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
@@ -70,7 +113,7 @@ struct CallVariant<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArg
 		CallMember<Tsignature, TtArglist<Targs...>> callMember;
 		CallStatic<Tsignature, TtArglist<Targs...>> callStatic;
 	};
-	alignas(Variant) unsigned char variant[sizeof(Variant)];
+	alignas(decltype(sizeof(int *))) unsigned char variant[sizeof(Variant)];
 
 	typename Trait::MemberDecay<Tsignature>::ReturnType
 	operator()(Targs ...aArgs) override
@@ -88,8 +131,7 @@ struct CallVariant<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArg
 	CallVariant(typename Trait::MemberDecay<Tsignature, Trait::Stript<Tinstance>>::CallbackType aCallback, Tinstance aInstance)
 	{
 		auto callMember = new (variant, Rr::Object{}) CallMember<Tsignature, TtArglist<Targs...>>();
-		callMember->memberFunctionCallback = rr_fn_cast<typename Trait::MemberDecay<Tsignature, Rr::Object>::CallbackType>(aCallback);
-		callMember->instance = rr_fn_cast<typename Trait::MemberDecay<Tsignature, Rr::Object>::InstanceType *>(aInstance);
+		callMember->init(aCallback, aInstance);
 	}
 };
 
