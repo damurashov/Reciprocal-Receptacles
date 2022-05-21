@@ -16,6 +16,12 @@ struct IntegralConstant {
 	static constexpr T value = Vval;
 };
 
+struct FalseType : IntegralConstant<bool, false> {
+};
+
+struct TrueType : IntegralConstant<bool, true> {
+};
+
 }  // namespace Trait
 }  // namespace Rr
 
