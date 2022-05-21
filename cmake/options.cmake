@@ -14,9 +14,6 @@ endmacro()
 # C++ standard library
 rr_bin_option(RRO_STL_USED "C++ STL standard library is being used" ON)
 
-# Safe callback conversion
-rr_bin_option(RRO_STATIC_CAST_FN_CONVERSION "Use static_cast to convert callbacks. Requires deriving from base type" OFF)
-
 # Do use c assert() method
 rr_bin_option(RRO_ENABLE_CASSERT "Use static_cast to convert callbacks. Requires deriving from base type" OFF)
 
