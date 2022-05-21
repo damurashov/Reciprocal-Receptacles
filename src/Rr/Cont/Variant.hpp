@@ -14,6 +14,7 @@
 #include <Rr/Trait/Forward.hpp>
 #include <Rr/Trait/RemoveReference.hpp>
 #include <Rr/Trait/EnableIf.hpp>
+#include <Rr/Trait/Conditional.hpp>
 #include <Rr/Util/DefaultConfig.hpp>
 
 namespace Rr {
@@ -34,6 +35,12 @@ private:
 
 	template <class T>
 	using GetIndex = typename Rr::Trait::TypeToInt<T, Ta...>;
+
+	/// \brief A non-idiomatic implementation of std::decay
+	///
+	template <class T>
+	using DecayTp = typename Rr::Trait::StoreType<
+		Conditional<>>::Type;
 
 public:
 	Variant() : index{-1}
