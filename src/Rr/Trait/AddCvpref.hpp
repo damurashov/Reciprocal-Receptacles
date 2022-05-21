@@ -14,7 +14,6 @@
 namespace Rr {
 namespace Trait {
 
-
 template <class T>
 struct AddPointer : StoreType<typename RemovePointer<T>::Type *> {
 };
@@ -23,8 +22,16 @@ template <class T>
 struct AddLvalueReference : StoreType<typename RemoveReference<T>::Type &> {
 };
 
+template <>
+struct AddLvalueReference<void> : StoreType<void> {
+};
+
 template <class T>
 struct AddRvalueReference : StoreType<typename RemoveReference<T>::Type &&> {
+};
+
+template <>
+struct AddRvalueReference<void> : StoreType<void> {
 };
 
 template <class T>
