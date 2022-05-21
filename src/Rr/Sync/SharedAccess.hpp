@@ -42,7 +42,7 @@ struct SharedAccess {
 ///
 template <class Titerator>
 class SharedAccessIt {
-	using S = typename Rr::Trait::StripTp<decltype(*Rr::Trait::declval<Titerator>())>;
+	using S = typename Rr::Trait::StripTp<decltype(*Rr::Trait::eDeclval<Titerator>())>;
 	using Policy = Rr::Sync::Policy::SharedAccess<typename S::SyncTrait>;
 
 	Titerator it;
