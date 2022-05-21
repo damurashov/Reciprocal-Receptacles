@@ -38,6 +38,8 @@ constexpr T &eDeclval()
 	return *const_cast<T *>((const T *) DeclvalImpl::p2);
 }
 
+using DeclvalImpl::declval;
+
 }  // namespace Trait
 }  // namespace Rr
 
