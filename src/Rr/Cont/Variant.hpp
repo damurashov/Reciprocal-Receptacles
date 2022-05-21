@@ -13,6 +13,7 @@
 #include <Rr/Trait/TypeToIntegral.hpp>
 #include <Rr/Trait/Forward.hpp>
 #include <Rr/Trait/RemoveReference.hpp>
+#include <Rr/Trait/EnableIf.hpp>
 #include <Rr/Util/DefaultConfig.hpp>
 
 namespace Rr {
@@ -28,8 +29,8 @@ bool holdsAlternative(const Variant<Tvargs...> &aArgs);
 template <class ...Ta>
 class Variant final {
 private:
-//	template <int I>
-//	using GetTypeTp = typename Rr::Trait::IntToType<I, Ta...>::Type;
+	template <int I>
+	using GetTypeTp = typename Rr::Trait::IntToType<I, Ta...>::Type;
 
 	template <class T>
 	using GetIndex = typename Rr::Trait::TypeToInt<T, Ta...>;
@@ -42,12 +43,10 @@ public:
 	template <class T>
 	Variant(T &&aValue) : index{-1}
 	{
-		static_assert(Rr::Trait::TypeIn<T, Ta...>::value, "The provided type is not among those the variant can hold");
-		emplace<T>(Trait::forward<T>(aValue));
-	}
-
-	~Variant()
-	{
+		using Type = Trait::RemoveCvprefTp<decltype(aValue), true, true, false, true>;
+		static_assert(Rr::Trait::TypeIn<Type, Ta...>::value, "The provided type is not among those the variant can hold");
+		destruct<0>();
+		emplace<Type>(Trait::forward<T>(aValue));
 	}
 
 	template <class T, class ...Ts>
@@ -64,6 +63,38 @@ public:
 	friend bool holdsAlternative(const Variant<Tvargs...> &);
 
 private:
+	template <int I>
+	GetTypeTp<I> &getAs()
+	{
+		static_assert(I < sizeof...(Ta), "The provided index exceeds the number of template arguments for the `Variant`");
+		return *reinterpret_cast<GetTypeTp<I> *>(cell);
+	}
+
+	template <class T>
+	T &getAs()
+	{
+		static_assert(Rr::Trait::TypeIn<T, Ta...>::value, "The provided type is not among those the variant can hold");
+		return *reinterpret_cast<T *>(cell);
+	}
+
+	template <int I, bool F = (I >= sizeof...(Ta))>
+	inline typename Trait::EnableIf<F>::Type destruct()
+	{
+	}
+
+	template <int I, bool F = (I >= sizeof...(Ta))>
+	inline typename Trait::EnableIf<!F>::Type destruct()
+	{
+		using Type = GetTypeTp<I>;
+
+		if (-1 != index && I < sizeof...(Ta)) {
+			if (I == index) {
+				getAs<Type>().~Type();
+			} else {
+				destruct<I + 1>();
+			}
+		}
+	}
 
 private:
 	alignas(decltype(sizeof(int*))) unsigned char cell[Rr::Trait::MaxSizeof<Ta...>::value];
@@ -71,12 +102,18 @@ private:
 };
 
 template <class Talt, class ...Tvargs>
-bool holdsAlternative(const Variant<Tvargs...> &aArgs)
+bool holdsAlternative(const Variant<Tvargs...> &aVariant)
 {
-	return aArgs.index > 0 && Variant<Tvargs...>::template GetIndex<Talt>::value == aArgs.index;
+	return aVariant.index >= 0 && Variant<Tvargs...>::template GetIndex<Talt>::value == aVariant.index;
 }
 
 }  // VariantImpl
+
+namespace Vrnt {
+
+using Rr::Cont::VariantImpl::holdsAlternative;
+
+}  // Vrnt
 
 using VariantImpl::Variant;
 
