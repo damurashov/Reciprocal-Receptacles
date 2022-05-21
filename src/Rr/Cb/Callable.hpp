@@ -55,8 +55,6 @@ struct CallStatic<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArgl
 
 template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
 struct CallMember<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArglist<Targs...>> {
-	typename Trait::MemberDecay<Tsignature, Rr::Object>::CallbackType memberFunctionCallback;
-	typename Trait::MemberDecay<Tsignature, Rr::Object>::InstanceType *instance;
 
 	/// \brief Helper stub that enables assessing how much of a storage a pointer to a virtual member takes
 	///
@@ -86,13 +84,10 @@ struct CallMember<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArgl
 		return (cb.inst->*cb.ptr)(aArgs...);
 	}
 
-	alignas(Cb<decltype(&Stub::call), Stub>) unsigned char cell[sizeof(Cb<decltype(&Stub::call), Stub>)];  ///< Polymorphic cell storing call information
-	CallerType caller;  ///< Type erasure-based caller
-
 	/// \brief Initialize `cell` and `caller`
 	///
 	template <class Tptr, class Tinst>
-	void init(Tptr &&aPtr, Tinst &&aInst)
+	void init(Tptr aPtr, Tinst aInst)
 	{
 		caller = tcaller<Tptr, Tinst>;
 		new (cell, Rr::Object()) Cb<Tptr, Tinst>{aPtr, aInst};
@@ -103,10 +98,13 @@ struct CallMember<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArgl
 	typename Trait::MemberDecay<Tsignature>::ReturnType
 	operator()(Targs ...aArgs) override
 	{
-		return (instance->*memberFunctionCallback)(aArgs...);
+		return caller(cell, aArgs...);
 	}
 
 	virtual ~CallMember() = default;
+
+	alignas(decltype(sizeof(int))) unsigned char cell[sizeof(Cb<decltype(&Stub::call), Stub>)];  ///< Polymorphic cell storing call information
+	CallerType caller;  ///< Type erasure-based caller
 };
 
 template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
@@ -133,8 +131,7 @@ struct CallVariant<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArg
 	CallVariant(typename Trait::MemberDecay<Tsignature, Trait::Stript<Tinstance>>::CallbackType aCallback, Tinstance aInstance)
 	{
 		auto callMember = new (variant, Rr::Object{}) CallMember<Tsignature, TtArglist<Targs...>>();
-		callMember->memberFunctionCallback = rr_fn_cast<typename Trait::MemberDecay<Tsignature, Rr::Object>::CallbackType>(aCallback);
-		callMember->instance = rr_fn_cast<typename Trait::MemberDecay<Tsignature, Rr::Object>::InstanceType *>(aInstance);
+		callMember->init(aCallback, aInstance);
 	}
 };
 
