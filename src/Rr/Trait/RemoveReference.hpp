@@ -78,6 +78,9 @@ struct RemoveExtent<T[N]> : StoreType<T> {
 };
 
 template <class T>
+using RemoveExtentTp = typename RemoveExtent<T>::Type;
+
+template <class T>
 using Strip = Apply<T, RemoveCv, RemoveReference, RemovePointer>;
 
 template <class T>
