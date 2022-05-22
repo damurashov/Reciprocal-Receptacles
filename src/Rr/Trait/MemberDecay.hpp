@@ -101,9 +101,7 @@ template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatil
 
 }  // namespace MemberDecayImpl
 
-template <class ...Targs>
-struct MemberDecay : MemberDecayImpl::MemberDecay<Targs...> {
-};
+using MemberDecayImpl::MemberDecay;
 
 }  // Trait
 }  // Rr
