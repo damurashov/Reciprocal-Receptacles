@@ -17,16 +17,16 @@ namespace Trait {
 namespace AddCvprefImpl {
 
 template <class T>
-auto sfinaeAddRvalueReference(int) -> Rr::Trait::StoreType<T &&>;
+auto sfinaeAddRvalueReference(int) -> typename Rr::Trait::StoreType<T &&>::Type;
 
 template <class T>
-auto sfinaeAddRvalueReference(...) -> Rr::Trait::StoreType<T>;
+auto sfinaeAddRvalueReference(...) -> typename Rr::Trait::StoreType<T>::Type;
 
 template <class T>
-auto sfinaeAddLvalueReference(int) -> Rr::Trait::StoreType<T&>;
+auto sfinaeAddLvalueReference(int) -> typename Rr::Trait::StoreType<T&>::Type;
 
 template <class T>
-auto sfinaeAddLvalueReference(...) -> Rr::Trait::StoreType<T>;
+auto sfinaeAddLvalueReference(...) -> typename Rr::Trait::StoreType<T>::Type;
 
 template <class T>
 struct AddLvalueReference : decltype(sfinaeAddLvalueReference<T>(0)) {
