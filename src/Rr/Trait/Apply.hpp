@@ -14,18 +14,18 @@
 namespace Rr {
 namespace Trait {
 
-template <bool F, template <class...> class Tt>
+template <bool F, template <class> class Tt, template <class> class TtElse = StoreType>
 struct ApplyConditional {
     template<class T>
     struct Ttype : Tt<T> {
     };
 };
 
-template <template <class...> class Tt>
-struct ApplyConditional<false, Tt> {
+template <template <class> class Tt, template <class> class TtElse>
+struct ApplyConditional<false, Tt, TtElse> {
     template<class T>
-    struct Ttype : StoreType<T> {
-    };
+	struct Ttype : TtElse<T> {
+	};
 };
 
 namespace ApplyImpl {
