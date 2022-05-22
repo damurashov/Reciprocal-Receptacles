@@ -12,6 +12,7 @@
 #include <Rr/Trait/IsFunction.hpp>
 #include <Rr/Trait/IsPointer.hpp>
 #include <Rr/Trait/IsArray.hpp>
+#include <Rr/Trait/Apply.hpp>
 
 namespace Rr {
 namespace Trait {
@@ -19,24 +20,14 @@ namespace DecayImpl {
 
 using namespace Rr::Trait;
 
-template <class Tnoref>
-struct DecayNoref :
-	StoreType<
-		ConditionalTp<
-			/* if */IsArray<Tnoref>::value,
-			/* then */RemoveExtentTp<Tnoref> *,
-			ConditionalTp<
-				/* elseif */IsFunction<Tnoref>::value,
-				/* then */typename AddPointer<Tnoref>::Type,
-				/* else */typename RemoveCv<Tnoref>::Type
-			>
-		>
+template <class T>
+struct Decay :
+	Apply<T,
+		RemoveReference,
+		ApplyConditional<IsArray<T>::value, MakeApplyChain<RemoveExtent, AddPointer>::template Ttype>::template Ttype,
+		ApplyConditional<IsFunction<T>::value, AddPointer, RemoveCv>::template Ttype
 	>
 {
-};
-
-template <class T>
-struct Decay : DecayNoref<typename RemoveReference<T>::Type> {
 };
 
 }  // DecayImpl
