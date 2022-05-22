@@ -20,13 +20,15 @@ namespace Trait {
 
 namespace MemberDecayImpl {
 
+struct Stub;
+
 template <class ...Targs>
 struct ArgsListImpl;
 
 template <class T, bool Fconst, bool Fvolatile>
 using Cv = AddCvpreft<Stript<T>, Fconst, Fvolatile, false, false, false>;  ///< Strip type, add const and volatile qualifiers depending on template args arguments
 
-template <class Tret, class Tcb, class Ti, bool Fconst, bool Fvolatile, class ...Targs>
+template <class Tret, class Tcb, class Ti, bool Fconst, bool Fvolatile, bool Fptrform, class ...Targs>
 struct MemberDecayStore {
 	using StaticCallbackType = Tret(*)(Targs...);
 	using CallbackType = Tcb;
@@ -37,6 +39,8 @@ struct MemberDecayStore {
 
 	static constexpr auto kIsConst = Fconst;
 	static constexpr auto kIsVolatile = Fvolatile;
+	static constexpr auto kIsMethod = IsSame<Stub, Ti>::value;
+	static constexpr auto kIsPointerForm = Fptrform;  ///< The signature has form `Ret(Type::*)(Args...)` or `Ret(*)(Args...)`
 
 	using AsMemberCallback = Tret(Ti::*)(Targs...);
 	using AsConstMemberCallback = Tret(Ti::*)(Targs...) const;
@@ -55,55 +59,51 @@ struct MemberDecayStore {
 };
 
 template<class ...Ta> struct MemberDecay;
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...)                  , T> : MemberDecayStore<Ret, Ret(T::*)(Args...)                  , T, false, false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const            , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const            , T, true , false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile         , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile         , T, false, true , Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile   , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile   , T, true , true , Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...)                & , T> : MemberDecayStore<Ret, Ret(T::*)(Args...)                & , T, false, false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const          & , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const          & , T, true , false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile       & , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile       & , T, false, true , Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile & , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile & , T, true , true , Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...)                &&, T> : MemberDecayStore<Ret, Ret(T::*)(Args...)                &&, T, false, false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const          &&, T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const          &&, T, true , false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile       &&, T> : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile       &&, T, false, true , Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile &&, T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile &&, T, true , true , Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...)                  , T> : MemberDecayStore<Ret, Ret(T::*)(Args...)                  , T, false, false, false, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const            , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const            , T, true , false, false, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile         , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile         , T, false, true , false, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile   , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile   , T, true , true , false, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...)                & , T> : MemberDecayStore<Ret, Ret(T::*)(Args...)                & , T, false, false, false, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const          & , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const          & , T, true , false, false, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile       & , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile       & , T, false, true , false, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile & , T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile & , T, true , true , false, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...)                &&, T> : MemberDecayStore<Ret, Ret(T::*)(Args...)                &&, T, false, false, false, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const          &&, T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const          &&, T, true , false, false, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile       &&, T> : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile       &&, T, false, true , false, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile &&, T> : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile &&, T, true , true , false, Args...> {};
 
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...)                  > : MemberDecayStore<Ret, Ret(T::*)(Args...)                  , T, false, false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const            > : MemberDecayStore<Ret, Ret(T::*)(Args...) const            , T, true , false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) volatile         > : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile         , T, false, true , Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const volatile   > : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile   , T, true , true , Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...)                & > : MemberDecayStore<Ret, Ret(T::*)(Args...)                & , T, false, false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const          & > : MemberDecayStore<Ret, Ret(T::*)(Args...) const          & , T, true , false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) volatile       & > : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile       & , T, false, true , Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const volatile & > : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile & , T, true , true , Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...)                &&> : MemberDecayStore<Ret, Ret(T::*)(Args...)                &&, T, false, false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const          &&> : MemberDecayStore<Ret, Ret(T::*)(Args...) const          &&, T, true , false, Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) volatile       &&> : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile       &&, T, false, true , Args...> {};
-template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const volatile &&> : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile &&, T, true , true , Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...)                  > : MemberDecayStore<Ret, Ret(T::*)(Args...)                  , T, false, false, true, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const            > : MemberDecayStore<Ret, Ret(T::*)(Args...) const            , T, true , false, true, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) volatile         > : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile         , T, false, true , true, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const volatile   > : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile   , T, true , true , true, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...)                & > : MemberDecayStore<Ret, Ret(T::*)(Args...)                & , T, false, false, true, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const          & > : MemberDecayStore<Ret, Ret(T::*)(Args...) const          & , T, true , false, true, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) volatile       & > : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile       & , T, false, true , true, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const volatile & > : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile & , T, true , true , true, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...)                &&> : MemberDecayStore<Ret, Ret(T::*)(Args...)                &&, T, false, false, true, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const          &&> : MemberDecayStore<Ret, Ret(T::*)(Args...) const          &&, T, true , false, true, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) volatile       &&> : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile       &&, T, false, true , true, Args...> {};
+template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const volatile &&> : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile &&, T, true , true , true, Args...> {};
 
-struct Stub;
+template<class Ret, class ...Args> struct MemberDecay<Ret(*)(Args...)> : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, false, true, Args...> {};
 
-template<class Ret, class ...Args> struct MemberDecay<Ret(*)(Args...)> : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, false, Args...> {};
-
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...)                  > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, false, Args...> {};
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const            > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , false, Args...> {};
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile         > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, true , Args...> {};
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile   > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , true , Args...> {};
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...)                & > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, false, Args...> {};
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const          & > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , false, Args...> {};
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile       & > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, true , Args...> {};
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile & > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , true , Args...> {};
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...)                &&> : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, false, Args...> {};
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const          &&> : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , false, Args...> {};
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile       &&> : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, true , Args...> {};
-template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile &&> : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , true , Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...)                  > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, false, false, Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const            > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , false, false, Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile         > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, true , false, Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile   > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , true , false, Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...)                & > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, false, false, Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const          & > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , false, false, Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile       & > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, true , false, Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile & > : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , true , false, Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...)                &&> : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, false, false, Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const          &&> : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , false, false, Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) volatile       &&> : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, true , false, Args...> {};
+template<class Ret, class ...Args> struct MemberDecay<Ret(Args...) const volatile &&> : MemberDecayStore<Ret, Ret(*)(Args...), Stub, true , true , false, Args...> {};
 
 
 }  // namespace MemberDecayImpl
 
-template <class ...Targs>
-struct MemberDecay : MemberDecayImpl::MemberDecay<Targs...> {
-};
+using MemberDecayImpl::MemberDecay;
 
 }  // Trait
 }  // Rr

@@ -23,6 +23,10 @@ template <class T>
 auto sfinaeAddRvalueReference(...) -> Rr::Trait::StoreType<T>;
 
 template <class T>
+struct AddRvalueReference : decltype(sfinaeAddRvalueReference<T>(0)) {
+};
+
+template <class T>
 auto sfinaeAddLvalueReference(int) -> Rr::Trait::StoreType<T&>;
 
 template <class T>
@@ -33,17 +37,20 @@ struct AddLvalueReference : decltype(sfinaeAddLvalueReference<T>(0)) {
 };
 
 template <class T>
-struct AddRvalueReference : decltype(sfinaeAddRvalueReference<T>(0)) {
+auto sfinaeAddPointer(int) -> Rr::Trait::StoreType<typename Rr::Trait::RemoveReference<T>::Type *>;
+
+template <class T>
+auto sfinaeAddPointer(...) -> Rr::Trait::StoreType<T>;
+
+template <class T>
+struct AddPointer : decltype(sfinaeAddPointer<T>(0)) {
 };
 
 }  // AddCvprefImpl
 
-template <class T>
-struct AddPointer : StoreType<typename RemovePointer<T>::Type *> {
-};
-
 using AddCvprefImpl::AddLvalueReference;
 using AddCvprefImpl::AddRvalueReference;
+using AddCvprefImpl::AddPointer;
 
 template <class T>
 struct AddVolatile : StoreType <volatile T> {

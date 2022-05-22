@@ -66,6 +66,21 @@ struct RemoveCv : StoreType<typename RemoveConst<typename RemoveVolatile<T>::Typ
 };
 
 template <class T>
+struct RemoveExtent : StoreType<T> {
+};
+
+template <class T>
+struct RemoveExtent<T[]> : StoreType<T> {
+};
+
+template <class T, decltype(sizeof(int *)) N>
+struct RemoveExtent<T[N]> : StoreType<T> {
+};
+
+template <class T>
+using RemoveExtentTp = typename RemoveExtent<T>::Type;
+
+template <class T>
 using Strip = Apply<T, RemoveCv, RemoveReference, RemovePointer>;
 
 template <class T>
