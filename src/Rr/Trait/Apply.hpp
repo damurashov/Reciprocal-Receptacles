@@ -38,7 +38,16 @@ template <class T>
 struct Apply<T, StoreType> : StoreType<T> {
 };
 
+template <template <class> class Tt, template <class> class ...Tts>
+struct MakeApplyChain {
+
+	template <class T>
+	using Ttype = Apply<T, Tt, Tts..., StoreType>;
+};
+
 }  // ApplyImpl
+
+using ApplyImpl::MakeApplyChain;
 
 template <class T, template <class...> class ...Tts>
 struct Apply : ApplyImpl::Apply<T, Tts..., StoreType> {
