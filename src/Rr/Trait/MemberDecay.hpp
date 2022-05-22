@@ -20,6 +20,8 @@ namespace Trait {
 
 namespace MemberDecayImpl {
 
+struct Stub;
+
 template <class ...Targs>
 struct ArgsListImpl;
 
@@ -37,6 +39,7 @@ struct MemberDecayStore {
 
 	static constexpr auto kIsConst = Fconst;
 	static constexpr auto kIsVolatile = Fvolatile;
+	static constexpr auto kIsMethod = IsSame<Stub, Ti>::value;
 
 	using AsMemberCallback = Tret(Ti::*)(Targs...);
 	using AsConstMemberCallback = Tret(Ti::*)(Targs...) const;
@@ -80,8 +83,6 @@ template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...
 template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const          &&> : MemberDecayStore<Ret, Ret(T::*)(Args...) const          &&, T, true , false, Args...> {};
 template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) volatile       &&> : MemberDecayStore<Ret, Ret(T::*)(Args...) volatile       &&, T, false, true , Args...> {};
 template<class T, class Ret, class ...Args> struct MemberDecay<Ret(T::*)(Args...) const volatile &&> : MemberDecayStore<Ret, Ret(T::*)(Args...) const volatile &&, T, true , true , Args...> {};
-
-struct Stub;
 
 template<class Ret, class ...Args> struct MemberDecay<Ret(*)(Args...)> : MemberDecayStore<Ret, Ret(*)(Args...), Stub, false, false, Args...> {};
 
