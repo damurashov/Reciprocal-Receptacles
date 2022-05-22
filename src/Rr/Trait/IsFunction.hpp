@@ -18,8 +18,8 @@ namespace Trait {
 namespace IsFunctionImpl {
 
 struct MethodSfinae {
-	template <class T, bool F = Trait::MemberDecay<T>::kIsMethod>
-	static typename Trait::EnableIf<F>::Type call();
+	template <class T, bool F = Trait::MemberDecay<T>::kIsPointerForm>
+	static typename Trait::EnableIf<!F>::Type call();
 };
 
 template <class T>
