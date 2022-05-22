@@ -17,30 +17,30 @@ namespace Trait {
 namespace AddCvprefImpl {
 
 template <class T>
-auto sfinaeAddRvalueReference(int) -> typename Rr::Trait::StoreType<T &&>::Type;
+auto sfinaeAddRvalueReference(int) -> Rr::Trait::StoreType<T &&>;
 
 template <class T>
-auto sfinaeAddRvalueReference(...) -> typename Rr::Trait::StoreType<T>::Type;
+auto sfinaeAddRvalueReference(...) -> Rr::Trait::StoreType<T>;
 
 template <class T>
 struct AddRvalueReference : decltype(sfinaeAddRvalueReference<T>(0)) {
 };
 
 template <class T>
-auto sfinaeAddLvalueReference(int) -> typename Rr::Trait::StoreType<T&>::Type;
+auto sfinaeAddLvalueReference(int) -> Rr::Trait::StoreType<T&>;
 
 template <class T>
-auto sfinaeAddLvalueReference(...) -> typename Rr::Trait::StoreType<T>::Type;
+auto sfinaeAddLvalueReference(...) -> Rr::Trait::StoreType<T>;
 
 template <class T>
 struct AddLvalueReference : decltype(sfinaeAddLvalueReference<T>(0)) {
 };
 
 template <class T>
-auto sfinaeAddPointer(int) -> typename Rr::Trait::StoreType<typename Rr::Trait::RemoveReference<T>::Type *>::Type;
+auto sfinaeAddPointer(int) -> Rr::Trait::StoreType<typename Rr::Trait::RemoveReference<T>::Type *>;
 
 template <class T>
-auto sfinaeAddPointer(...) -> typename Rr::Trait::StoreType<typename Rr::Trait::RemoveReference<T>::Type *>::Type;
+auto sfinaeAddPointer(...) -> Rr::Trait::StoreType<typename Rr::Trait::RemoveReference<T>::Type *>;
 
 template <class T>
 struct AddPointer : decltype(sfinaeAddPointer<T>(0)) {
