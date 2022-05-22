@@ -40,7 +40,7 @@ template <class T>
 auto sfinaeAddPointer(int) -> Rr::Trait::StoreType<typename Rr::Trait::RemoveReference<T>::Type *>;
 
 template <class T>
-auto sfinaeAddPointer(...) -> Rr::Trait::StoreType<typename Rr::Trait::RemoveReference<T>::Type *>;
+auto sfinaeAddPointer(...) -> Rr::Trait::StoreType<T>;
 
 template <class T>
 struct AddPointer : decltype(sfinaeAddPointer<T>(0)) {
