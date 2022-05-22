@@ -14,6 +14,7 @@
 #include <Rr/Trait/Forward.hpp>
 #include <Rr/Trait/RemoveReference.hpp>
 #include <Rr/Trait/EnableIf.hpp>
+#include <Rr/Trait/Decay.hpp>
 #include <Rr/Util/DefaultConfig.hpp>
 
 namespace Rr {
@@ -34,6 +35,9 @@ private:
 
 	template <class T>
 	using GetIndex = typename Rr::Trait::TypeToInt<T, Ta...>;
+
+	template <class T>
+	using DecayTp = typename Rr::Trait::Decay<T>::Type;
 
 public:
 	Variant() : index{-1}
