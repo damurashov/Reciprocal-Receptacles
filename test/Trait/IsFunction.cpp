@@ -16,8 +16,8 @@ TEST_CASE("Trait::IsFunction") {
 	// Short function signatures and function pointer types are both deemed functions
 	CHECK_EXPR_WRAP(Rr::Trait::IsFunction<int(void)>::value);
 	CHECK_EXPR_WRAP(IsFunction<int()>::value);
-	CHECK_EXPR_WRAP(IsFunction<int(*)(char)>::value);
-	CHECK_EXPR_WRAP(IsFunction<int(*)(void)>::value);
+	CHECK_EXPR_WRAP(!IsFunction<int(*)(char)>::value);
+	CHECK_EXPR_WRAP(!IsFunction<int(*)(void)>::value);
 	CHECK_EXPR_WRAP(IsFunction<int()>::value);
 	CHECK_EXPR_WRAP(IsFunction<int(char)>::value);
 
