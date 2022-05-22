@@ -28,4 +28,6 @@ TEST_CASE("Trait::Decay") {
 	CHECK(checkDecayEq<const int * const , const int *>());
 	CHECK(checkDecayEq<const int * volatile , const int *>());
 	CHECK(checkDecayEq<const int * const volatile , const int *>());
+	CHECK(checkDecayEq<int(void), int(*)(void)>());
+	CHECK(checkDecayEq<int(*)(void), int(*)(void)>());
 }
