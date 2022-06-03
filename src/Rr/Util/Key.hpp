@@ -18,12 +18,12 @@ namespace Rr {
 namespace Util {
 namespace KeyImpl {
 
-template <class Tsignature, class TsyncTrait, template <class ...>class TcallableContainer, class TargList>
+template <class Tsignature, class TsyncTrait, template <class ...>class TcallableContainer, class TargList, class Ttopic>
 class Key;
 
 template <class Tsignature, class TsyncTrait, template <class ...> class TcallableContainer, class ...Targs,
-	template <class...> class TargsList>
-class Key<Tsignature, TsyncTrait, TcallableContainer, TargsList<Targs...>> : public Rr::Cb::Callable<Tsignature> {
+	template <class...> class TargsList, class Ttopic>
+class Key<Tsignature, TsyncTrait, TcallableContainer, TargsList<Targs...>, Ttopic> : public Rr::Cb::Callable<Tsignature> {
 private:
 	static Rr::Sync::Storage<Rr::Cb::Callable<Tsignature>, TsyncTrait, TcallableContainer> storage;
 	typename Rr::Sync::Storage<Rr::Cb::Callable<Tsignature>, TsyncTrait, TcallableContainer>::Value &sharedAccess;
@@ -81,17 +81,17 @@ public:
 };
 
 template <class Tsignature, class TsyncTrait, template <class ...> class TcallableContainer, class ...Targs,
-	template <class...> class TargsList>
+	template <class...> class TargsList, class Ttopic>
 Rr::Sync::Storage<Rr::Cb::Callable<Tsignature>, TsyncTrait, TcallableContainer>
-Key<Tsignature, TsyncTrait, TcallableContainer, TargsList<Targs...>>::storage;
+Key<Tsignature, TsyncTrait, TcallableContainer, TargsList<Targs...>, Ttopic>::storage;
 
 }  // namespace KeyImpl
 
 template <class Tsignature, class TsyncTrait, template <class ...> class TcallableContainer, class Ttopic=void>
-struct Key : KeyImpl::Key<Tsignature, TsyncTrait, TcallableContainer, typename Rr::Trait::MemberDecay<Tsignature>::ArgsList> {
+struct Key : KeyImpl::Key<Tsignature, TsyncTrait, TcallableContainer, typename Rr::Trait::MemberDecay<Tsignature>::ArgsList, Ttopic> {
 private:
 	using Base = typename KeyImpl::Key<Tsignature, TsyncTrait, TcallableContainer,
-		typename Rr::Trait::MemberDecay<Tsignature>::ArgsList>;
+		typename Rr::Trait::MemberDecay<Tsignature>::ArgsList, Ttopic>;
 
 public:
 	using Base::Base;
@@ -106,7 +106,7 @@ template <class Tsignature, class TsyncTrait, template <class ...> class Tcallab
 struct LegacyKey {
 private:
 	using KeyType = typename KeyImpl::Key<Tsignature, TsyncTrait, TcallableContainer,
-		typename Rr::Trait::MemberDecay<Tsignature>::ArgsList>;
+		typename Rr::Trait::MemberDecay<Tsignature>::ArgsList, Ttopic>;
 	KeyType *key;
 public:
 
