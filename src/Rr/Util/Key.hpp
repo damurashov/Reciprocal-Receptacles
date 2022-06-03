@@ -78,6 +78,16 @@ public:
 			callable(Rr::Trait::forward<Targs>(aArgs)...);
 		}
 	}
+
+	/// \brief Notify every subscriber, invoking the caller on each response using a provided callback;
+	///
+	template <class Tcb>
+	static void notifyCb(Targs ...aArgs, Tcb &&aCb)
+	{
+		for (auto &callable : storage.getIterators()) {
+			aCb(callable(Rr::Trait::forward<Targs>(aArgs)...));
+		}
+	}
 };
 
 template <class Tsignature, class TsyncTrait, template <class ...> class TcallableContainer, class ...Targs,
