@@ -21,4 +21,4 @@ rr_bin_option(RRO_ENABLE_CASSERT "Use static_cast to convert callbacks. Requires
 rr_bin_option(RRO_ENABLE_DEBUG "Use debug output" ON)
 
 # Whether the dynamic allocation capabilities are present
-rr_bin_option(RRO_USE_NEW_OPERATOR "Provided environment has `new` operator defined. Some features rely on it." OFF)
+rr_bin_option(RRO_USE_OPERATOR_NEW "Provided environment has `new` operator defined. Some features rely on it." OFF)
