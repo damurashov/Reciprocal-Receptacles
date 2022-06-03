@@ -8,28 +8,30 @@
 #if !defined(RR_TRAIT_MAX_HPP)
 #define RR_TRAIT_MAX_HPP
 
+#include <Rr/Util/DefaultConfig.hpp>
+
 namespace Rr {
 namespace Trait {
 
-template <unsigned N1, unsigned N2, bool Ngt = (N1 > N2)>
+template <Rr::usize N1, Rr::usize N2, bool Ngt = (N1 > N2)>
 struct Max2;
 
-template <unsigned N1, unsigned N2>
+template <Rr::usize N1, Rr::usize N2>
 struct Max2<N1, N2, true> {
 	static constexpr auto value = N1;
 };
 
-template <unsigned N1, unsigned N2>
+template <Rr::usize N1, Rr::usize N2>
 struct Max2<N1, N2, false> {
 	static constexpr auto value = N2;
 };
 
-template <unsigned N, unsigned ...Nsizeofs>
+template <Rr::usize N, Rr::usize ...Nsizeofs>
 struct MaxN {
 	static constexpr auto value = Max2<N, MaxN<(Nsizeofs)...>::value>::value;
 };
 
-template <unsigned N>
+template <Rr::usize N>
 struct MaxN<N> {
 	static constexpr auto value = N;
 };
