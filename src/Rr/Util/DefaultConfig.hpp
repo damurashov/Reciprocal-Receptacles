@@ -52,6 +52,10 @@
 # define RRO_ENABLE_DEBUG 0
 #endif
 
+#if !defined(RRO_USE_NEW_OPERATOR)
+# define RRO_USE_NEW_OPERATOR 0
+#endif
+
 #if RRO_ENABLE_DEBUG
 # if !RRO_STL_USED
 #  error "STL is required for debug output"
