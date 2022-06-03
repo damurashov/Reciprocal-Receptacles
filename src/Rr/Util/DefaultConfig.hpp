@@ -52,8 +52,8 @@
 # define RRO_ENABLE_DEBUG 0
 #endif
 
-#if !defined(RRO_USE_NEW_OPERATOR)
-# define RRO_USE_NEW_OPERATOR 0
+#if !defined(RRO_USE_OPERATOR_NEW)
+# define RRO_USE_OPERATOR_NEW 0
 #endif
 
 #if RRO_ENABLE_DEBUG
