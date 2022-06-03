@@ -85,6 +85,9 @@ struct Object {
 	{
 	}
 };
+
+using usize = decltype(sizeof(int));
+
 }  // Rr
 
 ///
