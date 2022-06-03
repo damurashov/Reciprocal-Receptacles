@@ -79,13 +79,29 @@ public:
 		}
 	}
 
-	/// \brief Notify every subscriber, invoking the caller on each response using a provided callback;
+	/// \brief Notify every subscriber, feedbacking the caller on each response using a provided callback.
 	///
 	template <class Tcb>
 	static void notifyCb(Targs ...aArgs, Tcb &&aCb)
 	{
 		for (auto &callable : storage.getIterators()) {
 			aCb(callable(Rr::Trait::forward<Targs>(aArgs)...));
+		}
+	}
+
+	/// \brief Notify N first subscribers.
+	///
+	/// Useful for implementing something like a module framework, where only 1 or N responses are required or expected.
+	///
+	template <class Tcb>
+	static void notifyCbn(Targs ...aArgs, Tcb &&aCb, unsigned aN)
+	{
+		for (auto &callable : storage.getIterators()) {
+			aCb(callable(Rr::Trait::forward<Targs>(aArgs)...));
+
+			if (0 == --aN) {
+				break;
+			}
 		}
 	}
 };
