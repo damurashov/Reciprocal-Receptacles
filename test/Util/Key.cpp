@@ -72,7 +72,13 @@ TEST_CASE("Key") {
 			CHECK(TestKey::Ret::Correct == callable(0xffff));
 		}
 
-		CHECK(1 == TestKey::Call::ncalled);
+		TestKey::Key::notifyCb(0xffff,
+			[](TestKey::Ret aRet)
+			{
+				CHECK(TestKey::Ret::Correct == aRet);
+			});
+
+		CHECK(2 == TestKey::Call::ncalled);
 	}
 
 	SUBCASE("Enabled / disabled") {
