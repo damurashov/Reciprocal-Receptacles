@@ -9,6 +9,7 @@
 #define RR_TRAIT_INTEGRALIN_HPP
 
 #include <Rr/Trait/IntegralConstant.hpp>
+#include <Rr/Util/DefaultConfig.hpp>
 
 namespace Rr {
 namespace Trait {
@@ -23,15 +24,15 @@ namespace Trait {
 /// @tparam Icurrent   Current integer
 /// @tparam Ia         Integers, including 2 fictitious elements
 ///
-template <unsigned Isizeof, unsigned ImaxSizeof, int Ibase, unsigned Ipos, int Icurrent, int... Ia>
+template <Rr::usize Isizeof, Rr::usize ImaxSizeof, int Ibase, Rr::usize Ipos, int Icurrent, int... Ia>
 struct IntToPosBase : IntegralConstant<int, IntToPosBase<Isizeof, ImaxSizeof, Ibase, Ipos + 1, Ia...>::value> {
 };
 
-template <unsigned Isizeof, unsigned ImaxSizeof, int Ibase, unsigned Ipos, int ...Ia>
-struct IntToPosBase<Isizeof, ImaxSizeof, Ibase, Ipos, Ibase, Ia...> : IntegralConstant<int, Ipos> {
+template <Rr::usize Isizeof, Rr::usize ImaxSizeof, int Ibase, Rr::usize Ipos, int ...Ia>
+struct IntToPosBase<Isizeof, ImaxSizeof, Ibase, Ipos, Ibase, Ia...> : IntegralConstant<int, static_cast<int>(Ipos)> {
 };
 
-template <unsigned Isizeof, unsigned ImaxSizeof, int Ibase, int Icurrent>
+template <Rr::usize Isizeof, Rr::usize ImaxSizeof, int Ibase, int Icurrent>
 struct IntToPosBase<Isizeof, ImaxSizeof, Ibase, ImaxSizeof, Icurrent> : IntegralConstant<int, -1> {
 };
 
