@@ -29,10 +29,6 @@ struct Serial : Rr::Util::ModuleRegistry<Serial, MutexLockTrait, std::list> {
 
 struct Uart : Serial, Rr::Util::MakeModule<Serial, Uart> {
 
-	Uart() : Rr::Util::MakeModule<Serial, Uart>(false)
-	{
-	}
-
 	std::size_t deviceId() const
 	{
 		return 1;
