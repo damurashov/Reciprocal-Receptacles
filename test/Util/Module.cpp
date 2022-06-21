@@ -41,7 +41,8 @@ struct Usb : Serial {
 TEST_CASE("Module, const") {
 }
 
-TEST_CASE("Module, basic usage") {
+TEST_CASE("Module, basic usage")
+{
 	static constexpr auto knInstances = 3;
 	Uart uarts[knInstances] = {{}};
 
@@ -49,8 +50,8 @@ TEST_CASE("Module, basic usage") {
 		u.setEnabled(true);
 	}
 
-	SUBCASE("iterate") {
-
+	SUBCASE("Iterate")
+	{
 		std::size_t n = 0;
 
 		Uart::visitAll(
@@ -62,8 +63,8 @@ TEST_CASE("Module, basic usage") {
 		CHECK(knInstances == n);
 	}
 
-	SUBCASE("iterate disable") {
-
+	SUBCASE("iterate disable")
+	{
 		uarts[1].setEnabled(false);
 		std::size_t n = 0;
 
@@ -85,4 +86,22 @@ TEST_CASE("Module, basic usage") {
 			});
 		CHECK(knInstances == n);
 	}
+
+	SUBCASE("Iterate over heterogeneous instances")
+	{
+		Usb usb;
+		Serial::reg(usb, true);
+		unsigned n = 0;
+
+		Uart::visitAll(
+			[&n](Serial &aSerial)
+			{
+				(void)aSerial;
+				++n;
+			}
+		);
+
+		CHECK(knInstances + 1 == n);
+	}
+
 }
