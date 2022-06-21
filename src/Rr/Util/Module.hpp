@@ -30,6 +30,11 @@ public:
 	using ValueType = Tmod;
 	using SyncTrait = Tsytr;
 
+	static auto getIterators() -> decltype(storage.getIterators())
+	{
+		return storage.getIterators();
+	}
+
 	static auto reg(Tmod &aMod, bool aEnabled = true) -> decltype(storage.reg(aMod, aEnabled))
 	{
 		return storage.reg(aMod, aEnabled);
