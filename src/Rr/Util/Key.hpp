@@ -67,6 +67,7 @@ public:
 
 	void setEnabled(bool aEnabled)
 	{
+		// TODO: move `setEnabled` method into `SharedAccess<...>`
 		Rr::Sync::Policy::SharedAccess<TsyncTrait>::PrimitiveOps::lock(sharedAccess.primitive);
 		sharedAccess.stored = (aEnabled ? this : nullptr);
 		Rr::Sync::Policy::SharedAccess<TsyncTrait>::PrimitiveOps::unlock(sharedAccess.primitive);
