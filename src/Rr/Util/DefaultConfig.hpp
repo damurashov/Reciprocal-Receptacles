@@ -35,6 +35,10 @@
 
 // Enable <cassert>
 
+#if !defined(RRO_USE_OPERATOR_NEW)
+#define RRO_USE_OPERATOR_NEW 0
+#endif
+
 #if !defined(RRO_ENABLE_CASSERT)
 # define RRO_ENABLE_CASSERT 1
 #endif
