@@ -27,7 +27,7 @@ struct CallWrap;
 template <class...>
 struct CallMember;
 
-template <class...>
+template <class ...>
 struct CallStatic;
 
 template <class...>
@@ -35,22 +35,28 @@ struct CallVariant;
 
 template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
 struct CallWrap<Tsignature, TtArglist<Targs...>> {
-	virtual typename Trait::MemberDecay<Tsignature>::ReturnType
-	operator()(Targs ...) = 0;
-	virtual ~CallWrap() = default;
+	using CallerType = typename Trait::MemberDecay<Tsignature>::ReturnType(*)(
+		CallWrap<Tsignature, TtArglist<Targs...>> */* Cb */, Targs... aArgs);  ///< Type erasure-based caller
+
+	CallerType caller;
 };
 
 template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
 struct CallStatic<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArglist<Targs...>> {
-	typename Trait::MemberDecay<Tsignature>::CallbackType staticFunctionCallback;
+	typename Trait::MemberDecay<Tsignature>::ReturnType(*staticCaller)(Targs ...aArgs);
 
-	typename Trait::MemberDecay<Tsignature>::ReturnType
-	operator()(Targs ...aArgs) override
+	static typename Trait::MemberDecay<Tsignature>::ReturnType call(
+		CallWrap<Tsignature, TtArglist<Targs...>> *aInstance, Targs...aArgs)
 	{
-		return staticFunctionCallback(aArgs...);
+		auto *thisInstance = static_cast<CallStatic<Tsignature, TtArglist<Targs...>> *>(aInstance);
+		return thisInstance->staticCaller(aArgs...);
 	}
 
-	virtual ~CallStatic() = default;
+	void init(decltype(staticCaller) aCaller)
+	{
+		staticCaller = aCaller;
+		this->caller = call;
+	}
 };
 
 template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
@@ -73,14 +79,14 @@ struct CallMember<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArgl
 		Tinst inst;  ///< Pointer to an instance
 	};
 
-	using CallerType = typename Trait::MemberDecay<Tsignature>::ReturnType(*)(void */* Cb */, Targs... aArgs);  ///< Type erasure-based caller
-
 	/// \brief Template stub for creating callers at compile time
 	///
 	template <class Tptr, class Tinst>
-	static typename Trait::MemberDecay<Tsignature>::ReturnType tcaller(void *aCb, Targs ...aArgs)
+	static typename Trait::MemberDecay<Tsignature>::ReturnType call(
+		CallWrap<Tsignature, TtArglist<Targs...>> *aInstance, Targs...aArgs)
 	{
-		auto &cb = *reinterpret_cast<Cb<Tptr, Tinst> *>(aCb);
+		auto *thisInstance = static_cast<CallMember<Tsignature, TtArglist<Targs...>> *>(aInstance);
+		auto &cb = *reinterpret_cast<Cb<Tptr, Tinst> *>(thisInstance->cell);
 		return (cb.inst->*cb.ptr)(aArgs...);
 	}
 
@@ -89,42 +95,31 @@ struct CallMember<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArgl
 	template <class Tptr, class Tinst>
 	void init(Tptr aPtr, Tinst aInst)
 	{
-		caller = tcaller<Tptr, Tinst>;
+		this->caller = call<Tptr, Tinst>;
 		new (cell, Rr::Object()) Cb<Tptr, Tinst>{aPtr, aInst};
 	}
 
-	/// \brief Invoke the caller
-	///
-	typename Trait::MemberDecay<Tsignature>::ReturnType
-	operator()(Targs ...aArgs) override
-	{
-		return caller(cell, aArgs...);
-	}
-
-	virtual ~CallMember() = default;
-
 	alignas(decltype(sizeof(int *))) unsigned char cell[sizeof(Cb<decltype(&Stub::call), Stub>)];  ///< Polymorphic cell storing call information
-	CallerType caller;  ///< Type erasure-based caller
 };
 
 template <class Tsignature, class ...Targs, template <class ...> class TtArglist>
-struct CallVariant<Tsignature, TtArglist<Targs...>> : CallWrap<Tsignature, TtArglist<Targs...>> {
+struct CallVariant<Tsignature, TtArglist<Targs...>> {
 	union Variant {
 		CallMember<Tsignature, TtArglist<Targs...>> callMember;
 		CallStatic<Tsignature, TtArglist<Targs...>> callStatic;
 	};
 	alignas(decltype(sizeof(int *))) unsigned char variant[sizeof(Variant)];
 
-	typename Trait::MemberDecay<Tsignature>::ReturnType
-	operator()(Targs ...aArgs) override
+	typename Trait::MemberDecay<Tsignature>::ReturnType operator()(Targs ...aArgs)
 	{
-		return (*reinterpret_cast<CallWrap<Tsignature, TtArglist<Targs...>> *>(variant))(aArgs...);
+		auto *callWrap = reinterpret_cast<CallWrap<Tsignature, TtArglist<Targs...>> *>(variant);
+		return (callWrap->caller)(callWrap, aArgs...);
 	}
 
 	CallVariant(typename Trait::MemberDecay<Tsignature>::CallbackType aCallback)
 	{
 		auto callStatic = new (variant, Rr::Object{}) CallStatic<Tsignature, TtArglist<Targs...>>();
-		callStatic->staticFunctionCallback = aCallback;
+		callStatic->init(aCallback);
 	}
 
 	template<class Tinstance>
