@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <Rr/Cb/Callable.hpp>
+#include <functional>
 
 using namespace std;
 
@@ -26,6 +27,9 @@ int main(void)
 	PRINT_SIZEOF(Member);
 	PRINT_SIZEOF(Member::cell);
 	PRINT_SIZEOF(Member::caller);
+
+	using StlFunction = std::function<void(int)>;
+	PRINT_SIZEOF(StlFunction);
 
 	using Cb = Rr::Cb::Callable<void(int)>;
 	PRINT_SIZEOF(Cb);
