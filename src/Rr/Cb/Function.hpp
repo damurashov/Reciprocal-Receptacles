@@ -15,6 +15,9 @@
 namespace Rr {
 namespace Cb {
 
+template <class ...Ts>
+class Function;
+
 template <class Tsg, class ...Ts, template <class ...> class Tal>
 class Function<Tsg, Tal<Ts...>> {
 private:
@@ -41,7 +44,7 @@ private:
 		}
 
 		template <class T>
-		static Ret functorInvoke(void *aIntsance, Ts ...aArgs)
+		static Ret functorCallable(void *aInstance, Ts ...aArgs)
 		{
 			return (*reinterpret_cast<T *>(aInstance))(aArgs...);
 		}
@@ -75,6 +78,11 @@ private:
 			a.destructor = nullptr;
 			a.callable = nullptr;
 		}
+
+		template <class T>
+		Object(T &&a) : constructor{functorConstruct<T>}, destructor{functorDestruct<T>}, callable{functorCallable<T>}
+		{
+		}
 	};
 
 public:
@@ -92,7 +100,7 @@ public:
 	}
 
 	template <class Tf>
-	Function(Tf &&aFn) : object{Object<Tf>{}}, functor{object.constructor(&aFn)}
+	Function(Tf &&aFn) : object{Object{}}, functor{object.constructor(&aFn)}
 	{
 	}
 
@@ -110,7 +118,7 @@ public:
 	Function(Function &&a)
 	{
 		object.destructor(functor);
-		object{Rr::Trait::move(a.object)};
+		object = Object{Rr::Trait::move(a.object)};
 		functor = a.functor;
 		a.functor = nullptr;
 		a.object = Object{};
@@ -128,7 +136,7 @@ public:
 	Function &operator=(Function &&a)
 	{
 		object.destructor(functor);
-		object{Rr::Trait::move(a.object)};
+		object = Object{Rr::Trait::move(a.object)};
 		functor = a.functor;
 		a.functor = nullptr;
 		a.object = Object{};
