@@ -23,75 +23,13 @@ class Function<Tsg, Tal<Ts...>> {
 private:
 	using Ret = typename Rr::Trait::MemberDecay<Tsg>::ReturnType;
 
-	struct Object {
-		void *(*constructor)(void *);
-		void (*destructor)(void *);
-		Ret (*callable)(void *, Ts...);
-
-		template <class T>
-		static void* functorConstruct(void *aOther)
-		{
-			return new T{*reinterpret_cast<T *>(aOther)};
-		}
-
-		template <class T>
-		static void functorDestruct(void *aInstance)
-		{
-			if (nullptr != aInstance) {
-				reinterpret_cast<T *>(aInstance)->~T();
-				delete reinterpret_cast<T *>(aInstance);
-			}
-		}
-
-		template <class T>
-		static Ret functorCallable(void *aInstance, Ts ...aArgs)
-		{
-			return (*reinterpret_cast<T *>(aInstance))(aArgs...);
-		}
-
-		Object() : constructor{nullptr}, destructor{nullptr}, callable{nullptr}
-		{
-		}
-
-		Object(const Object &a) : constructor{a.consturctor}, destructor{a.destructor}, callable{a.callable}
-		{
-		}
-
-		Object(Object &&a) : constructor{a.consturctor}, destructor{a.destructor}, callable{a.callable}
-		{
-			a = Object{};
-		}
-
-		Object &operator=(const Object &a)
-		{
-			constructor = a.constructor;
-			destructor = a.destructor;
-			callable = a.callable;
-		}
-
-		Object &operator=(Object &&a)
-		{
-			constructor = a.constructor;
-			destructor = a.destructor;
-			callable = a.callable;
-			a.constructor = nullptr;
-			a.destructor = nullptr;
-			a.callable = nullptr;
-		}
-
-		template <class T>
-		Object(T &&a) : constructor{functorConstruct<T>}, destructor{functorDestruct<T>}, callable{functorCallable<T>}
-		{
-		}
-	};
-
 public:
 	static_assert(RRO_USE_OPERATOR_NEW, "Implementation of function requires dynamic memory allocation");
 
 	Ret operator()(Ts ...aArgs)
 	{
 		rr_assert(nullptr != functor);
-		return object.callable(aArgs...);
+		return callable(aArgs...);
 	}
 
 	operator bool()
@@ -99,53 +37,98 @@ public:
 		return nullptr != functor;
 	}
 
-	template <class Tf>
-	Function(Tf &&aFn) : object{Object{}}, functor{object.constructor(&aFn)}
+	template <class T>
+	Function(T &&aFn) :
+		constructor{functorConstruct<T>},
+		destructor{functorDestruct<T>},
+		callable{functorCallable<T>},
+		functor{constructor(&aFn)}
 	{
 	}
 
-	Function() : object{}, functor{nullptr}
+	Function() : constructor{nullptr}, destructor{nullptr}, callable{nullptr}, functor{nullptr}
 	{
 	}
 
 	Function(const Function &a)
 	{
-		object.destructor(functor);
-		object = a.object;
-		functor = object.constructor(a.functor);
+		destructor(functor);
+
+		constructor = a.constructor;
+		destructor = a.destructor;
+		callable = a.callable;
+		functor = constructor(a.functor);
 	}
 
 	Function(Function &&a)
 	{
-		object.destructor(functor);
-		object = Object{Rr::Trait::move(a.object)};
+		destructor(functor);
+
+		constructor = a.constructor;
+		destructor = a.destructor;
+		callable = a.callable;
 		functor = a.functor;
+		a.constructor = nullptr;
+		a.destructor = nullptr;
+		a.callable = nullptr;
 		a.functor = nullptr;
-		a.object = Object{};
 	}
 
 	Function &operator=(const Function &a)
 	{
-		object.destructor(functor);
-		object = a.object;
-		functor = a.functor;
+		destructor(functor);
+
+		constructor = a.constructor;
+		destructor = a.destructor;
+		callable = a.callable;
+		functor = constructor(a.functor);
 
 		return *this;
 	}
 
 	Function &operator=(Function &&a)
 	{
-		object.destructor(functor);
-		object = Object{Rr::Trait::move(a.object)};
+		destructor(functor);
+
+		constructor = a.constructor;
+		destructor = a.destructor;
+		callable = a.callable;
 		functor = a.functor;
+		a.constructor = nullptr;
+		a.destructor = nullptr;
+		a.callable = nullptr;
 		a.functor = nullptr;
-		a.object = Object{};
 
 		return *this;
 	}
 
 private:
-	Object object;
+	template <class T>
+	static void* functorConstruct(void *aOther)
+	{
+		return new T{*reinterpret_cast<T *>(aOther)};
+	}
+
+	template <class T>
+	static void functorDestruct(void *aInstance)
+	{
+		if (nullptr != aInstance) {
+			reinterpret_cast<T *>(aInstance)->~T();
+			delete reinterpret_cast<T *>(aInstance);
+		}
+	}
+
+	template <class T>
+	static Ret functorCallable(void *aInstance, Ts ...aArgs)
+	{
+		return (*reinterpret_cast<T *>(aInstance))(aArgs...);
+	}
+
+
+private:
+	void *(*constructor)(void *);
+	void (*destructor)(void *);
+	Ret (*callable)(void *, Ts...);
 	void *functor;
 };
 
