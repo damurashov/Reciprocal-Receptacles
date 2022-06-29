@@ -26,7 +26,6 @@ int main(void)
 	PRINT_SIZEOF(Member);
 	PRINT_SIZEOF(Member::cell);
 	PRINT_SIZEOF(Member::caller);
-	PRINT_SIZEOF(Member::_vptr);
 
 	using Cb = Rr::Cb::Callable<void(int)>;
 	PRINT_SIZEOF(Cb);
