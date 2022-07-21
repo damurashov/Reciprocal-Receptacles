@@ -14,6 +14,16 @@
 namespace Rr {
 namespace Sync {
 
+/// \brief Shared access is a thread-safe wrapper over an instance of `T`. Shared access is stored in a static storage,
+/// and thus it is valid to refer to it even when the stored type itself has ceased to exist.
+///
+/// \details Both during the stored instance's lifetime control (constructors and destructors), and during access to
+/// the instance, the same mutex (`primitive`) is used. Therefore, the instance can be safely destructed.
+///
+/// WORKFLOW. A client gets ownership of a `primitive`, checks whether `stored` is nullptr, and if that's not the case,
+/// references the stored instance. The instance during its own creation or destruction, in turn, acquires ownership
+/// over `primitive` and modifies `stored`.
+///
 template <class T, class TsyncTrait>
 struct SharedAccess {
 	using Type = T;
@@ -42,6 +52,11 @@ struct SharedAccess {
 	}
 };
 
+/// \brief An iterator can be turned into `LockWrap`, so the instance may be safely accessed at some point later.
+///
+/// \details This whole "delayed access" scheme is useful, when the instance is unavailable at the moment, but there is
+/// a reason to believe that this will be changed.
+///
 template <class T, class TsyncTrait>
 struct LockWrap final {
 public:
