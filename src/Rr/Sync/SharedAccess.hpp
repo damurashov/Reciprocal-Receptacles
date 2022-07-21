@@ -42,6 +42,36 @@ struct SharedAccess {
 	}
 };
 
+template <class T, class TsyncTrait>
+struct LockWrap final {
+public:
+	struct Wrapped final {
+		T *tryGet() {
+			return sharedAccess.stored;
+		}
+		Wrapped(SharedAccess<T, TsyncTrait> &aSharedAccess) : sharedAccess{aSharedAccess}
+		{
+			sharedAccess.lock();
+		}
+		~Wrapped()
+		{
+			sharedAccess.unlock();
+		}
+	private:
+		SharedAccess<T, TsyncTrait> &sharedAccess;
+	};
+
+	LockWrap(SharedAccess<T, TsyncTrait> &aSharedAccess) : sharedAccess{aSharedAccess}
+	{
+	}
+	Wrapped wrap()
+	{
+		return Wrapped{sharedAccess};
+	}
+private:
+	SharedAccess<T, TsyncTrait> &sharedAccess;
+};
+
 ///
 /// @brief Iterates over elements, enables one to skip positions which contain nullptr-ed `SharedAccess` instances.
 /// Works as a wrapper over an iterator type pertaining to whatever container stores `SharedAccess<...>` instances. The
