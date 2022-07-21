@@ -83,6 +83,10 @@ public:
 	{
 		return Wrapped{sharedAccess};
 	}
+	SharedLockWrap(const SharedLockWrap<T, TsyncTrait> &) = default;
+	SharedLockWrap(SharedLockWrap<T, TsyncTrait> &&) = default;
+	SharedLockWrap &operator=(const SharedLockWrap<T, TsyncTrait> &) = default;
+	SharedLockWrap &operator=(SharedLockWrap<T, TsyncTrait> &&) = default;
 private:
 	SharedAccess<T, TsyncTrait> &sharedAccess;
 };
