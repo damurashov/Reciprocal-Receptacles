@@ -48,6 +48,7 @@ TEST_CASE("Module, basic usage")
 
 	for (auto &u : uarts) {
 		u.setEnabled(true);
+		u.asLockWrap();
 	}
 
 	SUBCASE("Iterate")
