@@ -23,6 +23,16 @@ struct SharedAccess {
 	Type *stored = nullptr;
 	PrimitiveType primitive;
 
+	void lock()
+	{
+		Rr::Sync::Policy::SharedAccess<TsyncTrait>::PrimitiveOps::lock(primitive);
+	}
+
+	void unlock()
+	{
+		Rr::Sync::Policy::SharedAccess<TsyncTrait>::PrimitiveOps::unlock(primitive);
+	}
+
 	SharedAccess(Type *a): stored{a}, primitive{}
 	{
 	}
