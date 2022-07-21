@@ -90,6 +90,11 @@ public:
 		Rr::Sync::Policy::SharedAccess<typename Treg::SyncTrait>::PrimitiveOps::unlock(sharedAccess.primitive);
 	}
 
+	Sync::SharedLockWrap<typename Treg::ValueType, typename Treg::SyncTrait> asLockWrap()
+	{
+		return Sync::SharedLockWrap<typename Treg::ValueType, typename Treg::SyncTrait>{sharedAccess};
+	}
+
 	MakeModule(bool aEnabled = true) : sharedAccess{Treg::reg(*static_cast<Thint *>(this), aEnabled)}
 	{
 	}
