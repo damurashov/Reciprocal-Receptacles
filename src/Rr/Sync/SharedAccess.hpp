@@ -58,7 +58,7 @@ struct SharedAccess {
 /// a reason to believe that this will be changed.
 ///
 template <class T, class TsyncTrait>
-struct LockWrap final {
+struct SharedLockWrap final {
 public:
 	struct Wrapped final {
 		T *tryGet() {
@@ -76,7 +76,7 @@ public:
 		SharedAccess<T, TsyncTrait> &sharedAccess;
 	};
 
-	LockWrap(SharedAccess<T, TsyncTrait> &aSharedAccess) : sharedAccess{aSharedAccess}
+	SharedLockWrap(SharedAccess<T, TsyncTrait> &aSharedAccess) : sharedAccess{aSharedAccess}
 	{
 	}
 	Wrapped wrap()
