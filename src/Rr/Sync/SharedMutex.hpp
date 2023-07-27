@@ -70,7 +70,7 @@ public:
 			if (attemptCounter > 0) {
 				attemptCounter -= 1;
 			} else {
-				Rr::Port::Log::tryPrintIntegralCallable(Rr::Port::LogLevel::Warning,
+				Rr::Port::Log::tryPrintIntegral(Rr::Port::LogLevel::Warning,
 					"`SharedMutex::lock()` may be stuck, maximum number of attempts has been exceeded:",
 					kMaxAttempts);
 			}
