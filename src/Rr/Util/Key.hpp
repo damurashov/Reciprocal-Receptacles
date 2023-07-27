@@ -5,6 +5,9 @@
 //     Author: Dmitry Murashov (dmtr <AT> murashov <DOT> gmail.com)
 //
 
+/// \warning This module is deprecated due to its over-complicatedness, as well
+/// as most of its dependencies. Please use `Rr::Util::Event` instead.
+
 #if !defined(RR_UTIL_KEY_HPP)
 #define RR_UTIL_KEY_HPP
 
