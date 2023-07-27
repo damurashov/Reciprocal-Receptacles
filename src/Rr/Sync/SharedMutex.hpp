@@ -108,6 +108,8 @@ public:
 			} else {
 				sharedLockRequestCounter += 1;
 				mutex.unlock();
+
+				break;
 			}
 		}
 	}
