@@ -20,10 +20,10 @@ namespace ThreadApiImpl {
 template <class T>
 class ThreadApi {
 public:
-	void setThreadSleepCallable(ThreadSleepCallable);
+	static void setThreadSleepCallable(ThreadSleepCallable);
 
 	/// Invokes sleep (yield control) function, if set
-	void trySleep()
+	static void trySleep()
 	{
 		if (threadSleepCallable != nullptr) {
 			threadSleepCallable();
