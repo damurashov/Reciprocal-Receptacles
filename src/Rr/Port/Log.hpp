@@ -37,7 +37,7 @@ public:
 	}
 
 	/// Invokes the static callback, if set
-	static void tryPrintIntegralCallable(LogLevel aLogLevel, const char *aPrefix, int aValue)
+	static void tryPrintIntegral(LogLevel aLogLevel, const char *aPrefix, int aValue)
 	{
 		if (printIntegralCallable != nullptr) {
 			printIntegralCallable(aLogLevel, aPrefix, &aValue);
