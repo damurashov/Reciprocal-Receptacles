@@ -23,10 +23,10 @@ namespace Cont {
 /// \details
 /// The following limitations must be considered:
 ///  - Removing from / adding to the container is slow
-template <template <class ...> class TContainer>
+template <class TContainer>
 class PointerStorage {
 private:
-	TContainer<void *> container;
+	TContainer container;
 
 public:
 	bool tryAdd(void *aPointer)
