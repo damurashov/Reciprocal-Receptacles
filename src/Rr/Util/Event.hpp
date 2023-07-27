@@ -59,6 +59,7 @@ public:
 			Rr::Trait::forward<Tinstance>(aInstance)
 		}
 	{
+		setEnabled(aEnabled);
 	}
 
 	/// Add the event key into the notification queue
@@ -93,17 +94,17 @@ public:
 	}
 
 private:
-	static typename Rr::Sync::SharedMutex<TsyncTrait::MutexType> mutex;
+	static typename Rr::Sync::template SharedMutex<typename TsyncTrait::MutexType> mutex;
 
 	/// Notification queue
-	static typename Rr::Cont::PointerStorage<TsyncTrait::CallableContainerType> pointerStorage;
+	static typename Rr::Cont::template PointerStorage<typename TsyncTrait::template CallableContainerType<void *>> pointerStorage;
 };
 
 template <class Tsignature, class TsyncTrait, class ...Targs, template <class...> class TargsList, class Ttopic>
-Rr::Sync::SharedMutex<TsyncTrait::MutexType> Event<Tsignature, TsyncTrait, TargsList<Targs...>, Ttopic>::mutex;
+Rr::Sync::SharedMutex<typename TsyncTrait::MutexType> Event<Tsignature, TsyncTrait, TargsList<Targs...>, Ttopic>::mutex;
 
 template <class Tsignature, class TsyncTrait, class ...Targs, template <class...> class TargsList, class Ttopic>
-Rr::Cont::PointerStorage<TsyncTrait::CallableContainerType> Event<Tsignature, TsyncTrait, TargsList<Targs...>, Ttopic>::pointerStorage;
+Rr::Cont::PointerStorage<typename  TsyncTrait::template CallableContainerType<void *>> Event<Tsignature, TsyncTrait, TargsList<Targs...>, Ttopic>::pointerStorage;
 
 }  // EventImpl
 
@@ -116,7 +117,6 @@ private:
 
 public:
 	using Base::Base;
-	using Base::getIterators;
 	using Base::setEnabled;
 	using Base::notify;
 	using Base::Arg;
