@@ -67,7 +67,7 @@ public:
 				mutex.unlock();
 			}
 
-			if (attempCounter > 0) {
+			if (attemptCounter > 0) {
 				attemptCounter -= 1;
 			} else {
 				Rr::Port::Log::tryPrintIntegralCallable(Rr::Port::LogLevel::Warning,
