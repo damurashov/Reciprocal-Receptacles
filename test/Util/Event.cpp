@@ -83,7 +83,8 @@ TEST_CASE("Util::Event Notification")
 	CHECK(a == 2);
 }
 
-/// Checks the correctness a statistical hypothesis that half of the time the value will not get changed
+/// Checks the correctness of a statistical hypothesis that half of the time
+/// the value will not get changed
 TEST_CASE("Util::Event Multithreading switch `setEnabled()`")
 {
 	constexpr int kRuns = 20;
