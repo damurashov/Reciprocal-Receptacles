@@ -93,10 +93,10 @@ public:
 	}
 
 private:
-	static Rr::Sync::SharedMutex<TsyncTrait::MutexType> mutex;
+	static typename Rr::Sync::SharedMutex<TsyncTrait::MutexType> mutex;
 
 	/// Notification queue
-	static Rr::Cont::PointerStorage<TsyncTrait::CallableContainerType> pointerStorage;
+	static typename Rr::Cont::PointerStorage<TsyncTrait::CallableContainerType> pointerStorage;
 };
 
 template <class Tsignature, class TsyncTrait, class ...Targs, template <class...> class TargsList, class Ttopic>
