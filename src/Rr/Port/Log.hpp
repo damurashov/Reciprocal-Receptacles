@@ -19,7 +19,10 @@ enum class LogLevel {
 	Debug,
 };
 
-using PrintIntegralCallable = void(*)(LogLevel, char *aPrefix, int aValue);
+/// Prints string sequence followed by an integer
+/// \param `aValue` If `nullptr`, the value MUST be ignored. The lifetime is
+/// not persistent, i.e. the value MUST be copied, if necessary
+using PrintIntegralCallable = void(*)(LogLevel, char *aPrefix, int *aValue);
 
 namespace LogApiImpl {
 
@@ -37,7 +40,14 @@ public:
 	static void tryPrintIntegralCallable(LogLevel aLogLevel, char *aPrefix, int aValue)
 	{
 		if (printIntegralCallable != nullptr) {
-			printIntegralCallable(aLogLevel, aPrefix, aValue);
+			printIntegralCallable(aLogLevel, aPrefix, &aValue);
+		}
+	}
+
+	static void tryPrint(LogLevel aLogLevel, char *aString)
+	{
+		if (printIntegralCallable != nullptr) {
+			printIntegralCallable(aLogLevel, aString, nullptr);
 		}
 	}
 
