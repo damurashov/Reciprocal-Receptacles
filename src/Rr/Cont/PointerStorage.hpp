@@ -25,6 +25,9 @@ namespace Cont {
 ///  - Removing from / adding to the container is slow
 template <template <class ...> class TContainer>
 class PointerStorage {
+private:
+	TContainer<void *> container;
+
 public:
 	bool tryAdd(void *aPointer)
 	{
@@ -69,8 +72,6 @@ public:
 	{
 		return container.end();
 	}
-private:
-	TContainer<void *> container;
 };
 
 }  // Cont
