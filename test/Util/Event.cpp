@@ -16,8 +16,8 @@ namespace TestUtilEvent {
 struct SyncTrait {
 	using MutexType = std::mutex;
 
-	template <class T>
-	using CallableContainerType = std::list<T>;
+	template <class ...Ts>
+	using CallableContainerType = std::list<Ts...>;
 };
 
 using Event = typename Rr::Util::Event<void(int &), SyncTrait>;
@@ -46,7 +46,7 @@ struct MethodCallable {
 
 TEST_CASE("Util::Event Notification") {
 	TestUtilEvent::Event functionCallbackEvent{TestUtilEvent::simpleCallable};
-	MethodCallable methodCallable{};
+	TestUtilEvent::MethodCallable methodCallable{};
 	int a = 0;
 	TestUtilEvent::Event::notify(a);
 	CHECK(a == 2);
