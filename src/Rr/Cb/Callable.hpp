@@ -147,6 +147,7 @@ struct CallVariant<Tsignature, TtArglist<Targs...>> {
 	template<class Tinstance>
 	CallVariant(typename Trait::MemberDecay<Tsignature, Trait::Stript<Tinstance>>::CallbackType aCallback, Tinstance aInstance)
 	{
+		static_assert(sizeof(aCallback) + sizeof(aInstance) < sizeof(CallMember<Tsignature, TtArglist<Targs...>>), "");  // Redundant check to make sure that everything fits
 		auto callMember = new (variant, Rr::Object{}) CallMember<Tsignature, TtArglist<Targs...>>();
 		callMember->init(aCallback, aInstance);
 	}
