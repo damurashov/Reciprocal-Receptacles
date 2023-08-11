@@ -20,7 +20,7 @@ supports C++11, RR is the way to go.
 It all boils down to type erasure:
 
 1. RR stores callbacks to either class methods, or regular functions -- the
-   very same way STL or ETL does so in an instance of `Callable<...>` type;
+very same way STL or ETL does so -- in an instance of `Callable<...>` type;
 2. The storage (which type you choose yourself) stores pointers to `Callable`s
    synchronized with a shared mutex;
 3. The shared mutex is implemented as a wrapper over a regular mutex (which
@@ -38,7 +38,7 @@ together.
 
 # What else can I use it for?
 
-Under the hood, it's just a slightly obscure (due to the use of generic
+At the end of the day, it's just a slightly obscure (due to the use of generic
 programming) subscription mechanism, so you can use it for pretty much
 anything.
 
