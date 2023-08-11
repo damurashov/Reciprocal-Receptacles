@@ -8,7 +8,6 @@
 #if !defined(RR_UTIL_EVENT_HPP)
 #define RR_UTIL_EVENT_HPP
 
-#include <Rr/Sync/Storage.hpp>
 #include <Rr/Cb/Callable.hpp>
 #include <Rr/Trait/MemberDecay.hpp>
 #include <Rr/Trait/Forward.hpp>
