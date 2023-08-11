@@ -45,4 +45,54 @@ anything.
 But don't use it for anything else, as, most likely, you will create messy
 code. And don't ask me why I know that.
 
-# Examples
+# Example
+
+```c++
+
+#include <Rr/Util/Event.hpp>
+
+// At first, let's create a trait containing all the necessary fields.
+struct SyncTrait {
+	using MutexType = std::mutex;
+
+	// Let's store our callables (pointers to those, anyway) in the list
+	template <class ...Ts>
+	using CallableContainerType = std::list<Ts...>;
+};
+
+struct MarkerToDistinguishTopics;
+
+// Define a topic
+using Event = typename Rr::Util::Event<void(int &), SyncTrait, MarkerToDistinguishTopics /* optional! */>;
+
+// Here is how you activate a subscription
+struct MethodCallable {
+	void callable(int &aValue)
+	{
+		aValue += 1;
+	}
+
+	Event event;
+
+	MethodCallable():
+		event{&MethodCallable::callable, this}
+	{
+	}
+
+	~MethodCallable()
+	{
+		event.setEnabled(false);  // optional. it will be called on destruction of `Event`
+	}
+};
+
+void callback(int &aValue);
+
+int main(void)
+{
+	MethodCallable methodCallable{};
+	Event event{callback};
+	int value = 40;
+	Event::notify(aValue);  // value == 42;
+}
+
+```
